@@ -1,11 +1,25 @@
 // ============================================================
 //  scaffold.js: hand-write support for tatemonos
-//    node mizumi.js new [name] [--template=<id>]
-//    node mizumi.js block [tatemono] [block] [name] [--variant=<v>] [--dry]
+//    node mizumi.js new [name] [template] [resource] [--template=<id>] [--auth] [--description=..]
+//    node mizumi.js block [tatemono] <block> [name ...] [--variant=<v> | --ts] [--dry]
 //    node mizumi.js block --list
+//    node mizumi.js check [tatemono ...] [--all] [--variant=<v>]
 //  Every block in PLUFF_DSL_CATALOG.md is covered. Shapes follow
 //  PLUFF_GUIDELINES Section 3D; bodies follow the fixture tatemonos.
 //  mizumi.js passes its picker/prompt/log helpers in through `ctx`.
+//
+//  What makes it safe to lean on:
+//   - Arguments are parsed strictly: a mistyped flag is an error with a
+//     suggestion, never silently ignored. `--variant ts`, `--variant=ts`
+//     and `--ts` all work.
+//   - Names are normalised for their block (database -> snake_case,
+//     pages -> kebab-case, listeners -> PascalCase) and told to you.
+//   - Cross-references are checked against the file: endpoint/handler names
+//     must exist in the api/routes block, layouts and parents must exist,
+//     policy needs `policy: true`. Missing names are offered as choices.
+//   - A block is only written if it adds no NEW error (see lintSource).
+//     Use --force to write anyway.
+//   - `check` lints any tatemono without the engine installed.
 // ============================================================
 
 import fs from 'node:fs'
@@ -13,20 +27,104 @@ import path from 'node:path'
 
 // ─── HELPERS ──────────────────────────────────────────────────
 const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/
-const pascal = s => String(s).split(/[^a-zA-Z0-9]+/).filter(Boolean).map(w => w[0].toUpperCase() + w.slice(1)).join('')
-const singular = s => (s.endsWith('ies') ? s.slice(0, -3) + 'y' : s.endsWith('s') ? s.slice(0, -1) : s)
+const words = s => String(s).replace(/([a-z0-9])([A-Z])/g, '$1 $2').split(/[^a-zA-Z0-9]+/).filter(Boolean)
+const pascal = s => words(s).map(w => w[0].toUpperCase() + w.slice(1)).join('')
+const kebab = s => words(s).map(w => w.toLowerCase()).join('-')
+const snake = s => words(s).map(w => w.toLowerCase()).join('_')
 const escapeRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-function parseArgs(args) {
+const UNCOUNTABLE = new Set(['news', 'series', 'species', 'metadata', 'info', 'analytics', 'media', 'data'])
+const singularWord = w => {
+  const l = w.toLowerCase()
+  if (UNCOUNTABLE.has(l)) return w
+  if (/ies$/i.test(w)) return w.slice(0, -3) + 'y'
+  if (/(ss|us|is)es$/i.test(w) || /(x|z|ch|sh)es$/i.test(w)) return w.slice(0, -2)
+  if (/(ss|us|is)$/i.test(w)) return w
+  if (/s$/i.test(w)) return w.slice(0, -1)
+  return w
+}
+const singular = s => {
+  const m = String(s).match(/^(.*?)([A-Za-z0-9]+)$/)
+  return m ? m[1] + singularWord(m[2]) : String(s)
+}
+// Same rule as the engine validator's pluralizeTableName.
+const plural = s => (/[^aeiou]y$/i.test(s) ? s.slice(0, -1) + 'ies' : /(s|x|z|ch|sh)$/i.test(s) ? s + 'es' : s + 's')
+
+// Levenshtein distance, for "did you mean" hints.
+function distance(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)])
+  for (let j = 1; j <= b.length; j++) d[0][j] = j
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1))
+  return d[a.length][b.length]
+}
+function closest(word, list) {
+  let best = null, bestD = Infinity
+  for (const item of list) { const dist = distance(String(word).toLowerCase(), String(item).toLowerCase()); if (dist < bestD) { best = item; bestD = dist } }
+  return best !== null && bestD <= Math.max(1, Math.floor(String(word).length / 3)) ? best : null
+}
+const didYouMean = (word, list) => { const c = closest(word, list); return c ? ` Did you mean "${c}"?` : '' }
+
+// ─── ARGUMENTS ────────────────────────────────────────────────
+// Value flags take a value (`--k=v` or `--k v`); bool flags do not.
+// Anything else starting with `-` is an error, not a silent no-op.
+const VALUE_FLAGS = new Set(['variant', 'backend', 'template', 'resource', 'layout', 'parent', 'path', 'mode', 'description'])
+const BOOL_FLAGS = new Set(['dry', 'shared', 'list', 'force', 'exact', 'auth', 'help', 'all', 'quiet'])
+const SHORT_FLAGS = { d: 'dry', f: 'force', s: 'shared', l: 'list', h: 'help', a: 'all', q: 'quiet', t: 'template', v: 'variant', r: 'resource' }
+
+const BACKENDS = ['php', 'ts', 'py', 'java', 'cs', 'go', 'rs']
+const BACKEND_LABEL = { php: 'Laravel (PHP)', ts: 'Express (TypeScript)', py: 'FastAPI (Python)', java: 'Spring Boot (Java)', cs: 'ASP.NET Core (C#)', go: 'Go (Chi)', rs: 'Rust (Axum)' }
+const NATIVE = ['expo', 'rn']
+const NATIVE_LABEL = { expo: 'Expo', rn: 'Bare React Native' }
+const VARIANT_WORDS = new Set([...BACKENDS, ...NATIVE])
+
+export function parseArgs(args) {
   const positional = []
   const flags = {}
-  for (const a of args) {
+  const problems = []
+  const known = [...VALUE_FLAGS, ...BOOL_FLAGS, ...VARIANT_WORDS]
+  let literal = false
+  const setFlag = (k, v) => { flags[k] = v }
+  for (let i = 0; i < args.length; i++) {
+    const a = String(args[i])
+    if (literal || !a.startsWith('-') || a === '-') { positional.push(a); continue }
+    if (a === '--') { literal = true; continue }
+    let key, value
     if (a.startsWith('--')) {
-      const [k, ...rest] = a.slice(2).split('=')
-      flags[k] = rest.length ? rest.join('=') : true
-    } else positional.push(a)
+      const eq = a.indexOf('=')
+      key = eq < 0 ? a.slice(2) : a.slice(2, eq)
+      value = eq < 0 ? undefined : a.slice(eq + 1)
+    } else {
+      const short = SHORT_FLAGS[a.slice(1)]
+      if (!short || a.length !== 2) { problems.push(`Unknown flag ${a}.${didYouMean(a.replace(/^-+/, ''), known) ? ` Did you mean --${closest(a.replace(/^-+/, ''), known)}?` : ''}`); continue }
+      key = short
+    }
+    let negate = false
+    if (key.startsWith('no-') && BOOL_FLAGS.has(key.slice(3))) { negate = true; key = key.slice(3) }
+
+    if (VARIANT_WORDS.has(key) && value === undefined) {
+      if (flags.variant && flags.variant !== key) problems.push(`Two variants given: ${flags.variant} and ${key}.`)
+      setFlag('variant', key); continue
+    }
+    if (VALUE_FLAGS.has(key)) {
+      if (value === undefined) {
+        const next = args[i + 1]
+        if (next === undefined || (String(next).startsWith('-') && !/^-?\d/.test(String(next)) && String(next) !== '-')) { problems.push(`--${key} needs a value (--${key}=<value>).`); continue }
+        value = String(next); i++
+      }
+      if (value === '') { problems.push(`--${key} needs a value (--${key}=<value>).`); continue }
+      setFlag(key, value); continue
+    }
+    if (BOOL_FLAGS.has(key)) {
+      if (value === undefined) setFlag(key, !negate)
+      else if (/^(true|1|yes)$/i.test(value)) setFlag(key, !negate)
+      else if (/^(false|0|no)$/i.test(value)) setFlag(key, negate)
+      else problems.push(`--${key} does not take a value (got "${value}").`)
+      continue
+    }
+    problems.push(`Unknown flag --${key}.${didYouMean(key, known) ? ` Did you mean --${closest(key, known)}?` : ''}`)
   }
-  return { positional, flags }
+  return { positional, flags, problems }
 }
 
 // Block shapes (guidelines Section 3D)
@@ -35,10 +133,6 @@ const shapeB = (tag, yaml, body = '') => `/* @arkzen:${tag}\n${yaml}\n*/\n${body
 const shapeC = (tag, body, after = '') => `/* @arkzen:${tag} */\n${after}${body ? '\n' + body + '\n' : ''}\n/* @arkzen:${tag}:end */\n`  // code block
 const shapeD = (tag, body) => `/* @arkzen:${tag}\n*/\n${body}\n/* @arkzen:${tag}:end */\n`          // body-separator block
 
-const BACKENDS = ['php', 'ts', 'py', 'java', 'cs', 'go', 'rs']
-const BACKEND_LABEL = { php: 'Laravel (PHP)', ts: 'Express (TypeScript)', py: 'FastAPI (Python)', java: 'Spring Boot (Java)', cs: 'ASP.NET Core (C#)', go: 'Go (Chi)', rs: 'Rust (Axum)' }
-const NATIVE = ['expo', 'rn']
-const NATIVE_LABEL = { expo: 'Expo', rn: 'Bare React Native' }
 const RS_DOC = `// Documentary Rust variant; the Rust engine does not evaluate arbitrary snippets here.`
 const COMMENT = { php: '//', ts: '//', py: '#', java: '//', cs: '//', go: '//', rs: '//' }
 const todo = (v, text) => `${COMMENT[v]} ${text}`
@@ -576,10 +670,409 @@ const TEMPLATES = {
     make: ({ slug }) => [metaBlock(slug, 'Unity scene tatemono'), make('unity:project', null, { slug, flags: { mode: 'scene' } }), make('unity:environment'), make('unity:scene', 'main', { slug }), make('unity:export')] },
 }
 
+
+// ─── SOURCE MODEL ─────────────────────────────────────────────
+// A small, dependency-free reader for the parts of a tatemono the scaffold
+// needs to cross-check. It is not a YAML parser; it reads what the guideline
+// says these blocks contain.
+const BACKEND_CODE = new Set(['endpoint', 'handler', 'policy', 'middleware', 'listener'])
+const BACKEND_MIXED = new Set(['jobs', 'console', 'notifications', 'mail'])
+const SHAPE_A_TAGS = new Set(['meta', 'meta:web', 'meta:native', 'web:config', 'native:config', 'desktop:config', 'oauth', 'routes'])
+const DECL_RE = /^(web:page:layout|native:page:layout|native:page:lynx:layout):(.+)$/
+
+function parseTag(tag) {
+  const decl = tag.match(DECL_RE)
+  if (decl) return { family: decl[1], decl: decl[2], name: '' }
+  const parts = tag.split(':')
+  const head = parts[0]
+  if (BACKEND_CODE.has(head) || BACKEND_MIXED.has(head)) {
+    const variant = BACKENDS.includes(parts[1]) ? parts[1] : null
+    return { family: head, variant, name: parts.slice(variant ? 2 : 1).join(':') }
+  }
+  if (head === 'module') return { family: 'module:rs', name: '' }
+  if (head === 'meta') return { family: parts[1] ? `meta:${parts[1]}` : 'meta', name: '' }
+  if (head === 'web') return { family: `web:${parts[1]}`, name: parts.slice(2).join(':') }
+  if (head === 'desktop') return { family: `desktop:${parts[1]}`, name: parts.slice(2).join(':') }
+  if (head === 'godot' || head === 'unity') return { family: `${head}:${parts[1]}`, name: parts.slice(2).join(':') }
+  if (head === 'native') {
+    if (parts[2] === 'lynx' && (parts[1] === 'page' || parts[1] === 'layout' || parts[1] === 'components'))
+      return { family: `native:${parts[1]}:lynx`, name: parts.slice(3).join(':') }
+    return { family: `native:${parts[1]}`, name: parts.slice(2).join(':') }
+  }
+  return { family: head, name: parts.slice(1).join(':') }
+}
+
+const yamlTop = yaml => {
+  const out = {}
+  for (const line of yaml.split('\n')) {
+    const m = line.match(/^([A-Za-z_][\w-]*):[ \t]*(.*?)[ \t]*$/)
+    if (m) out[m[1]] = m[2].replace(/\s+#.*$/, '').replace(/^["']|["']$/g, '')
+  }
+  return out
+}
+
+// Names of mapping keys directly under `key:`, with the scalar fields of each child.
+function yamlChildren(yaml, key) {
+  const lines = yaml.split('\n')
+  const start = lines.findIndex(l => new RegExp(`^${escapeRe(key)}:\\s*(#.*)?$`).test(l))
+  if (start < 0) return null
+  const children = []
+  let indent = null, current = null
+  for (let i = start + 1; i < lines.length; i++) {
+    const l = lines[i]
+    if (!l.trim() || /^\s*#/.test(l)) continue
+    const lead = l.match(/^ */)[0].length
+    if (lead === 0) break
+    if (indent === null) indent = lead
+    const kv = l.match(/^\s*([A-Za-z_][\w.-]*):[ \t]*(.*?)[ \t]*$/)
+    if (!kv) continue
+    if (lead === indent) { current = { name: kv[1], fields: {} }; children.push(current) }
+    else if (current && lead > indent) current.fields[kv[1]] = kv[2].replace(/^["']|["']$/g, '')
+  }
+  return children
+}
+
+function listedNames(yaml, key) {
+  const names = []
+  for (const m of yaml.matchAll(new RegExp(`${key}:[ \\t]*\\[([^\\]]*)\\]`, 'g')))
+    names.push(...m[1].split(',').map(s => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean))
+  for (const m of yaml.matchAll(new RegExp(`^([ \\t]*)${key}:[ \\t]*\\n((?:\\1[ \\t]+-[^\\n]*\\n?)+)`, 'gm')))
+    for (const item of m[2].matchAll(/-\s*([A-Za-z0-9_]+)/g)) names.push(item[1])
+  return names
+}
+
+export function scanSource(source) {
+  const src = String(source).replace(/\r\n?/g, '\n')
+  const model = {
+    src, openers: [], meta: null, metaLine: 0, apis: [], tables: [], routes: [], events: [],
+    webPages: [], webLayouts: [], nativePages: [], nativeLayouts: [], lynxPages: [], lynxLayouts: [],
+    code: [], mixed: [], frames: [], fileBlocks: [], game: null, ends: new Set(), oauth: null,
+  }
+  const lineOf = idx => src.slice(0, idx).split('\n').length
+  let lastWeb = null, lastNative = null, lastLynx = null
+  for (const m of src.matchAll(/\/\*[ \t]*@arkzen:([A-Za-z0-9:_+.{}-]+)([^\n]*)/g)) {
+    const tag = m[1], rest = m[2]
+    const afterOpen = m.index + m[0].length
+    // A real block tag starts its line. Mentions inside strings or prose do not count.
+    if (!/^[ \t]*$/.test(src.slice(src.lastIndexOf('\n', m.index - 1) + 1, m.index))) continue
+    if (tag.endsWith(':end')) { model.ends.add(tag.slice(0, -4)); continue }
+    const sameLineClose = rest.includes('*/')
+    let yaml = '', closed = true
+    if (!sameLineClose) {
+      const end = src.indexOf('*/', afterOpen)
+      closed = end >= 0
+      yaml = closed ? src.slice(afterOpen, end).replace(/^\n/, '') : ''
+    }
+    const nextLine = (src.slice(afterOpen + 1).split('\n')[0] ?? '').trim()
+    const o = { tag, ...parseTag(tag), line: lineOf(m.index), sameLineClose, closed, yaml, nextLine }
+    model.openers.push(o)
+
+    switch (o.family) {
+      case 'meta': model.meta = { ...yamlTop(yaml), _raw: yaml }; model.metaLine = o.line; break
+      case 'database': {
+        const top = yamlTop(yaml)
+        const cols = yamlChildren(yaml, 'columns') ?? []
+        model.tables.push({ tag, line: o.line, id: o.name, table: top.table || o.name, columns: cols.map(c => ({ name: c.name, type: c.fields.type, foreign: c.fields.foreign })), hasColumns: yamlChildren(yaml, 'columns') !== null })
+        break
+      }
+      case 'api': {
+        const top = yamlTop(yaml)
+        const eps = yamlChildren(yaml, 'endpoints') ?? []
+        model.apis.push({ tag, line: o.line, id: o.name, model: top.model, controller: top.controller, prefix: top.prefix, policy: /^true$/i.test(top.policy ?? ''), endpoints: eps.map(e => ({ name: e.name, method: e.fields.method })) })
+        break
+      }
+      case 'routes': model.routes.push({ line: o.line, handlers: [...yaml.matchAll(/\bhandler:[ \t]*["']?([A-Za-z0-9_]+)/g)].map(h => h[1]) }); break
+      case 'events': model.events.push({ line: o.line, id: o.name, listeners: listedNames(yaml, 'listeners') }); break
+      case 'oauth': model.oauth = { line: o.line, ...yamlTop(yaml), _raw: yaml }; break
+      case 'web:page': lastWeb = { name: o.name, line: o.line, layout: null }; model.webPages.push(lastWeb); break
+      case 'web:page:layout': if (lastWeb) lastWeb.layout = o.decl; break
+      case 'web:layout': model.webLayouts.push({ name: o.name, line: o.line, parent: yamlTop(yaml).parent || null }); break
+      case 'native:page': lastNative = { name: o.name, line: o.line, layout: null }; model.nativePages.push(lastNative); break
+      case 'native:page:layout': if (lastNative) lastNative.layout = o.decl; break
+      case 'native:page:lynx': lastLynx = { name: o.name, line: o.line, layout: null }; model.lynxPages.push(lastLynx); break
+      case 'native:page:lynx:layout': if (lastLynx) lastLynx.layout = o.decl; break
+      case 'native:layout': model.nativeLayouts.push({ name: o.name, line: o.line, parent: yamlTop(yaml).parent || null }); break
+      case 'native:layout:lynx': model.lynxLayouts.push({ name: o.name, line: o.line, parent: yamlTop(yaml).parent || null }); break
+      case 'native:frame': case 'desktop:frame': model.frames.push({ target: o.name, line: o.line }); break
+      case 'file': model.fileBlocks.push({ name: o.name, line: o.line, path: yamlTop(yaml).path }); break
+      case 'godot:project': model.game = 'godot'; break
+      case 'unity:project': model.game = 'unity'; break
+      default:
+        if (BACKEND_CODE.has(o.family)) model.code.push(o)
+        else if (BACKEND_MIXED.has(o.family)) model.mixed.push(o)
+    }
+  }
+  const bodyFor = (family, variant) => model.code.filter(o => o.family === family && (o.variant ?? 'php') === variant).map(o => o.name)
+  model.implemented = (family, variant) => new Set(bodyFor(family, variant ?? 'php'))
+  model.apiEndpointNames = () => [...new Set(model.apis.flatMap(a => a.endpoints.map(e => e.name)))]
+  model.routeHandlerNames = () => [...new Set(model.routes.flatMap(r => r.handlers))]
+  model.listenerNames = () => [...new Set(model.events.flatMap(e => e.listeners))]
+  return model
+}
+
+// Same grammar as the engine's parsePageLayoutDecl.
+export function parseLayoutDecl(raw) {
+  const t = String(raw ?? '').trim()
+  const g = t.match(/^\+?(auth|guest)(?::([a-zA-Z0-9_-]+))?$/)
+  if (g) return { guard: g[1], layout: g[2] ?? undefined }
+  return { layout: t || undefined }
+}
+
+// ─── LINT ─────────────────────────────────────────────────────
+// Mirrors the engine's validator and the guideline's tag-shape rules, so a
+// tatemono can be checked without installing the engine. Calibrated against
+// every tatemono in tatemonos/ and against the engine validator itself.
+const VALID_COLUMN_TYPES = new Set(['integer', 'bigInteger', 'string', 'text', 'longText', 'decimal', 'float', 'boolean', 'date', 'datetime', 'timestamp', 'json', 'uuid', 'foreignId'])
+const VALID_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
+const SHAPE_C_HEADS = new Set(['web', 'native'])
+
+export function lintSource(source, opts = {}) {
+  const m = scanSource(source)
+  const errors = [], warnings = []
+  const E = (msg, line) => errors.push({ msg, line })
+  const W = (msg, line) => warnings.push({ msg, line })
+  const variant = opts.variant ?? null
+
+  // meta
+  if (!m.meta) E('@arkzen:meta is missing. Every tatemono starts with it.')
+  else {
+    if (!m.meta.name) E('@arkzen:meta needs a name:', m.metaLine)
+    else if (opts.slug && m.meta.name !== opts.slug) W(`@arkzen:meta name "${m.meta.name}" does not match the folder "${opts.slug}"`, m.metaLine)
+  }
+
+  // tag shapes (guideline Section 3D)
+  const seen = new Map()
+  for (const o of m.openers) {
+    if (o.family.startsWith('godot:') || o.family.startsWith('unity:') || o.tag.startsWith('import:') || o.tag.startsWith('resolved:')) continue
+    if (o.decl !== undefined) continue
+    // Expo and bare RN may each declare the same native block (the engine checks per target).
+    if (seen.has(o.tag) && o.tag.startsWith('native:') && !o.tag.includes('lynx')) continue
+    if (seen.has(o.tag)) E(`Duplicate block @arkzen:${o.tag} (first at line ${seen.get(o.tag)})`, o.line)
+    else seen.set(o.tag, o.line)
+
+    const head = o.tag.split(':')[0]
+    const isA = SHAPE_A_TAGS.has(o.tag) || head === 'database' || head === 'api'
+    const isD = BACKEND_CODE.has(head) || o.family === 'module:rs'
+    const isC = (SHAPE_C_HEADS.has(head) && !SHAPE_A_TAGS.has(o.tag) && o.family !== 'native:meta') || o.family === 'desktop:frame'
+    const needsEnd = () => { if (!m.ends.has(o.tag)) E(`@arkzen:${o.tag} is missing its closing /* @arkzen:${o.tag}:end */`, o.line) }
+    if (isA) {
+      if (o.sameLineClose) E(`@arkzen:${o.tag} is a YAML-only block: do not put */ on the opening line, close it with a bare */ line`, o.line)
+      else if (!o.closed) E(`@arkzen:${o.tag} is never closed with */`, o.line)
+    } else if (isD) {
+      // The engine also accepts the legacy one-line form (`/* @arkzen:endpoint:php:x */`).
+      if (!o.sameLineClose && o.nextLine !== '*/') E(`@arkzen:${o.tag}: the line after the opening tag must be exactly */`, o.line)
+      needsEnd()
+    } else if (isC) {
+      const layoutWithYaml = (o.family === 'web:layout' || o.family === 'native:layout' || o.family === 'native:layout:lynx') && !o.sameLineClose && o.closed
+      if (!o.sameLineClose && !layoutWithYaml) E(`@arkzen:${o.tag} is a code block: put */ on the SAME line as the opening tag`, o.line)
+      needsEnd()
+    } else if (o.family === 'file') {
+      if (!o.sameLineClose && !o.yaml.trim()) E(`@arkzen:${o.tag} needs a path: line`, o.line)
+      if (!m.fileBlocks.find(f => f.name === o.name)?.path) E(`@arkzen:${o.tag} needs a path: (where the file is written)`, o.line)
+      needsEnd()
+    } else if (BACKEND_MIXED.has(head) || o.family === 'events' || o.family === 'realtime') {
+      if (o.name && (o.variant || o.family === 'realtime' || o.family === 'events') && !m.ends.has(o.tag) && !o.closed) E(`@arkzen:${o.tag} is never closed with */`, o.line)
+    }
+  }
+
+  const isGame = !!m.game
+  const hasFiles = m.fileBlocks.length > 0
+
+  // pages
+  if (!isGame && !hasFiles && !m.webPages.length && !m.nativePages.length && !m.lynxPages.length)
+    E('At least one @arkzen:web:page:<name>, @arkzen:native:page:<name> or @arkzen:native:page:lynx:<name> is required')
+  for (const [list, label] of [[m.webPages, 'web'], [m.nativePages, 'native'], [m.lynxPages, 'Lynx']]) {
+    const names = new Set()
+    for (const p of list) { if (names.has(p.name) && label !== 'native') E(`Duplicate ${label} page "${p.name}"`, p.line); names.add(p.name) }
+  }
+
+  // layouts: pages and parents must point at layouts that exist
+  const layoutCheck = (pages, layouts, label, marker, skipDefault) => {
+    const declared = new Set(layouts.map(l => l.name))
+    for (const p of pages) {
+      if (skipDefault && (p.layout ?? 'default') === 'default') continue
+      if (p.layout == null) continue
+      const { layout } = parseLayoutDecl(p.layout)
+      const missing = (layout?.split(':') ?? []).filter(n => !declared.has(n))
+      if (missing.length) E(`${label} page "${p.name}": layout "${missing.join(':')}" is not defined. Valid layouts: ${[...declared].join(', ') || '(none)'}. Define it with @arkzen:${marker}:${missing[0]}`, p.line)
+    }
+    for (const l of layouts) {
+      if (l.parent && !declared.has(l.parent)) E(`${label} layout "${l.name}": parent "${l.parent}" is not defined`, l.line)
+      let cur = l, hops = 0
+      while (cur?.parent && hops++ < 50) cur = layouts.find(x => x.name === cur.parent)
+      if (hops >= 50) E(`${label} layout chain cycles at "${l.name}"`, l.line)
+    }
+  }
+  layoutCheck(m.webPages, m.webLayouts, 'Web', 'web:layout', false)
+  layoutCheck(m.nativePages, m.nativeLayouts, 'Native', 'native:layout', true)
+  layoutCheck(m.lynxPages, m.lynxLayouts, 'Lynx', 'native:layout:lynx', true)
+
+  if (m.meta && /^true$/i.test(m.meta.auth ?? '')) {
+    const guards = m.webPages.map(p => parseLayoutDecl(p.layout).guard)
+    if (guards.includes('auth') && !guards.includes('guest'))
+      W('auth: true is set but no guest page exists, so nobody can log in. Add @arkzen:web:page:layout:+guest to the login page.')
+  }
+  if (m.oauth) {
+    if (!/^true$/i.test(m.meta?.auth ?? '')) E('@arkzen:oauth requires auth: true in @arkzen:meta', m.oauth.line)
+    if (!/providers:\s*\S/.test(m.oauth._raw)) E('@arkzen:oauth needs a non-empty providers list', m.oauth.line)
+  }
+
+  // database
+  const tableNames = new Set(['users', ...m.tables.map(t => t.table)])
+  const prefix = (m.meta?.name ?? '').replace(/-/g, '_')
+  m.tables.forEach(t => tableNames.add(`${prefix}_${t.table}`))
+  const seenTables = new Set()
+  for (const t of m.tables) {
+    if (!/^[a-z][a-z0-9_]*$/.test(t.table)) E(`Table name "${t.table}" must be lowercase snake_case`, t.line)
+    else if (!/^[a-z][a-z0-9_]*s$/.test(t.table) && t.table !== 'users' && !t.table.endsWith('_log')) W(`Table "${t.table}" should be plural snake_case (e.g. "${plural(t.table)}")`, t.line)
+    if (!t.hasColumns) E(`database "${t.table}" needs a columns: section`, t.line)
+    if (seenTables.has(t.table)) E(`Duplicate table declaration "${t.table}"`, t.line)
+    seenTables.add(t.table)
+    for (const c of t.columns) {
+      if (c.type === 'enum') E(`Table "${t.table}", column "${c.name}": type "enum" is unsupported; use string and check the values in the endpoint code`, t.line)
+      else if (c.type && !VALID_COLUMN_TYPES.has(c.type)) E(`Table "${t.table}", column "${c.name}": invalid type "${c.type}"`, t.line)
+      if (c.foreign && !tableNames.has(c.foreign.split('.')[0])) E(`Table "${t.table}", column "${c.name}": foreign key points at unknown table "${c.foreign.split('.')[0]}"`, t.line)
+    }
+  }
+  const deps = new Map(m.tables.map(t => [t.table, t.columns.filter(c => c.foreign).map(c => c.foreign.split('.')[0])]))
+  const cyc = (t, stack = new Set(), done = new Set()) => { if (stack.has(t)) return true; if (done.has(t)) return false; stack.add(t); for (const d of deps.get(t) ?? []) if (cyc(d, stack, done)) return true; stack.delete(t); done.add(t); return false }
+  for (const t of m.tables) if (cyc(t.table)) { E(`Circular foreign key dependency involving "${t.table}"`, t.line); break }
+
+  // api
+  const seenControllers = new Set()
+  for (const a of m.apis) {
+    if (!a.controller) E(`api "${a.id || a.model}" needs controller:`, a.line)
+    else if (!a.controller.endsWith('Controller')) E(`API controller "${a.controller}" must end with "Controller"`, a.line)
+    if (a.model && !/^[A-Z][a-zA-Z0-9]*$/.test(a.model)) E(`API model "${a.model}" must be PascalCase`, a.line)
+    if (!a.prefix) E(`api "${a.id || a.model}" needs prefix:`, a.line)
+    else if (!a.prefix.startsWith('/api/')) E(`API prefix "${a.prefix}" must start with /api/`, a.line)
+    for (const e of a.endpoints) if (e.method && !VALID_METHODS.has(e.method.toUpperCase())) E(`API "${a.controller}", endpoint "${e.name}": invalid method "${e.method}"`, a.line)
+    if (a.controller) { if (seenControllers.has(a.controller)) E(`Duplicate controller "${a.controller}"`, a.line); seenControllers.add(a.controller) }
+    if (a.model && m.tables.length) {
+      const snakeModel = a.model.replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
+      if (!m.tables.some(t => t.table === plural(snakeModel) || t.table === snakeModel))
+        W(`API model "${a.model}" expects table "${plural(snakeModel)}". Add a @arkzen:database block with that table.`, a.line)
+    }
+  }
+
+  // frames (engine contract)
+  for (const f of m.frames) {
+    const o = m.openers.find(x => x.line === f.line)
+    const body = bodyBetween(m.src, o)
+    if (f.target === 'expo' && !/export\s+default\b/.test(body)) E('@arkzen:native:frame:expo must `export default` a layout component', f.line)
+    if (f.target === 'rn' && !/export\s+(?:const|let|function)\s+(?:screenOptions|Frame)\b/.test(body)) E('@arkzen:native:frame:rn must export `screenOptions` and/or `Frame`', f.line)
+    if (f.target === 'lynx' && !/export\s+(?:const|let|function)\s+Frame\b/.test(body)) E('@arkzen:native:frame:lynx must export a `Frame` component', f.line)
+    if (f.target === 'electron' && !/export\s+(?:default\b|(?:const|let|function)\s+(?:setup|windowOptions)\b)/.test(body)) E('@arkzen:desktop:frame:electron must export `setup`, `windowOptions` or a default function (plain JavaScript)', f.line)
+    if (f.target === 'tauri' && !/pub\s+fn\s+frame\s*\(/.test(body)) E('@arkzen:desktop:frame:tauri must define `pub fn frame(app: ...)`', f.line)
+  }
+
+  // backend code blocks: cross-references and variants
+  const endpointNames = new Set(m.apiEndpointNames()), handlerNames = new Set(m.routeHandlerNames()), listenerNames = new Set(m.listenerNames())
+  for (const o of m.code) {
+    if (o.family === 'endpoint' && !endpointNames.has(o.name)) W(`@arkzen:${o.tag}: no @arkzen:api declares an endpoint "${o.name}", so this body is never used.${didYouMean(o.name, [...endpointNames])}`, o.line)
+    if (o.family === 'handler' && !handlerNames.has(o.name)) W(`@arkzen:${o.tag}: no @arkzen:routes entry uses handler: ${o.name}, so this body is never used.${didYouMean(o.name, [...handlerNames])}`, o.line)
+    if (o.family === 'listener' && !listenerNames.has(o.name)) W(`@arkzen:${o.tag}: no @arkzen:events block lists "${o.name}" as a listener.${didYouMean(o.name, [...listenerNames])}`, o.line)
+    if (o.family === 'policy' && !m.apis.some(a => a.policy)) W(`@arkzen:${o.tag}: no @arkzen:api has policy: true, so the policy is not applied`, o.line)
+  }
+  if (variant) {
+    const groups = new Map()
+    for (const o of [...m.code, ...m.mixed]) {
+      const key = `${o.family}:${o.name}`
+      if (!groups.has(key)) groups.set(key, { o, variants: new Set(), shared: false })
+      const g = groups.get(key)
+      if (o.variant) g.variants.add(o.variant); else if (BACKEND_CODE.has(o.family)) g.variants.add('php'); else g.shared = true
+    }
+    for (const g of groups.values()) {
+      if (g.variants.size && !g.variants.has(variant) && !g.shared)
+        W(`@arkzen:${g.o.family}:${g.o.name} has no :${variant} variant (found: ${[...g.variants].join(', ')}). The tatemono is inactive on the :${variant} backend until you add it.`, g.o.line)
+    }
+  }
+  return { errors, warnings, model: m }
+}
+
+function bodyBetween(src, opener) {
+  const start = src.split('\n').slice(0, opener.line).join('\n').length
+  const end = src.indexOf(`@arkzen:${opener.tag}:end`, start)
+  return src.slice(start, end < 0 ? undefined : end)
+}
+
+export const formatFinding = f => (f.line ? `line ${f.line}: ` : '') + f.msg
+
+// ─── NAMES ────────────────────────────────────────────────────
+// Each block kind has one naming style in the fixtures (checked across every
+// tatemono in tatemonos/). A name that is not in that style is converted and
+// the conversion is reported. --exact turns conversion off (validity is still
+// enforced, because an invalid table name breaks the whole tatemono).
+const NAME_KIND = {
+  database: 'table', api: 'table', crud: 'table',
+  listener: 'pascal', 'web:style:name': 'pascal',
+  endpoint: 'ident', handler: 'ident', policy: 'ident', middleware: 'ident',
+  realtime: 'free', 'realtime:event': 'free', 'native:style:name': 'free', 'lynx:style:name': 'free',
+  'native:script': 'free', 'lynx:script': 'free',
+}
+
+function normalizeName(block, raw, flags) {
+  const kind = NAME_KIND[block.key] ?? 'kebab'
+  const input = String(raw).trim()
+  if (block.name?.optional && input === '') return { value: '' }
+  if (!input) return { error: `${block.key} needs a name` }
+  const done = value => ({ value, note: value !== input ? `name "${input}" -> "${value}" (${kind === 'table' ? 'snake_case plural table name' : kind + ' style'}; --exact keeps it as typed)` : undefined })
+  if (kind === 'table') {
+    if (flags.exact) return /^[a-z][a-z0-9_]*$/.test(input) ? { value: input } : { error: `"${input}" is not a valid table name (lowercase snake_case, starts with a letter)` }
+    let v = /^[a-z][a-z0-9_]*$/.test(input) ? input : snake(input)
+    if (!/^[a-z]/.test(v)) return { error: `"${input}" cannot be turned into a table name (it must start with a letter)` }
+    if (!/s$/.test(v) && !/_log$/.test(v)) v = v.replace(/[a-z0-9]+$/, w => plural(w))
+    return done(v)
+  }
+  if (kind === 'pascal') {
+    const v = /^[A-Z][A-Za-z0-9]*$/.test(input) ? input : pascal(input)
+    return v ? done(v) : { error: `"${input}" cannot be turned into a PascalCase name` }
+  }
+  if (kind === 'ident') {
+    if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(input)) return { value: input }
+    const w = words(input)
+    const v = w.length ? w[0].toLowerCase() + w.slice(1).map(x => x[0].toUpperCase() + x.slice(1)).join('') : ''
+    return /^[A-Za-z_]/.test(v) ? done(v) : { error: `"${input}" is not a valid ${block.key} name (letters, digits and _; not starting with a digit)` }
+  }
+  if (kind === 'free') return /^[A-Za-z0-9][A-Za-z0-9_.{}-]*$/.test(input) ? { value: input } : { error: `"${input}" is not a valid ${block.key} identifier (letters, digits, - _ . { })` }
+  if (flags.exact) return /^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(input) ? { value: input } : { error: `"${input}" is not a valid name` }
+  const v = /^[a-z0-9]+(-[a-z0-9]+)*$/.test(input) ? input : kebab(input)
+  return v ? done(v) : { error: `"${input}" cannot be turned into a kebab-case name` }
+}
+
+// ─── BLOCK LOOKUP ─────────────────────────────────────────────
+BLOCKS.splice(BLOCKS.findIndex(b => b.key === 'routes') + 1, 0,
+  { key: 'crud', group: 'Data + API', sub: 'a table and its api resource in one step (database + api)', name: { prompt: 'Resource (plural table name)', def: 'items' }, composite: ['database', 'api'] })
+
+const ALIASES = {
+  page: 'web:page', layout: 'web:layout', components: 'web:components', style: 'web:style', script: 'web:script', animation: 'web:animation',
+  '404': 'web:error:404', '500': 'web:error:500', db: 'database', table: 'database', route: 'routes', ep: 'endpoint', job: 'jobs', event: 'events',
+  notif: 'notifications', notification: 'notifications', cmd: 'console', command: 'console', email: 'mail', channel: 'realtime', screen: 'native:page',
+  resource: 'crud', model: 'crud',
+}
+
+function resolveBlock(word, gameKind) {
+  const w = String(word)
+  const visible = BLOCKS.filter(b => (gameKind ? b.game === gameKind || !b.game : !b.game))
+  const exact = visible.find(b => b.key === w) ?? BLOCKS.find(b => b.key === w)
+  if (exact) return { block: exact }
+  if (gameKind && blockByKey(`${gameKind}:${w}`)) return { block: blockByKey(`${gameKind}:${w}`) }
+  if (ALIASES[w] && blockByKey(ALIASES[w])) return { block: blockByKey(ALIASES[w]) }
+  const prefix = visible.filter(b => b.key.startsWith(w))
+  if (prefix.length === 1) return { block: prefix[0] }
+  if (prefix.length > 1) return { candidates: prefix.map(b => b.key) }
+  const inner = visible.filter(b => b.key.split(':').includes(w))
+  if (inner.length === 1) return { block: inner[0] }
+  if (inner.length > 1) return { candidates: inner.map(b => b.key) }
+  return {}
+}
+
 // ─── SHARED CHECKS ────────────────────────────────────────────
 const hasTag = (source, tag) => new RegExp(`/\\* @arkzen:${escapeRe(tag)}(?![\\w:+-])`).test(source)
 const interactive = () => !!process.stdin.isTTY
 const ask = (ctx, q, def) => (interactive() ? ctx.prompt(q, def) : Promise.resolve(def))
+const eolOf = source => (source.includes('\r\n') ? '\r\n' : '\n')
+const fail = () => { process.exitCode = 1 }
 
 function listTatemonoDirs(ctx) {
   if (!fs.existsSync(ctx.TATEMONOS_DIR)) return []
@@ -588,46 +1081,78 @@ function listTatemonoDirs(ctx) {
     .map(e => e.name).sort()
 }
 
+function latestTatemono(ctx, list) {
+  return [...list].sort((a, b) => fs.statSync(path.join(ctx.TATEMONOS_DIR, b, 'core.tsx')).mtimeMs - fs.statSync(path.join(ctx.TATEMONOS_DIR, a, 'core.tsx')).mtimeMs)[0]
+}
+
 function activeBackendVariant(ctx, flags = {}) {
   if (flags.variant) return String(flags.variant)
-  if (flags.backend) return ctx.backendVariant(ctx.BACKEND_ALIASES[flags.backend] ?? String(flags.backend))
+  if (flags.backend) return ctx.backendVariant(ctx.BACKEND_ALIASES?.[flags.backend] ?? String(flags.backend))
   return ctx.backendVariant(ctx.resolveBackend(ctx.readConfig()))
 }
+const safeActiveVariant = ctx => { try { const v = activeBackendVariant(ctx); return BACKENDS.includes(v) ? v : null } catch { return null } }
+
+function reportProblems(ctx, problems) { for (const p of problems) ctx.error(p); fail() }
 
 // ─── mizumi new ───────────────────────────────────────────────
 export async function cmdNew(ctx, args) {
-  const { positional, flags } = parseArgs(args)
-  let slug = positional[0]
+  const { positional, flags, problems } = parseArgs(args)
+  if (flags.help) { printNewHelp(); return }
+  if (problems.length) return reportProblems(ctx, problems)
+  const stray = ['shared', 'layout', 'parent', 'path', 'mode', 'list', 'all'].filter(k => flags[k] !== undefined && flags[k] !== false)
+  if (stray.length) { ctx.error(`mizumi new does not use ${stray.map(k => '--' + k).join(', ')}. See: mizumi new --help`); return fail() }
+
+  let [slug, tplWord, resWord, ...extra] = positional
+  if (extra.length) { ctx.error(`Too many arguments (${extra.join(' ')}). Usage: mizumi new <name> [template] [resource]`); return fail() }
   if (!slug) {
-    if (!interactive()) { ctx.error(`Usage: mizumi new <name> [--template=${Object.keys(TEMPLATES).join('|')}]`); return }
+    if (!interactive()) { ctx.error(`Usage: mizumi new <name> [template] [resource]   templates: ${Object.keys(TEMPLATES).join(', ')}`); return fail() }
     slug = await ctx.prompt('Tatemono name (kebab-case)', '')
   }
-  if (!slug || !SLUG_RE.test(slug)) { ctx.error(`"${slug ?? ''}" is not a valid name. Use kebab-case, e.g. my-app`); return }
-  const dir = path.join(ctx.TATEMONOS_DIR, slug)
-  if (fs.existsSync(dir)) { ctx.error(`tatemonos/${slug} already exists`); return }
+  const rawSlug = String(slug ?? '').trim()
+  const name = SLUG_RE.test(rawSlug) ? rawSlug : kebab(rawSlug)
+  if (!name || !SLUG_RE.test(name)) { ctx.error(`"${rawSlug}" is not a valid name. Use kebab-case, e.g. my-app`); return fail() }
+  if (name !== rawSlug) ctx.info(`Name "${rawSlug}" -> "${name}" (tatemono names are kebab-case)`)
+  const dir = path.join(ctx.TATEMONOS_DIR, name)
+  if (fs.existsSync(dir)) { ctx.error(`tatemonos/${name} already exists`); return fail() }
 
-  let template = flags.template
+  let template = flags.template ?? tplWord
+  if (flags.template && tplWord) { ctx.error(`Template given twice (${tplWord} and --template=${flags.template})`); return fail() }
+  if (template && !TEMPLATES[template]) { ctx.error(`Unknown template "${template}". Use one of: ${Object.keys(TEMPLATES).join(', ')}.${didYouMean(template, Object.keys(TEMPLATES))}`); return fail() }
   if (!template) {
-    if (!interactive()) { ctx.error(`Pass --template=${Object.keys(TEMPLATES).join('|')}`); return }
+    if (!interactive()) { ctx.error(`Pass a template: mizumi new ${name} <${Object.keys(TEMPLATES).join('|')}>`); return fail() }
     ctx.divider()
-    template = (await ctx.picker('テンプレート Which starting point?',
-      Object.entries(TEMPLATES).map(([key, t]) => ({ label: t.label, sub: t.sub, value: key })))).value
+    template = (await ctx.picker('テンプレート Which starting point?', Object.entries(TEMPLATES).map(([key, t]) => ({ label: t.label, sub: t.sub, value: key })))).value
   }
   const tpl = TEMPLATES[template]
-  if (!tpl) { ctx.error(`Unknown template: ${template} (use: ${Object.keys(TEMPLATES).join(', ')})`); return }
+
+  if (flags.resource && resWord) { ctx.error(`Resource given twice (${resWord} and --resource=${flags.resource})`); return fail() }
+  if ((flags.resource || resWord) && template !== 'crud') ctx.warn(`The resource only applies to the crud template; ignored for "${template}".`)
+  let resource = flags.resource ?? resWord ?? 'items'
+  if (template === 'crud' && !flags.resource && !resWord) resource = await ask(ctx, 'Resource (plural table name)', 'items')
+  const res = normalizeName({ key: 'database', name: {} }, resource, flags)
+  if (res.error) { ctx.error(res.error); return fail() }
+  if (res.note && template === 'crud') ctx.info(`Resource ${res.note}`)
+  resource = res.value
 
   const variant = activeBackendVariant(ctx, flags)
-  let resource = flags.resource ? String(flags.resource) : 'items'
-  if (template === 'crud' && !flags.resource) resource = await ask(ctx, 'Resource (plural table name)', 'items')
-  if (!SLUG_RE.test(resource)) { ctx.error(`"${resource}" is not a valid resource name`); return }
+  if (!BACKENDS.includes(variant)) { ctx.error(`Unknown backend variant "${variant}". Use one of: ${BACKENDS.join(', ')}.${didYouMean(variant, BACKENDS)}`); return fail() }
 
-  const text = tpl.make({ slug, variant, resource }).join('\n')
-  if (flags.dry) { console.log(text); return }
+  let text = tpl.make({ slug: name, variant, resource }).join('\n')
+  if (flags.auth && !/^auth: true$/m.test(text)) text = text.replace(/^auth: false$/m, 'auth: true')
+  if (flags.description) text = text.replace(/^description: .*$/m, `description: ${String(flags.description).replace(/[\r\n]+/g, ' ')}`)
+
+  const lint = lintSource(text, { variant, slug: name })
+  if (lint.errors.length && !flags.force) {
+    ctx.error(`The "${template}" template would produce an invalid tatemono. This is a scaffold bug, nothing was written:`)
+    lint.errors.forEach(e => ctx.error('  ' + formatFinding(e)))
+    return fail()
+  }
+  if (flags.dry) { console.log(text); ctx.info(`Dry run: ${lint.errors.length ? lint.errors.length + ' error(s)' : 'no errors'}, ${lint.warnings.length} warning(s). Nothing written.`); return }
   fs.mkdirSync(dir, { recursive: true })
   fs.writeFileSync(path.join(dir, 'core.tsx'), text, 'utf8')
-  ctx.success(`Created tatemonos/${slug}/core.tsx  ${ctx.paint(ctx.c.gray, `(${template})`)}`)
-  ctx.info(`Add more blocks: node mizumi.js block ${slug}`)
-  ctx.info('Check it appears: node mizumi.js modules')
+  ctx.success(`Created tatemonos/${name}/core.tsx  ${ctx.paint(ctx.c.gray, `(${template}, :${variant})`)}`)
+  if (!flags.quiet) lint.warnings.forEach(w => ctx.warn(formatFinding(w)))
+  ctx.info(`Next: node mizumi.js block ${name} <block> [name]   |   node mizumi.js check ${name}`)
 }
 
 // ─── mizumi block ─────────────────────────────────────────────
@@ -638,92 +1163,274 @@ function printCatalog(ctx) {
     if (b.group !== group) { group = b.group; console.log(`\n  ${ctx.paint(ctx.c.white + ctx.c.bold, group)}\n`) }
     console.log(`  ${ctx.paint(ctx.c.cyan, b.key.padEnd(24))} ${ctx.paint(ctx.c.gray, b.sub)}`)
   }
+  console.log(`\n  ${ctx.paint(ctx.c.gray, 'Shortcuts: ' + Object.entries(ALIASES).map(([a, k]) => `${a}=${k}`).join('  '))}`)
   ctx.divider()
 }
 
+function printBlockHelp() {
+  console.log(`
+  mizumi block [tatemono] <block> [name ...] [flags]
+
+    tatemono        optional; omit it to use the most recently edited one
+    block           a key from \`mizumi block --list\`, a shortcut (page, db, ep...) or a unique prefix
+    name ...        one or more identifiers; several names add several blocks in one go
+
+  Flags
+    --variant=<v>   backend (php ts py java cs go rs) or native target (expo rn); also --ts, --php, ...
+    --shared        YAML-only form for jobs / console / mail / notifications
+    --layout=<decl> page layout: +auth, +guest, +auth:shell, shell, none
+    --parent=<name> parent layout for web:layout / native:layout / lynx:layout
+    --path=<file>   output path for file blocks
+    --mode=scene    unity:project mode
+    --exact         keep the name as typed (no snake_case / kebab-case conversion)
+    --force         write even if the result has new errors
+    --dry           print the block, write nothing
+  Examples
+    mizumi block my-app crud notes
+    mizumi block my-app page about contact pricing
+    mizumi block my-app ep stats --ts
+`)
+}
+function printNewHelp() {
+  console.log(`
+  mizumi new <name> [template] [resource] [flags]
+
+    templates: ${Object.keys(TEMPLATES).join(', ')}
+    --template=<id>      same as the second positional
+    --resource=<table>   for the crud template (plural table name)
+    --auth               set auth: true in @arkzen:meta
+    --description=<text> meta description
+    --variant=<v> | --ts backend variant for code bodies (default: active backend)
+    --dry                print it, write nothing
+  Examples
+    mizumi new notes-app crud notes --auth
+    mizumi new landing web
+`)
+}
+
+function candidatesFor(block, model, variant) {
+  if (block.key === 'endpoint') return { all: model.apiEndpointNames(), done: model.implemented('endpoint', variant), what: 'api endpoint', missing: model.apis.length ? null : 'There is no @arkzen:api block yet. Add one first: mizumi block <tatemono> api <name>' }
+  if (block.key === 'handler') return { all: model.routeHandlerNames(), done: model.implemented('handler', variant), what: 'routes handler', missing: model.routes.length ? null : 'There is no @arkzen:routes block yet. Add one first: mizumi block <tatemono> routes' }
+  if (block.key === 'listener') return { all: model.listenerNames(), done: model.implemented('listener', variant), what: 'event listener', missing: model.events.length ? null : 'There is no @arkzen:events block yet. Add one first: mizumi block <tatemono> events <name>' }
+  if (block.key === 'policy') return { all: ['update', 'delete'], done: model.implemented('policy', variant), what: 'policy method', missing: model.apis.some(a => a.policy) ? null : 'No @arkzen:api has policy: true, so a policy would not be applied. Set policy: true on the api block first.' }
+  return null
+}
+
+function crossCheck(block, name, variant, model, force) {
+  const c = candidatesFor(block, model, variant)
+  if (!c || force) return null
+  if (c.missing) return c.missing
+  if (!c.all.includes(name)) return `No ${c.what} named "${name}". This file has: ${c.all.join(', ') || '(none)'}.${didYouMean(name, c.all)} Declare it first, or pass --force.`
+  return null
+}
+
+function allowedFlagsFor(block) {
+  const ok = new Set(['dry', 'force', 'exact', 'quiet', 'help'])
+  if (block.variants) { ok.add('variant'); ok.add('backend'); if (block.variants.optional) ok.add('shared') }
+  if (['web:page', 'native:page', 'lynx:page'].includes(block.key)) ok.add('layout')
+  if (['web:layout', 'native:layout', 'lynx:layout'].includes(block.key)) ok.add('parent')
+  if (block.key === 'file') ok.add('path')
+  if (block.key === 'unity:project') ok.add('mode')
+  return ok
+}
+
+function chooseVariant(ctx, block, flags) {
+  const { list, optional, labels, backend } = block.variants
+  if (flags.shared && flags.variant) return { error: 'Use either --shared or a variant, not both.' }
+  if (flags.shared) return optional ? { value: null } : { error: `${block.key} has no shared form. Pick a variant: ${list.join(', ')}.` }
+  const given = flags.variant ?? (backend && flags.backend ? activeBackendVariant(ctx, flags) : null)
+  if (given) return list.includes(given) ? { value: given } : { error: `${block.key} has no :${given} form. Allowed: ${list.join(', ')}.${didYouMean(given, list)}` }
+  return { ask: true }
+}
+
 export async function cmdBlock(ctx, args) {
-  const { positional, flags } = parseArgs(args)
+  const { positional, flags, problems } = parseArgs(args)
+  if (flags.help) { printBlockHelp(); return }
+  if (problems.length) return reportProblems(ctx, problems)
   if (flags.list) { printCatalog(ctx); return }
 
   const tatemonos = listTatemonoDirs(ctx)
-  if (tatemonos.length === 0) { ctx.warn('No tatemonos yet. Create one: node mizumi.js new <name>'); return }
+  if (!tatemonos.length) { ctx.warn('No tatemonos yet. Create one: node mizumi.js new <name> <template>'); return }
+  const rest = [...positional]
 
-  // 1. which tatemono
-  let slug = positional[0]
-  if (!slug) {
-    if (!interactive()) { ctx.error('Usage: mizumi block <tatemono> <block> [name]  (see: mizumi block --list)'); return }
+  // 1. which tatemono (omitted = most recently edited)
+  let slug = null, usedDefault = false
+  if (rest[0] && tatemonos.includes(rest[0])) slug = rest.shift()
+  else if (rest.length) { slug = latestTatemono(ctx, tatemonos); usedDefault = true }
+  else {
+    if (!interactive()) { ctx.error('Usage: mizumi block [tatemono] <block> [name ...]   (mizumi block --help, mizumi block --list)'); return fail() }
     ctx.divider()
     slug = (await ctx.picker('どのタテモノ？ Add a block to which tatemono?', tatemonos.map(t => ({ label: t, value: t })))).value
   }
-  if (!tatemonos.includes(slug)) { ctx.error(`Unknown tatemono: ${slug}`); return }
   const file = path.join(ctx.TATEMONOS_DIR, slug, 'core.tsx')
   const source = fs.readFileSync(file, 'utf8')
   const gameKind = /@arkzen:godot:project/.test(source) ? 'godot' : /@arkzen:unity:project/.test(source) ? 'unity' : null
 
-  // 2. which DSL group, then which block
-  let block = positional[1] ? blockByKey(positional[1]) : null
-  if (positional[1] && !block) { ctx.error(`Unknown block: ${positional[1]} (see: mizumi block --list)`); return }
-  if (!block) {
-    if (!interactive()) { ctx.error('Pass a block key (see: mizumi block --list)'); return }
+  // 2. which block (key, shortcut, unique prefix, or the picker)
+  let block = null
+  if (rest[0]) {
+    const r = resolveBlock(rest[0], gameKind)
+    if (r.candidates) { ctx.error(`"${rest[0]}" matches several blocks: ${r.candidates.join(', ')}. Be more specific.`); return fail() }
+    if (!r.block) {
+      const t = closest(rest[0], tatemonos), k = closest(rest[0], BLOCKS.map(b => b.key))
+      ctx.error(`"${rest[0]}" is neither a tatemono nor a block.${t ? ` Tatemono "${t}"?` : ''}${k ? ` Block "${k}"?` : ''} (mizumi block --list)`)
+      return fail()
+    }
+    block = r.block; rest.shift()
+  } else {
+    if (!interactive()) { ctx.error('Pass a block key (mizumi block --list)'); return fail() }
     const visible = BLOCKS.filter(b => (gameKind ? b.game === gameKind : !b.game))
     const groups = [...new Set(visible.map(b => b.group))]
     ctx.divider()
     const group = (await ctx.picker('どのDSL？ Which kind of block?', groups.map(g => ({ label: g, value: g })))).value
     ctx.divider()
-    block = blockByKey((await ctx.picker(`${group}: which block?`,
-      visible.filter(b => b.group === group).map(b => ({ label: b.key, sub: b.sub, value: b.key })))).value)
+    block = blockByKey((await ctx.picker(`${group}: which block?`, visible.filter(b => b.group === group).map(b => ({ label: b.key, sub: b.sub, value: b.key })))).value)
   }
-  if (block.game && block.game !== gameKind) { ctx.error(`${block.key} belongs in a ${block.game} tatemono (one that has @arkzen:${block.game}:project)`); return }
-  if (!block.game && gameKind) { ctx.error(`This is a ${gameKind} tatemono. Use the ${gameKind}:* blocks (see: mizumi block --list)`); return }
-  if (block.needs) { const problem = block.needs(source); if (problem) { ctx.error(problem); return } }
+  if (usedDefault) ctx.info(`Using tatemono "${slug}" (most recently edited). Put a tatemono name first to choose another.`)
+  if (block.game && block.game !== gameKind) { ctx.error(`${block.key} belongs in a ${block.game} tatemono (one that has @arkzen:${block.game}:project)`); return fail() }
+  if (!block.game && gameKind) { ctx.error(`"${slug}" is a ${gameKind} tatemono. Use the ${gameKind}:* blocks (mizumi block --list)`); return fail() }
+  if (block.needs) { const problem = block.needs(source); if (problem) { ctx.error(problem); return fail() } }
 
-  // 3. identifier
-  let name = positional[2] ?? null
-  if (block.name) {
-    if (name === null) {
-      if (block.name.choices && interactive()) {
-        ctx.divider()
-        name = (await ctx.picker(block.name.prompt, block.name.choices.map(v => ({ label: v, value: v })))).value
-      } else name = await ask(ctx, block.name.prompt, block.name.def)
-    }
-    const optionalBlank = block.name.optional && name === ''
-    const valid = optionalBlank || (block.name.pascal ? /^[A-Z][A-Za-z0-9]*$/.test(name) : /^[A-Za-z0-9][A-Za-z0-9_.{}-]*$/.test(name))
-    if (!valid) { ctx.error(`"${name}" is not a valid identifier for ${block.key}${block.name.pascal ? ' (use PascalCase)' : ''}`); return }
-  }
+  // 3. flags that do not belong to this block are errors, not silent no-ops
+  const allowed = allowedFlagsFor(block)
+  const bad = Object.keys(flags).filter(k => flags[k] !== false && !allowed.has(k) && k !== 'list')
+  if (bad.length) { ctx.error(`${block.key} does not use ${bad.map(k => '--' + k).join(', ')}.${allowed.size > 5 ? ` It accepts: ${[...allowed].filter(k => !['dry', 'force', 'exact', 'quiet', 'help'].includes(k)).map(k => '--' + k).join(', ')}.` : ''}`); return fail() }
 
   // 4. variant (backend or native target)
   let variant = null
   if (block.variants) {
-    const { list, optional, labels, backend } = block.variants
-    if (flags.shared && optional) variant = null
-    else if (flags.variant || (backend && flags.backend)) {
-      variant = backend ? activeBackendVariant(ctx, flags) : String(flags.variant)
-      if (!list.includes(variant)) { ctx.error(`${block.key} has no :${variant} form. Allowed: ${list.join(', ')}`); return }
-    } else if (interactive()) {
+    const v = chooseVariant(ctx, block, flags)
+    if (v.error) { ctx.error(v.error); return fail() }
+    if (v.ask) {
+      const { list, optional, labels, backend } = block.variants
       const active = backend ? activeBackendVariant(ctx) : list[0]
-      const options = list.map(v => ({ label: `${v === active ? '→ ' : '  '}:${v}`, sub: labels[v], value: v }))
-      if (optional) options.unshift({ label: '  shared', sub: 'YAML only, works on every backend', value: null })
-      ctx.divider()
-      variant = (await ctx.picker(backend ? 'バックエンド？ Which backend variant?' : 'ターゲット？ Which native target?', options)).value
-    } else {
-      const active = backend ? activeBackendVariant(ctx) : list[0]
-      variant = list.includes(active) ? active : (optional ? null : list[0])
-    }
+      if (interactive()) {
+        const options = list.map(x => ({ label: `${x === active ? '→ ' : '  '}:${x}`, sub: labels[x], value: x }))
+        if (optional) options.unshift({ label: '  shared', sub: 'YAML only, works on every backend', value: null })
+        ctx.divider()
+        variant = (await ctx.picker(backend ? 'バックエンド？ Which backend variant?' : 'ターゲット？ Which native target?', options)).value
+      } else variant = list.includes(active) ? active : (optional ? null : list[0])
+    } else variant = v.value
   }
 
-  // 5. extra field (file path)
-  if (block.extra && !flags[block.extra.key]) flags[block.extra.key] = await ask(ctx, block.extra.prompt, block.extra.def)
+  // 5. names: given, suggested from the file, or asked
+  const model0 = scanSource(source)
+  let names = rest
+  if (!block.name && !block.composite) {
+    if (names.length) {
+      const hint = blockByKey(`${block.key}:name`)
+      ctx.error(`${block.key} takes no name (got: ${names.join(' ')}).${hint ? ` Did you mean ${hint.key}?` : ''}`)
+      return fail()
+    }
+    names = [null]
+  } else if (!names.length) {
+    const cands = candidatesFor(block, model0, variant)
+    if (cands) {
+      if (cands.missing) { ctx.error(cands.missing); return fail() }
+      const open = cands.all.filter(n => !cands.done.has(n))
+      if (!open.length) { ctx.error(`Every ${cands.what} already has a body${variant ? ` for :${variant}` : ''}. Nothing to add.`); return fail() }
+      if (open.length === 1) { names = [open[0]]; ctx.info(`Only "${open[0]}" is missing a body, using it.`) }
+      else if (interactive()) { ctx.divider(); names = [(await ctx.picker(`Which ${cands.what}?`, open.map(n => ({ label: n, value: n })))).value] }
+      else { ctx.error(`Pass a name. ${cands.what}s without a body: ${open.join(', ')}`); return fail() }
+    } else if (block.name?.choices && interactive()) {
+      ctx.divider(); names = [(await ctx.picker(block.name.prompt, block.name.choices.map(v => ({ label: v, value: v })))).value]
+    } else names = [await ask(ctx, block.name.prompt, block.name.def)]
+  }
 
-  // 6. guard against duplicates, then write
-  const tag = block.tag(name, variant)
-  if (hasTag(source, tag)) { ctx.error(`@arkzen:${tag} already exists in tatemonos/${slug}/core.tsx`); return }
+  // 6. file blocks need a path
+  if (block.extra && !flags[block.extra.key]) flags.path = await ask(ctx, block.extra.prompt, block.extra.def)
+  if (block.key === 'file') {
+    const p = String(flags.path ?? '').replace(/\\/g, '/')
+    if (!p || p.split('/').includes('..') || /^[A-Za-z]:/.test(p)) { ctx.error(`--path "${flags.path ?? ''}" is not allowed: use a relative path without .. or a drive letter`); return fail() }
+    flags.path = p
+  }
 
-  const snippet = block.build({ name, slug, variant, flags })
-  if (flags.dry) { console.log(snippet); return }
-  fs.writeFileSync(file, source.replace(/\s*$/, '') + '\n\n' + snippet, 'utf8')
-  ctx.success(`Added @arkzen:${tag}  ${ctx.paint(ctx.c.gray, `→ tatemonos/${slug}/core.tsx`)}`)
-  if (block.key === 'endpoint') ctx.info(`The method "${name}" must exist in an @arkzen:api block.`)
-  if (block.key === 'handler') ctx.info(`The handler "${name}" must be listed in an @arkzen:routes block.`)
-  if (block.key === 'policy') ctx.info('The api block needs policy: true.')
-  if (block.key === 'meta:web') ctx.info('Put your own favicon at tatemonos/' + slug + '/assets/images/favicon.svg (not an emoji, not AI-made).')
+  // 7. build, cross-check and apply each block to an in-memory copy
+  const eol = eolOf(source)
+  let candidate = source
+  const written = [], notes = [], snippets = []
+  const items = block.composite ? names.flatMap(n => block.composite.map(k => [blockByKey(k), n])) : names.map(n => [block, n])
+  for (const [b, rawName] of items) {
+    let name = null
+    if (b.name) {
+      const r = normalizeName(b, rawName, flags)
+      if (r.error) { ctx.error(r.error); return fail() }
+      name = r.value
+      if (r.note && !notes.includes(r.note)) notes.push(r.note)
+      if (b.name.choices && !b.name.choices.includes(name)) { ctx.error(`"${name}" is not a valid ${b.key} choice. Use: ${b.name.choices.join(', ')}.${didYouMean(name, b.name.choices)}`); return fail() }
+    }
+    const model = scanSource(candidate)
+    const problem = crossCheck(b, name, variant, model, flags.force)
+    if (problem) { ctx.error(problem); return fail() }
+
+    const f = { ...flags }
+    if (b.key === 'web:page' || b.key === 'native:page' || b.key === 'lynx:page') {
+      if (f.layout === 'none') delete f.layout
+      else if (!f.layout && b.key === 'web:page' && /^true$/i.test(model.meta?.auth ?? '')) {
+        const guard = /^(login|register|signup|sign-in|sign-up|forgot-password|reset-password)$/.test(name) ? '+guest' : /^(dashboard|account|profile|settings|admin)$/.test(name) ? '+auth' : null
+        if (guard) { f.layout = guard; notes.push(`page "${name}": added layout ${guard} because auth is on (pass --layout=none to skip)`) }
+      }
+    }
+    const tag = b.tag(name, variant)
+    if (hasTag(candidate, tag)) { ctx.error(`@arkzen:${tag} already exists in tatemonos/${slug}/core.tsx`); return fail() }
+    const snippet = b.build({ name, slug, variant, flags: f })
+    candidate = candidate.replace(/\s*$/, '') + eol + eol + snippet.replace(/\n/g, eol)
+    written.push(tag); snippets.push(snippet)
+  }
+
+  // 8. lint: never leave a tatemono worse than it was
+  const lv = safeActiveVariant(ctx)
+  const before = lintSource(source, { variant: lv, slug }), after = lintSource(candidate, { variant: lv, slug })
+  const known = new Set(before.errors.map(e => e.msg))
+  const fresh = after.errors.filter(e => !known.has(e.msg))
+  const freshWarn = after.warnings.filter(w => !before.warnings.some(x => x.msg === w.msg))
+  notes.forEach(n => ctx.info(n))
+  if (fresh.length && !flags.force) {
+    ctx.error(`Not written: this would add ${fresh.length} error(s) to tatemonos/${slug}/core.tsx`)
+    fresh.forEach(e => ctx.error('  ' + formatFinding(e)))
+    ctx.info('Fix the cause, or pass --force to write it anyway.')
+    return fail()
+  }
+  if (flags.dry) { console.log(snippets.join('\n')); ctx.info(`Dry run: ${fresh.length ? fresh.length + ' new error(s)' : 'no new errors'}. Nothing written.`); return }
+
+  fs.writeFileSync(file, candidate, 'utf8')
+  written.forEach(t => ctx.success(`Added @arkzen:${t}  ${ctx.paint(ctx.c.gray, `→ tatemonos/${slug}/core.tsx`)}`))
+  if (fresh.length) fresh.forEach(e => ctx.warn('Forced: ' + formatFinding(e)))
+  if (!flags.quiet) freshWarn.forEach(w => ctx.warn(formatFinding(w)))
+  if (block.key === 'meta:web') ctx.info(`Put your own favicon at tatemonos/${slug}/assets/images/favicon.svg (not an emoji, not AI-made).`)
+  if (block.key === 'crud') ctx.info(`Next: mizumi block ${slug} endpoint <name> for custom bodies, mizumi block ${slug} page ${names[0]} for the UI.`)
+}
+
+// ─── mizumi check ─────────────────────────────────────────────
+export async function cmdCheck(ctx, args) {
+  const { positional, flags, problems } = parseArgs(args)
+  if (flags.help) { console.log('\n  mizumi check [tatemono ...] [--all] [--variant=<v>] [--quiet]\n  Lints tatemonos for tag shapes, names, layouts, cross-references and backend variants. Exit code 1 if any has errors.\n'); return }
+  if (problems.length) return reportProblems(ctx, problems)
+  const all = listTatemonoDirs(ctx)
+  if (!all.length) { ctx.warn('No tatemonos found.'); return }
+  const targets = positional.length && !flags.all ? positional : all
+  const unknown = targets.filter(t => !all.includes(t))
+  if (unknown.length) { unknown.forEach(t => ctx.error(`Unknown tatemono "${t}".${didYouMean(t, all)}`)); return fail() }
+  const variant = flags.variant ?? safeActiveVariant(ctx)
+  if (variant && !BACKENDS.includes(variant)) { ctx.error(`Unknown variant "${variant}". Use one of: ${BACKENDS.join(', ')}.`); return fail() }
+  let bad = 0, warned = 0
+  for (const slug of targets) {
+    const file = path.join(ctx.TATEMONOS_DIR, slug, 'core.tsx')
+    const { errors, warnings, model } = lintSource(fs.readFileSync(file, 'utf8'), { variant, slug })
+    for (const o of model.openers) {
+      const dir = path.join(ctx.TATEMONOS_DIR, slug)
+      if (o.tag === 'meta:web') { const fav = yamlTop(o.yaml).favicon?.match(/^\/tatemonos\/[^/]+\/assets\/(.+)$/); if (fav && !fs.existsSync(path.join(dir, 'assets', fav[1]))) warnings.push({ msg: `favicon assets/${fav[1]} does not exist yet (meta:web points at it)`, line: o.line }) }
+      if (o.tag === 'godot:assets' || o.tag === 'unity:assets') for (const s of o.yaml.matchAll(/source:\s*(\S+)/g)) if (!/^[A-Za-z]+:|^\//.test(s[1]) && !fs.existsSync(path.join(dir, s[1]))) warnings.push({ msg: `asset ${s[1]} does not exist under tatemonos/${slug}/ (the generator fails without it unless optional: true)`, line: o.line })
+    }
+    if (errors.length) bad++
+    if (warnings.length) warned++
+    const mark = errors.length ? ctx.paint(ctx.c.red ?? '', '✗') : '✓'
+    if (errors.length || (warnings.length && !flags.quiet) || targets.length === 1)
+      console.log(`  ${mark} ${slug}  ${ctx.paint(ctx.c.gray, `${errors.length} error(s), ${warnings.length} warning(s)`)}`)
+    errors.forEach(e => ctx.error('    ' + formatFinding(e)))
+    if (!flags.quiet) warnings.forEach(w => ctx.warn('    ' + formatFinding(w)))
+  }
+  const ok = targets.length - bad
+  ;(bad ? ctx.warn : ctx.success)(`${ok}/${targets.length} tatemono(s) clean of errors${warned ? `, ${warned} with warnings` : ''}${variant ? ` (backend :${variant})` : ''}`)
+  if (bad) fail()
 }
