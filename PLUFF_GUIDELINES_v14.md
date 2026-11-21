@@ -59,6 +59,7 @@
     - [⚠️ SECTION 2D: ANTI-AI-LOOKING UI GUARDRAILS (avoid by default, never banned)](#️-section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned)
     - [SECTION 2F - THE WHY LAYER (necessary, never banned)](#section-2f--the-why-layer-necessary-never-banned)
     - [SECTION 2E - DESIGN DEFAULTS DIGEST](#section-2e--design-defaults-digest)
+    - [SECTION 2G - KEEPING THE SHORT VERSION IN SYNC (maintenance note)](#section-2g--keeping-the-short-version-in-sync-maintenance-note)
     - [SECTION 3 - TATEMONO FILE RULES](#section-3--tatemono-file-rules)
     - [⚠️ SECTION 3D - DSL TAG FORMAT RULES (CRITICAL)](#️-section-3d--dsl-tag-format-rules-critical)
     - [SECTION 3A - IMPORT PLACEMENT](#section-3a--import-placement)
@@ -886,6 +887,21 @@
   - Real-looking sample data with Japanese (romaji), German, Russian, Indonesian or Korean names. No em dashes in copy. Hand-authored SVG favicon for new tatemonos.
   - Every hover effect has a keyboard focus equivalent. Animate only transform and opacity, and only with a purpose.
   - Second tier, optional: if `Library/` has a relevant reference, use it for taste. Guideline and tatemono index come first.
+
+  * * *
+
+## SECTION 2G - KEEPING THE SHORT VERSION IN SYNC (maintenance note)
+
+  **WHY THIS EXISTS:** When the AI builds a UI block (pages, components, layout, style and similar), it does not read Sections 2C, 2D and 2F in full. It only receives the short version in Section 2E. The whole guideline loads only when `--guide full` is used. So a rule that lives only in 2C, 2D or 2F, and is missing from 2E, is a rule the AI usually never sees.
+
+  **WHEN EDITING THIS GUIDELINE (person or AI):**
+  - [ ] When you add, remove or change a rule in 2C, 2D or 2F, change the matching line in 2E in the same edit
+  - [ ] 2E is the short form: the steps and the key ideas, without every example
+  - [ ] 2E must never contradict 2C, 2D or 2F. If they ever differ, the full sections win
+  - [ ] Keep 2E short, because it is sent with every UI block. Every line must earn its place
+  - [ ] The Why Layer (2F) must always appear in 2E in short form: the screen's main job, a why line that includes its cost, and the subtract pass
+  - [ ] Before finishing an edit, read 2E on its own and ask: if the AI saw only this, would it still follow the new rule?
+  - [ ] Do not rename or renumber Section 2E without also changing `pluffy-retrieve.js`, because the code finds it by the heading text `## SECTION 2E`
 
   * * *
 
