@@ -24,6 +24,7 @@
 //    node mizumi.js modules      ← list registered tatemonos
 //    node mizumi.js new <name>   ← create a hand-written tatemono from a template
 //    node mizumi.js block        ← add a DSL block (with backend variant) to a tatemono
+//    node mizumi.js check [name] ← lint tatemonos (tag shapes, names, layouts, cross-references)
 //    node mizumi.js ai           ← Pluffy AI (checkbox options, then your app idea)
 //    node mizumi.js scan         ← scan tatemonos into training data
 //    node mizumi.js chat         ← open the Pluffy chat window (Electron)
@@ -35,7 +36,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { supportsDocker, dockerRejectionMessage } from './export-docker.js'
-import { cmdNew as scaffoldNew, cmdBlock as scaffoldBlock } from './scaffold.js'
+import { cmdNew as scaffoldNew, cmdBlock as scaffoldBlock, cmdCheck as scaffoldCheck } from './scaffold.js'
 
 const ROOT_DIR  = path.dirname(fileURLToPath(import.meta.url))
 const JSON_PATH = path.join(ROOT_DIR, 'arkzen.json')
@@ -1077,6 +1078,7 @@ const scaffoldCtx = () => ({
 })
 const cmdNewTatemono = (rest = []) => scaffoldNew(scaffoldCtx(), rest)
 const cmdAddBlock    = (rest = []) => scaffoldBlock(scaffoldCtx(), rest)
+const cmdCheckTatemono = (rest = []) => scaffoldCheck(scaffoldCtx(), rest)
 
 // ─── INTERACTIVE MENU ─────────────────────────────────────────
 function readEnvFile(file) {
@@ -1377,7 +1379,8 @@ function printHelp() {
     ['mizumi modules',           '→ List tatemonos'],
     ['mizumi new <name>',        '→ Create a tatemono (--template=web|crud|routes|auth|native|multi|lynx|files|godot|unity)'],
     ['mizumi block',             '→ Add a DSL block to a tatemono (pick tatemono, DSL, block, backend)'],
-    ['mizumi block <t> <block> [name] --variant=ts', '→ Same, no prompts (--list shows every block, --dry prints only)'],
+    ['mizumi block [t] <block> [names..] --ts', '→ Same, no prompts; t is optional (latest edited), several names add several blocks (--list, --dry, --help)'],
+    ['mizumi check [t ...]',      '→ Lint tatemonos without the engine: tag shapes, names, layouts, endpoint/handler cross-references'],
     ['mizumi ai',                '→ Pluffy AI: option checkboxes, then ask for apps'],
     ['mizumi ai "idea" --ref on','→ Pluffy AI direct (flags go to pluffy-ai.js)'],
     ['mizumi scan',              '→ Scan tatemonos → training data (scan.js)'],
@@ -1439,6 +1442,7 @@ switch (command) {
   case 'modules': cmdModules();                break
   case 'new':     cmdNewTatemono(args.slice(1)); break
   case 'block':   cmdAddBlock(args.slice(1));  break
+  case 'check':   cmdCheckTatemono(args.slice(1)); break
   case 'ai':      cmdAi(args.slice(1));        break
   case 'scan':    cmdScan();                   break
   case 'index':   cmdIndex(args.slice(1));     break
