@@ -1865,5 +1865,114 @@
     ],
     "lines": 2669,
     "estimated_tokens": 33439
+  },
+  "godot-crystal-cave": {
+    "description": "Godot 4 cave exploration game. Wander a dim crystal cave, talk to the miners who still work there and follow the glow of the crystals.",
+    "meta_description": "Godot 4 cave exploration game. Wander a dim crystal cave, talk to the miners who still work there and follow the glow of the crystals.",
+    "blocks": [
+      "meta",
+      "godot:project",
+      "godot:world",
+      "godot:input",
+      "godot:assets",
+      "godot:scene:cave",
+      "godot:scene:explorer",
+      "godot:behavior:player",
+      "godot:behavior:camera",
+      "godot:export"
+    ],
+    "lines": 226,
+    "estimated_tokens": 1599
+  },
+  "godot-sky-islands": {
+    "description": "Godot 4 flying exploration game. Glide between floating islands above the clouds with a top-down orthographic camera and no gravity.",
+    "meta_description": "Godot 4 flying exploration game. Glide between floating islands above the clouds with a top-down orthographic camera and no gravity.",
+    "blocks": [
+      "meta",
+      "godot:project",
+      "godot:input",
+      "godot:assets",
+      "godot:world",
+      "godot:scene:sky",
+      "godot:scene:pilot",
+      "godot:behavior:player",
+      "godot:behavior:camera",
+      "godot:export"
+    ],
+    "lines": 213,
+    "estimated_tokens": 1455
+  },
+  "godot-block-arena": {
+    "description": "Godot 4 arena prototype built from plain meshes. A checkered floor, four walls and a capsule player, with optional ENet multiplayer.",
+    "meta_description": "Godot 4 arena prototype built from plain meshes. A checkered floor, four walls and a capsule player, with optional ENet multiplayer.",
+    "blocks": [
+      "meta",
+      "godot:project",
+      "godot:input",
+      "godot:assets",
+      "godot:scene:arena",
+      "godot:scene:fighter",
+      "godot:behavior:player",
+      "godot:behavior:camera",
+      "godot:multiplayer",
+      "godot:export"
+    ],
+    "lines": 202,
+    "estimated_tokens": 1419
+  },
+  "unity-rocket-dodge": {
+    "description": "Unity SVG runner game set in space. Hop a rocket over drifting asteroids and last as long as you can.",
+    "meta_description": "Unity SVG runner game set in space. Hop a rocket over drifting asteroids and last as long as you can.",
+    "blocks": [
+      "meta",
+      "unity:project",
+      "unity:game",
+      "unity:visuals",
+      "unity:controls",
+      "unity:assets"
+    ],
+    "lines": 53,
+    "estimated_tokens": 327
+  },
+  "unity-fox-hurdles": {
+    "description": "Unity SVG runner game. A fox sprints through a forest and jumps over fallen logs.",
+    "meta_description": "Unity SVG runner game. A fox sprints through a forest and jumps over fallen logs.",
+    "blocks": [
+      "meta",
+      "unity:project",
+      "unity:game",
+      "unity:visuals",
+      "unity:assets"
+    ],
+    "lines": 46,
+    "estimated_tokens": 272
+  },
+  "unity-orbit-sandbox": {
+    "description": "A Unity 3D physics sandbox with an orbiting planet, a bouncing crate and a walking explorer across two scenes.",
+    "meta_description": "A Unity 3D physics sandbox with an orbiting planet, a bouncing crate and a walking explorer across two scenes.",
+    "blocks": [
+      "meta",
+      "unity:project",
+      "unity:environment",
+      "unity:scene:orbit",
+      "unity:scene:menu",
+      "unity:export"
+    ],
+    "lines": 106,
+    "estimated_tokens": 740
+  },
+  "unity-garden-topdown": {
+    "description": "Unity 2D top-down garden scene. Walk a gardener around flowers and stones using sprite assets and 2D physics.",
+    "meta_description": "Unity 2D top-down garden scene. Walk a gardener around flowers and stones using sprite assets and 2D physics.",
+    "blocks": [
+      "meta",
+      "unity:project",
+      "unity:environment",
+      "unity:assets",
+      "unity:scene:garden",
+      "unity:export"
+    ],
+    "lines": 71,
+    "estimated_tokens": 497
   }
 }
