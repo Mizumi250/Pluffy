@@ -8,6 +8,7 @@ auth: false
 /* @arkzen:meta:web
 title: Cube solver - scan, check, solve
 label: Cube solver
+favicon: /tatemonos/rubik-solver/assets/images/favicon.svg
 description: Scan a 3x3 Rubik's cube with your camera and get a short, step by step solution. Runs fully in your browser with no AI.
 */
 
@@ -24,12 +25,12 @@ description: Scan a 3x3 Rubik's cube with your camera and get a short, step by s
 export const RK_FACES = ['U', 'R', 'F', 'D', 'L', 'B']
 
 export const RK_HEX: Record<string, string> = {
-  U: '#f3f1ea',
-  R: '#d92b3a',
-  F: '#17a34a',
-  D: '#ffd60a',
-  L: '#ff7b00',
-  B: '#1556d9',
+  U: '#f6f7f9',
+  R: '#f0584f',
+  F: '#3dbd6e',
+  D: '#f5dd14',
+  L: '#ff9a2e',
+  B: '#4a82ff',
 }
 
 export const RK_COLOR_NAME: Record<string, string> = {
@@ -634,15 +635,15 @@ export function rkBuildPolys(state: string[], viewName: string, anim?: RkAnim | 
           if (nz <= 0.0001) continue
           const body = quad(0.5, 0).map(project)
           const bz = (body[0][2] + body[1][2] + body[2][2] + body[3][2]) / 4
-          polys.push({ pts: body.map((q) => [q[0], q[1]]), fill: '#0e1013', stroke: '#050607', sw: 0.6, z: bz })
+          polys.push({ pts: body.map((q) => [q[0], q[1]]), fill: '#1a32d6', stroke: '#0b1038', sw: 0.8, z: bz })
           const idx = RK_INDEX[rkKey(center, n)]
           if (idx !== undefined && state[idx]) {
             const st = quad(0.42, 0.006).map(project)
             polys.push({
               pts: st.map((q) => [q[0], q[1]]),
               fill: RK_HEX[state[idx]] || '#444',
-              stroke: inLayer || inHi ? '#ffffff' : 'rgba(0,0,0,0.35)',
-              sw: inLayer || inHi ? 2.2 : 0.5,
+              stroke: inLayer || inHi ? '#f2e30c' : 'rgba(8,10,40,0.7)',
+              sw: inLayer || inHi ? 2.4 : 0.8,
               z: bz + 0.02,
             })
           }
@@ -2327,254 +2328,282 @@ export function rkSolvePro(start: string[]): { moves: string[]; plan: RkPlanStag
 /* @arkzen:web:script:end */
 
 /* @arkzen:web:style */
+/* Poster look: pale lime paper, one electric blue cube, near-black ink.
+   Flat only. No shadows, no gradients, no glow. Motion is transform and opacity only. */
 :root {
-  --rk-bg: #eef1f7;
-  --rk-surface: #ffffff;
-  --rk-ink: #12151c;
-  --rk-ink-2: #4a5263;
-  --rk-line: #d9deea;
-  --rk-accent: #2146d6;
-  --rk-accent-ink: #ffffff;
-  --rk-accent-soft: #e3e9ff;
-  --rk-good: #12805c;
-  --rk-good-soft: #dcf5ea;
-  --rk-warn: #b4430a;
-  --rk-warn-soft: #ffe9dc;
-  --rk-cube-bg: #0e1013;
-  --rk-radius: 16px;
-  --rk-shadow: 0 1px 2px rgba(18, 21, 28, 0.06), 0 8px 24px rgba(18, 21, 28, 0.07);
+  --rk-frame: #e8efbd;
+  --rk-paper: #dce5a6;
+  --rk-paper-2: #c8d38c;
+  --rk-paper-lt: #e9efc4;
+  --rk-ink: #121212;
+  --rk-ink-2: #3d4423;
+  --rk-blue: #2442f5;
+  --rk-blue-deep: #1a32d6;
+  --rk-yellow: #f2e30c;
+  --rk-white: #f6f7f9;
+  --rk-warn: #a3200f;
+  --rk-line: rgba(18, 18, 18, 0.28);
+  --rk-rim: rgba(8, 10, 40, 0.72);
+  --rk-radius: 10px;
+  color-scheme: light;
 }
 
-html, body { background: var(--rk-bg); }
+html, body { background: var(--rk-frame); }
 
+/* the sheet */
 .rk-app {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 28px);
+  max-width: 1180px;
+  margin: 14px auto;
+  padding: clamp(18px, 3.2vw, 44px);
+  background: var(--rk-paper);
   color: var(--rk-ink);
-  font-family: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: 16px;
-  line-height: 1.5;
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 20px 16px 40px;
+  line-height: 1.55;
 }
 .rk-app *, .rk-app *::before, .rk-app *::after { box-sizing: border-box; }
 .rk-hidden { display: none !important; }
-.rk-mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.01em; word-break: break-word; }
+.rk-main { flex: 1; }
+.rk-mono { font-family: 'Pixelify Sans', ui-monospace, Menlo, Consolas, monospace; font-size: 20px; line-height: 1.5; word-break: break-word; }
 
-/* header */
+/* header: face tally on the left, steps on the right */
 .rk-top {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-  margin-bottom: 20px;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+  margin-bottom: clamp(24px, 4vw, 48px);
 }
-.rk-brand { display: flex; align-items: center; gap: 12px; }
-.rk-brand-name { margin: 0; font-family: 'Bricolage Grotesque', 'Figtree', sans-serif; font-weight: 700; font-size: 22px; line-height: 1.1; }
-.rk-brand-sub { margin: 2px 0 0; font-size: 14px; color: var(--rk-ink-2); }
-.rk-glyph {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; width: 40px; height: 40px; padding: 3px;
-  background: var(--rk-cube-bg); border-radius: 10px; flex: none;
-}
-.rk-glyph i { display: block; border-radius: 2px; }
+.rk-tally-wrap { display: grid; justify-items: start; gap: 10px; }
+.rk-tally-label { margin: 0; font-size: 16px; font-weight: 500; line-height: 1.1; }
+.rk-tally { display: flex; gap: 8px; }
+.rk-tally i { display: block; width: 12px; height: 12px; border: 2px solid var(--rk-ink); border-radius: 50%; }
+.rk-tally i.is-on { background: var(--rk-ink); }
+.rk-short { display: block; width: 114px; height: 2px; margin-top: 10px; background: var(--rk-ink); }
 
-.rk-tabs { display: flex; gap: 6px; background: var(--rk-surface); border: 1px solid var(--rk-line); border-radius: 14px; padding: 4px; }
+.rk-tabs { display: flex; gap: clamp(16px, 3vw, 36px); }
 .rk-tab {
-  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px;
-  border: 0; border-radius: 10px; background: transparent; color: var(--rk-ink-2);
-  font: inherit; font-weight: 600; cursor: pointer;
+  position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 0 10px;
+  border: 0; background: none; color: var(--rk-ink-2); font: inherit; font-weight: 500; cursor: pointer;
 }
-.rk-tab:disabled { opacity: 0.45; cursor: not-allowed; }
-.rk-tab.is-on { background: var(--rk-ink); color: #fff; }
-.rk-tab-n {
-  display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
-  background: var(--rk-line); color: var(--rk-ink); font-size: 12px; font-weight: 700;
-}
-.rk-tab.is-on .rk-tab-n { background: #fff; color: var(--rk-ink); }
-
-.rk-main { display: block; }
-.rk-foot { margin-top: 28px; color: var(--rk-ink-2); font-size: 13px; }
-.rk-foot p { margin: 0; }
+.rk-tab::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--rk-line); }
+.rk-tab.is-on { color: var(--rk-ink); font-weight: 600; }
+.rk-tab.is-on::before { background: var(--rk-ink); }
+.rk-tab.is-on::after { content: ''; position: absolute; left: 0; bottom: -2px; width: 46%; height: 8px; background: var(--rk-ink); }
+.rk-tab:disabled { opacity: 0.5; cursor: not-allowed; }
+.rk-tab-n { font-size: 14px; font-weight: 600; }
 
 /* type */
-.rk-h2 { margin: 0 0 6px; font-family: 'Bricolage Grotesque', 'Figtree', sans-serif; font-weight: 700; font-size: 24px; line-height: 1.15; }
-.rk-p { margin: 0 0 10px; color: var(--rk-ink); }
-.rk-note { margin: 0 0 10px; font-size: 14px; color: var(--rk-ink-2); }
-.rk-note-warn { color: var(--rk-warn); }
-.rk-kicker { margin: 0 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--rk-accent); }
-.rk-list { margin: 0 0 10px; padding-left: 20px; font-size: 14px; color: var(--rk-ink); }
+.rk-h2 { margin: 0 0 8px; font-weight: 600; font-size: clamp(22px, 2.6vw, 30px); line-height: 1.15; letter-spacing: -0.01em; }
+.rk-p { margin: 0 0 10px; }
+.rk-note { margin: 0 0 10px; font-size: 15px; color: var(--rk-ink-2); }
+.rk-note-warn { color: var(--rk-warn); font-weight: 500; }
+.rk-kicker { margin: 0 0 6px; font-size: 15px; font-weight: 600; color: var(--rk-blue); }
+.rk-list { margin: 0 0 10px; padding-left: 20px; font-size: 15px; }
 .rk-list li { margin: 3px 0; }
 .rk-link {
-  display: inline-flex; align-items: center; gap: 6px; padding: 6px 2px; border: 0; background: none;
-  color: var(--rk-accent); font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 2px; border: 0; background: none;
+  color: var(--rk-ink); font: inherit; font-size: 15px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; cursor: pointer;
 }
+.rk-count { font-size: clamp(44px, 7vw, 72px); font-weight: 700; line-height: 1; letter-spacing: -0.02em; margin: 0 0 12px; }
 
 /* buttons */
-.rk-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+.rk-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
 .rk-row-wrap { flex-wrap: wrap; }
 .rk-btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px;
-  border: 1px solid var(--rk-line); border-radius: 12px; background: var(--rk-surface); color: var(--rk-ink);
-  font: inherit; font-weight: 600; cursor: pointer; transition: transform 0.12s ease, background 0.12s ease;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 20px;
+  border: 2px solid var(--rk-ink); border-radius: var(--rk-radius); background: transparent; color: var(--rk-ink);
+  font: inherit; font-weight: 600; cursor: pointer;
 }
-.rk-btn:hover:not(:disabled) { background: #f5f7fd; }
+.rk-btn:hover:not(:disabled) { background: var(--rk-ink); color: var(--rk-paper); }
 .rk-btn:active:not(:disabled) { transform: translateY(1px); }
 .rk-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.rk-btn-primary { background: var(--rk-accent); border-color: var(--rk-accent); color: var(--rk-accent-ink); }
-.rk-btn-primary:hover:not(:disabled) { background: #1a3bb8; }
-.rk-btn-quiet { background: transparent; }
-.rk-btn-small { min-height: 36px; padding: 0 12px; font-size: 14px; border-radius: 10px; }
-.rk-app button:focus-visible, .rk-app select:focus-visible, .rk-app summary:focus-visible { outline: 3px solid #7f9bff; outline-offset: 2px; }
+.rk-btn-primary { background: var(--rk-blue); border-color: var(--rk-blue); color: var(--rk-white); }
+.rk-btn-primary:hover:not(:disabled) { background: var(--rk-ink); border-color: var(--rk-ink); color: var(--rk-white); }
+.rk-btn-quiet { border-color: transparent; padding: 0 10px; text-decoration: underline; text-underline-offset: 4px; }
+.rk-btn-small { min-height: 40px; padding: 0 14px; font-size: 14px; }
+.rk-app button:focus-visible, .rk-app select:focus-visible, .rk-app summary:focus-visible { outline: 3px solid var(--rk-blue); outline-offset: 3px; }
 
-/* generic panels */
-.rk-panel, .rk-stage-card, .rk-side, .rk-viewer-wrap, .rk-net-wrap {
-  background: var(--rk-surface); border: 1px solid var(--rk-line); border-radius: var(--rk-radius); box-shadow: var(--rk-shadow);
-}
-.rk-panel { padding: 24px; max-width: 640px; }
-.rk-side, .rk-viewer-wrap, .rk-net-wrap { padding: 18px; }
-.rk-stage-card { padding: 18px; }
-.rk-callout { background: var(--rk-warn-soft); border-radius: 12px; padding: 12px 14px; margin-top: 8px; }
+/* progress: a thin rule with a thick segment, the same everywhere */
+.rk-rule { position: relative; height: 14px; margin: 14px 0 8px; }
+.rk-rule::before { content: ''; position: absolute; left: 0; right: 0; top: 6px; height: 2px; background: var(--rk-ink); }
+.rk-rule span { position: absolute; left: 0; top: 0; width: 100%; height: 14px; background: var(--rk-ink); transform-origin: left center; transition: transform 0.18s ease; }
+
+/* viewfinder corners */
+.rk-vf { position: relative; padding: 16px; }
+.rk-c { position: absolute; display: block; width: 28px; height: 28px; border: 0 solid var(--rk-ink); pointer-events: none; }
+.rk-c-tl { top: 0; left: 0; border-top-width: 4px; border-left-width: 4px; }
+.rk-c-tr { top: 0; right: 0; border-top-width: 4px; border-right-width: 4px; }
+.rk-c-bl { bottom: 0; left: 0; border-bottom-width: 4px; border-left-width: 4px; }
+.rk-c-br { bottom: 0; right: 0; border-bottom-width: 4px; border-right-width: 4px; }
+
+.rk-panel { max-width: 720px; }
+.rk-panel.rk-solve-panel { max-width: 960px; }
+.rk-callout { margin-top: 10px; padding: 12px 14px; border: 2px solid var(--rk-ink); border-radius: var(--rk-radius); background: var(--rk-paper-lt); }
+.rk-swatch { display: inline-block; flex: none; border: 2px solid var(--rk-rim); border-radius: 4px; }
 
 /* step 1, scan */
-.rk-scan, .rk-review { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-.rk-viewer { position: relative; width: 100%; max-width: 520px; margin: 0 auto; aspect-ratio: 1 / 1; border-radius: 14px; overflow: hidden; background: var(--rk-cube-bg); }
+.rk-scan, .rk-review { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: start; }
+.rk-viewer { position: relative; width: 100%; max-width: 540px; margin: 0 auto; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 6px; background: var(--rk-ink); }
 .rk-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.rk-viewer.is-flash::after { content: ''; position: absolute; inset: 0; background: #fff; opacity: 0.7; animation: rk-flash 0.38s ease-out forwards; }
+.rk-viewer.is-flash::after { content: ''; position: absolute; inset: 0; background: var(--rk-white); opacity: 0.8; animation: rk-flash 0.38s ease-out forwards; }
 @keyframes rk-flash { to { opacity: 0; } }
 .rk-guide {
   position: absolute; left: 11%; top: 11%; width: 78%; height: 78%;
   display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 3%;
   pointer-events: none;
 }
-.rk-guide-cell { position: relative; border: 2px solid rgba(255, 255, 255, 0.85); border-radius: 8px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); display: grid; place-items: center; }
-.rk-guide-cell.is-center { border-width: 3px; border-color: #fff; }
-.rk-guide-cell i { display: block; width: 34%; height: 34%; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4); }
+.rk-guide-cell { position: relative; display: grid; place-items: center; border: 2px solid rgba(246, 247, 249, 0.92); border-radius: 8px; box-shadow: 0 0 0 1px rgba(18, 18, 18, 0.5); }
+.rk-guide-cell.is-center { border-width: 3px; border-color: var(--rk-white); }
+.rk-guide-cell i { display: block; width: 34%; height: 34%; border: 2px solid var(--rk-white); border-radius: 50%; box-shadow: 0 0 0 1px rgba(18, 18, 18, 0.5); }
 .rk-viewer-empty {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
-  padding: 24px; text-align: center; background: rgba(14, 16, 19, 0.88); color: #fff;
+  padding: 20px; text-align: center; background: var(--rk-paper-lt); color: var(--rk-ink);
 }
-.rk-viewer-empty .rk-p, .rk-viewer-empty .rk-note { color: #dfe4f2; margin: 0; }
-.rk-viewer-empty .rk-note-warn { color: #ffc8a8; }
-.rk-meter, .rk-bar { height: 8px; border-radius: 999px; background: var(--rk-line); overflow: hidden; margin: 12px 0 6px; }
-.rk-meter span, .rk-bar span { display: block; height: 100%; background: var(--rk-accent); border-radius: 999px; transition: width 0.18s ease; }
-.rk-status { margin: 0 0 8px; min-height: 24px; font-weight: 600; }
+.rk-viewer-empty .rk-p, .rk-viewer-empty .rk-note { margin: 0; }
+.rk-viewer-empty svg { max-width: 56%; height: auto; }
+.rk-status { margin: 0 0 12px; min-height: 28px; font-weight: 600; }
 
-.rk-prompt { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
-.rk-prompt-sw { flex: none; width: 56px; height: 56px; border-radius: 14px; border: 2px solid rgba(0, 0, 0, 0.18); box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.12); }
+.rk-prompt { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+.rk-prompt-sw { flex: none; width: 64px; height: 64px; border: 3px solid var(--rk-ink); border-radius: 12px; }
 .rk-prompt .rk-p { margin: 0; color: var(--rk-ink-2); }
 
-.rk-faces { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 6px; }
+.rk-faces { list-style: none; margin: 0 0 16px; padding: 0; border-top: 2px solid var(--rk-ink); }
 .rk-face-row {
-  display: grid; grid-template-columns: 34px 1fr auto auto; align-items: center; gap: 10px;
-  padding: 6px 10px; border-radius: 10px; border: 1px solid transparent; background: #f6f8fc; font-size: 14px;
+  display: grid; grid-template-columns: 34px 1fr auto auto; align-items: center; gap: 12px;
+  padding: 8px 8px; border-bottom: 1px solid var(--rk-line); font-size: 15px;
 }
-.rk-face-row.is-now { border-color: var(--rk-accent); background: var(--rk-accent-soft); }
-.rk-face-row.is-done { background: var(--rk-good-soft); }
+.rk-face-row.is-now { background: var(--rk-ink); color: var(--rk-paper); }
+.rk-face-row.is-done .rk-face-name { color: var(--rk-ink-2); }
 .rk-face-name { font-weight: 600; }
-.rk-face-state { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: var(--rk-good); }
-.rk-face-row.is-now .rk-face-state { color: var(--rk-accent); }
-.rk-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; width: 30px; height: 30px; padding: 1px; background: var(--rk-cube-bg); border-radius: 5px; }
-.rk-mini i { display: block; border-radius: 1px; background: #444; }
-.rk-mini.is-dim { opacity: 0.55; }
+.rk-face-state { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; }
+.rk-face-row.is-now .rk-face-state { color: var(--rk-yellow); }
+.rk-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; width: 30px; height: 30px; padding: 2px; background: var(--rk-blue-deep); border-radius: 4px; }
+.rk-mini i { display: block; border-radius: 1px; background: rgba(8, 10, 40, 0.5); }
+.rk-mini.is-dim { opacity: 0.6; }
 
-/* step 2, net editor */
-.rk-net { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, auto); gap: 10px; }
+/* step 2, check and fix */
+.rk-net { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, auto); gap: 12px; }
 .rk-face-U { grid-column: 2; grid-row: 1; }
 .rk-face-L { grid-column: 1; grid-row: 2; }
 .rk-face-F { grid-column: 2; grid-row: 2; }
 .rk-face-R { grid-column: 3; grid-row: 2; }
 .rk-face-B { grid-column: 4; grid-row: 2; }
 .rk-face-D { grid-column: 2; grid-row: 3; }
-.rk-face-cap { margin: 0 0 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--rk-ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.rk-face-cap span { font-weight: 500; text-transform: none; letter-spacing: 0; }
-.rk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; padding: 3px; background: var(--rk-cube-bg); border-radius: 8px; }
+.rk-face-cap { margin: 0 0 4px; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rk-face-cap span { font-weight: 400; color: var(--rk-ink-2); }
+.rk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; padding: 4px; background: var(--rk-blue-deep); border-radius: 10px; }
 .rk-st {
   position: relative; display: grid; place-items: center; aspect-ratio: 1 / 1; min-width: 0; padding: 0;
-  border: 2px solid transparent; border-radius: 5px; background: #2b303a; color: rgba(0, 0, 0, 0.55); cursor: pointer;
+  border: 2px solid var(--rk-rim); border-radius: 5px; background: var(--rk-paper-2); color: rgba(18, 18, 18, 0.6); cursor: pointer;
 }
 span.rk-st { cursor: default; }
-.rk-st.is-empty { background: repeating-linear-gradient(45deg, #2b303a, #2b303a 4px, #3a404c 4px, #3a404c 8px); }
-.rk-st.is-center { cursor: not-allowed; border-color: rgba(0, 0, 0, 0.35); }
-.rk-st.is-sibling { border-color: #fff; box-shadow: 0 0 0 2px var(--rk-accent), 0 0 0 4px #fff; z-index: 1; }
-.rk-st.is-selected { border-color: #fff; box-shadow: 0 0 0 3px var(--rk-ink), 0 0 0 5px #fff; z-index: 2; }
-.rk-st.is-swap { border-color: #fff; box-shadow: 0 0 0 3px #ff7a00, 0 0 0 5px #fff; z-index: 2; }
-.rk-st.is-bad { border-color: #ff3b30; border-style: dashed; }
-.rk-st.is-unsure::after { content: ''; position: absolute; top: 2px; right: 2px; width: 7px; height: 7px; border-radius: 50%; background: #fff; border: 2px solid #12151c; }
+.rk-st.is-empty { background: repeating-linear-gradient(45deg, #c8d38c, #c8d38c 4px, #dce5a6 4px, #dce5a6 8px); }
+.rk-st.is-center { cursor: not-allowed; }
+.rk-st.is-sibling { border-color: var(--rk-yellow); box-shadow: 0 0 0 2px var(--rk-ink), 0 0 0 4px var(--rk-yellow); z-index: 1; }
+.rk-st.is-selected { border-color: var(--rk-white); box-shadow: 0 0 0 3px var(--rk-ink), 0 0 0 5px var(--rk-white); z-index: 2; }
+.rk-st.is-swap { border-color: var(--rk-white); box-shadow: 0 0 0 3px #ff9a2e, 0 0 0 5px var(--rk-white); z-index: 2; }
+.rk-st.is-bad { border-color: #ff8a70; border-style: dashed; }
+.rk-st.is-unsure::after { content: ''; position: absolute; top: 2px; right: 2px; width: 7px; height: 7px; border-radius: 50%; background: var(--rk-white); border: 2px solid var(--rk-ink); }
 .rk-net.is-compact { gap: 6px; }
-.rk-net.is-compact .rk-grid { gap: 2px; padding: 2px; }
+.rk-net.is-compact .rk-grid { gap: 2px; padding: 2px; border-radius: 6px; }
 .rk-net.is-compact .rk-st { border-radius: 3px; border-width: 1px; }
 .rk-net.is-compact .rk-face-cap { display: none; }
 
-.rk-tools { display: inline-flex; gap: 4px; padding: 4px; margin: 4px 0 12px; background: #f1f3f9; border-radius: 12px; }
-.rk-tool { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border: 0; border-radius: 9px; background: transparent; font: inherit; font-weight: 600; color: var(--rk-ink-2); cursor: pointer; }
-.rk-tool.is-on { background: var(--rk-surface); color: var(--rk-ink); box-shadow: 0 1px 3px rgba(18, 21, 28, 0.15); }
-.rk-palette { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 10px; }
-.rk-pal { display: grid; justify-items: center; gap: 4px; padding: 6px 0; border: 2px solid transparent; border-radius: 12px; background: #f6f8fc; font: inherit; cursor: pointer; }
-.rk-pal.is-on { border-color: var(--rk-ink); background: #fff; }
-.rk-pal-sw { width: 36px; height: 36px; border-radius: 9px; border: 2px solid rgba(0, 0, 0, 0.2); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.12); }
-.rk-pal-n { font-size: 12px; font-weight: 700; color: var(--rk-good); }
-.rk-pal.is-off .rk-pal-n { color: var(--rk-warn); }
-.rk-piece { min-height: 44px; }
+.rk-tools { display: inline-flex; margin: 4px 0 14px; border: 2px solid var(--rk-ink); border-radius: var(--rk-radius); overflow: hidden; }
+.rk-tool { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 0; background: transparent; color: var(--rk-ink); font: inherit; font-weight: 600; cursor: pointer; }
+.rk-tool + .rk-tool { border-left: 2px solid var(--rk-ink); }
+.rk-tool.is-on { background: var(--rk-ink); color: var(--rk-paper); }
+.rk-palette { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 12px; }
+.rk-pal { display: grid; justify-items: center; gap: 4px; padding: 6px 0; border: 2px solid transparent; border-radius: 12px; background: transparent; font: inherit; color: var(--rk-ink); cursor: pointer; }
+.rk-pal.is-on { border-color: var(--rk-ink); background: var(--rk-paper-lt); }
+.rk-pal-sw { width: 38px; height: 38px; border: 2px solid var(--rk-rim); border-radius: 9px; }
+.rk-pal-n { padding: 0 6px; border-radius: 4px; font-size: 13px; font-weight: 600; color: var(--rk-ink-2); }
+.rk-pal.is-off .rk-pal-n { background: var(--rk-ink); color: var(--rk-yellow); }
+.rk-piece { min-height: 48px; }
 .rk-piece-line { margin: 0 0 2px; }
-.rk-verdict { padding: 12px 14px; border-radius: 12px; margin: 10px 0; }
+.rk-verdict { margin: 14px 0; padding: 14px 16px; border-radius: var(--rk-radius); }
 .rk-verdict .rk-p { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-weight: 600; }
-.rk-verdict.is-ok { background: var(--rk-good-soft); color: #0b5a40; }
-.rk-verdict.is-warn { background: var(--rk-warn-soft); color: #7a2d05; }
-.rk-rescan { margin: 10px 0 6px; }
+.rk-verdict .rk-note { margin: 6px 0 0; color: inherit; }
+.rk-verdict.is-ok { background: var(--rk-blue); color: var(--rk-white); }
+.rk-verdict.is-warn { background: var(--rk-ink); color: var(--rk-yellow); }
+.rk-rescan { margin: 14px 0 6px; }
 
-.rk-modes { margin: 12px 0 6px; display: grid; gap: 8px; }
-.rk-mode { display: grid; gap: 2px; text-align: left; padding: 10px 14px; border: 2px solid var(--rk-line); border-radius: 12px; background: #fff; font: inherit; color: var(--rk-ink); cursor: pointer; }
-.rk-mode.is-on { border-color: var(--rk-ink); background: #f6f8fc; }
+.rk-modes { display: grid; margin: 18px 0 12px; border-top: 2px solid var(--rk-ink); }
+.rk-modes .rk-kicker { margin: 12px 0 4px; }
+.rk-mode {
+  display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 12px; text-align: left;
+  padding: 12px 4px; border: 0; border-bottom: 1px solid var(--rk-line); background: transparent; color: var(--rk-ink); font: inherit; cursor: pointer;
+}
+.rk-mode-dot { grid-row: span 2; width: 22px; height: 22px; margin-top: 2px; border: 2px solid var(--rk-ink); border-radius: 50%; }
+.rk-mode.is-on .rk-mode-dot { background: var(--rk-blue); box-shadow: inset 0 0 0 3px var(--rk-paper); }
+.rk-mode-name { grid-column: 2; display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.rk-mode-blurb { grid-column: 2; font-size: 15px; line-height: 1.45; color: var(--rk-ink-2); }
 .rk-mode.is-soon { opacity: 0.55; cursor: not-allowed; }
-.rk-mode-name { font-weight: 700; display: flex; align-items: center; gap: 8px; }
-.rk-mode-blurb { font-size: 14px; color: var(--rk-ink-2); line-height: 1.4; }
-.rk-soon { font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: #e7ebf5; color: var(--rk-ink-2); }
-.rk-stagechip { display: inline-block; margin: 0 0 8px; padding: 4px 10px; border-radius: 999px; background: var(--rk-ink); color: #fff; font-size: 13px; font-weight: 700; }
-.rk-stages { display: grid; gap: 10px; margin-bottom: 12px; }
-.rk-stage { padding: 10px 12px; border: 1px solid var(--rk-line); border-radius: 12px; }
-.rk-stage.is-now { border-color: var(--rk-ink); }
+.rk-soon { font-style: normal; font-size: 13px; font-weight: 600; text-decoration: underline; }
+.rk-stagechip { display: inline-block; margin: 0 0 10px; padding: 4px 12px; border-radius: 6px; background: var(--rk-ink); color: var(--rk-paper); font-size: 14px; font-weight: 600; }
+.rk-stages { display: grid; margin-bottom: 14px; }
+.rk-stage { padding: 12px 0; border-top: 1px solid var(--rk-line); }
+.rk-stage.is-now { padding-top: 8px; border-top: 6px solid var(--rk-ink); }
 .rk-stage.is-skip { opacity: 0.6; }
-.rk-stage .rk-moves { margin: 8px 0 0; }
-.rk-stage-h { margin: 0; font-size: 15px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.rk-stage-n { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #e7ebf5; font-size: 12px; }
-.rk-stage-c { margin-left: auto; font-size: 13px; font-weight: 500; color: var(--rk-ink-2); }
+.rk-stage .rk-moves { margin: 10px 0 0; }
+.rk-stage-h { margin: 0; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rk-stage-n { display: inline-grid; place-items: center; width: 26px; height: 26px; border: 2px solid var(--rk-ink); border-radius: 50%; font-size: 13px; }
+.rk-stage-c { margin-left: auto; font-size: 14px; font-weight: 500; color: var(--rk-ink-2); }
 
 /* step 3, solve and guide */
-.rk-solve-panel .rk-bar { max-width: 420px; }
-.rk-guide-layout { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-.rk-hold { margin: 0 0 14px; padding: 10px 12px; border-radius: 10px; background: var(--rk-accent-soft); color: #14287d; font-size: 14px; }
-.rk-stage-body { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; }
-.rk-cube-box { background: radial-gradient(circle at 50% 40%, #2a3350, #151a2a); border-radius: 16px; padding: 4px; line-height: 0; }
+.rk-ready { display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: clamp(20px, 4vw, 48px); align-items: center; max-width: 920px; }
+.rk-ready > svg { display: block; width: 100%; height: auto; }
+.rk-solve-panel .rk-rule { max-width: 420px; }
+.rk-guide-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: start; }
+.rk-hold { position: relative; margin: 0 0 18px; padding-left: 22px; font-size: 15px; }
+.rk-hold::before { content: ''; position: absolute; left: 0; top: 8px; width: 11px; height: 11px; border-radius: 50%; background: var(--rk-blue); }
+.rk-stage-body { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: center; }
+.rk-cube-box { line-height: 0; }
 .rk-canvas { display: block; max-width: 100%; }
-.rk-big { margin: 4px 0 8px; }
-.rk-tok { display: inline-flex; align-items: baseline; font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-weight: 700; }
+.rk-big { margin: 4px 0 12px; }
+.rk-tok { display: inline-flex; align-items: baseline; font-family: 'Pixelify Sans', ui-monospace, Menlo, monospace; font-weight: 700; }
 .rk-tok-f { font-size: 1em; }
-.rk-tok-m { font-size: 0.9em; margin-left: 1px; }
-.rk-big .rk-tok { font-size: 56px; line-height: 1; padding: 8px 18px; border-radius: 14px; background: var(--rk-ink); color: #fff; }
-.rk-big .rk-tok-m { color: #ffcf5c; }
+.rk-tok-m { font-size: 0.85em; margin-left: 2px; }
+.rk-big .rk-tok { padding: 10px 22px 6px; border-radius: 12px; background: var(--rk-yellow); color: var(--rk-ink); font-size: 64px; line-height: 1; }
 .rk-controls { margin-top: 12px; }
-.rk-speed { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--rk-ink-2); }
-.rk-speed select { min-height: 40px; padding: 0 10px; border: 1px solid var(--rk-line); border-radius: 10px; background: #fff; font: inherit; color: var(--rk-ink); }
+.rk-speed { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; }
+.rk-speed select { min-height: 44px; padding: 0 12px; border: 2px solid var(--rk-ink); border-radius: var(--rk-radius); background: var(--rk-paper-lt); color: var(--rk-ink); font: inherit; font-weight: 500; }
 .rk-moves { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-.rk-mv { min-width: 44px; min-height: 40px; padding: 0 10px; border: 1px solid var(--rk-line); border-radius: 10px; background: #f6f8fc; color: var(--rk-ink); font-size: 15px; cursor: pointer; }
-.rk-mv.is-past { background: var(--rk-good-soft); border-color: transparent; color: #0b5a40; }
-.rk-mv.is-now { background: var(--rk-ink); color: #fff; border-color: var(--rk-ink); }
-.rk-details { border-top: 1px solid var(--rk-line); padding: 10px 0; margin-top: 8px; }
-.rk-details summary { cursor: pointer; font-weight: 600; min-height: 32px; }
-.rk-details .rk-net { margin-top: 8px; }
+.rk-mv { min-width: 48px; min-height: 44px; padding: 0 8px; border: 2px solid var(--rk-ink); border-radius: 8px; background: transparent; color: var(--rk-ink); font-size: 17px; cursor: pointer; }
+.rk-mv.is-past { border-color: transparent; background: var(--rk-paper-2); color: var(--rk-ink-2); }
+.rk-mv.is-now { background: var(--rk-ink); color: var(--rk-yellow); }
+.rk-details { margin-top: 8px; padding: 12px 0; border-top: 1px solid var(--rk-line); }
+.rk-details summary { min-height: 32px; font-weight: 600; cursor: pointer; }
+.rk-details .rk-net { margin-top: 10px; }
 
+/* sign-off, like the caption on a poster */
+.rk-foot { position: relative; margin-top: clamp(36px, 6vw, 72px); padding-top: 36px; }
+.rk-foot::before { content: ''; position: absolute; left: 0; right: 0; top: 6px; height: 2px; background: var(--rk-ink); }
+.rk-foot::after { content: ''; position: absolute; left: 0; top: 0; width: 56px; height: 14px; background: var(--rk-ink); }
+.rk-foot-title { margin: 0; font-size: clamp(32px, 5vw, 46px); font-weight: 700; line-height: 1.05; letter-spacing: -0.02em; }
+.rk-foot-sub { margin: 6px 0 0; font-size: clamp(17px, 2.2vw, 22px); font-weight: 500; }
+.rk-foot-note { margin: 16px 0 0; max-width: 60ch; font-size: 14px; color: var(--rk-ink-2); }
+
+@media (min-width: 881px) {
+  .rk-net-wrap { position: sticky; top: 14px; }
+}
 @media (max-width: 880px) {
-  .rk-scan, .rk-review, .rk-guide-layout { grid-template-columns: minmax(0, 1fr); }
+  .rk-ready > svg { max-width: 240px; }
+  .rk-scan, .rk-review, .rk-guide-layout, .rk-ready { grid-template-columns: minmax(0, 1fr); }
   .rk-stage-body { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
-  .rk-tabs { width: 100%; }
-  .rk-tab { flex: 1; justify-content: center; padding: 0 8px; }
-  .rk-big .rk-tok { font-size: 44px; }
+  .rk-big .rk-tok { font-size: 52px; }
 }
 @media (max-width: 520px) {
-  .rk-app { padding: 14px 12px 32px; }
+  .rk-app { margin: 8px auto; padding: 16px 14px 24px; }
+  .rk-vf { padding: 12px; }
+  .rk-c { width: 20px; height: 20px; }
   .rk-net { gap: 6px; }
-  .rk-face-cap { font-size: 9px; }
-  .rk-st { border-radius: 3px; }
+  .rk-face-cap { font-size: 11px; }
+  .rk-st { border-radius: 3px; border-width: 1px; }
   .rk-st svg { display: none; }
   .rk-palette { grid-template-columns: repeat(3, 1fr); }
-  .rk-side, .rk-viewer-wrap, .rk-net-wrap, .rk-stage-card { padding: 14px; }
+  .rk-tabs { gap: 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .rk-app * { transition: none !important; animation: none !important; }
@@ -2902,12 +2931,114 @@ export function useRkInterval(callback: () => void, delay: number | null) {
 
 // ── small pieces ─────────────────────────────────────────────────────────────
 
-export const RkGlyph = () => {
-  const pattern = ['U', 'R', 'F', 'L', 'D', 'U', 'B', 'F', 'R']
+// Poster marks. Each one does a job: the tally counts faces, the rule shows progress,
+// the corner marks frame the live view, the hero cube fills the empty and finished states.
+export const RkTally = () => {
+  const stickers = useRkStore((s) => s.stickers)
+  const captures = useRkStore((s) => s.captures)
+  const flags = RK_SCAN_ORDER.map((f, i) => {
+    if (captures[i]) return true
+    const fi = RK_FACES.indexOf(f)
+    for (let k = 0; k < 9; k++) if (!stickers[fi * 9 + k]) return false
+    return true
+  })
+  const count = flags.filter(Boolean).length
   return (
-    <span className="rk-glyph" aria-hidden="true">
-      {pattern.map((f, i) => <i key={i} style={{ background: RK_HEX[f] }} />)}
-    </span>
+    <div className="rk-tally-wrap">
+      <p className="rk-tally-label">your cube</p>
+      <span className="rk-tally" role="img" aria-label={count + ' of 6 faces filled in'}>
+        {flags.map((on, i) => <i key={i} className={on ? 'is-on' : ''} />)}
+      </span>
+      <span className="rk-short" aria-hidden="true" />
+    </div>
+  )
+}
+
+export const RkRule = ({ value, label }: { value: number; label?: string }) => {
+  const v = Math.max(0, Math.min(1, value))
+  if (label) {
+    return (
+      <div className="rk-rule" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(v * 100)}>
+        <span style={{ transform: 'scaleX(' + v + ')' }} />
+      </div>
+    )
+  }
+  return (
+    <div className="rk-rule" aria-hidden="true">
+      <span style={{ transform: 'scaleX(' + v + ')' }} />
+    </div>
+  )
+}
+
+export const RkFrame = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+  <div className={'rk-vf ' + className}>
+    <i className="rk-c rk-c-tl" aria-hidden="true" />
+    <i className="rk-c rk-c-tr" aria-hidden="true" />
+    <i className="rk-c rk-c-bl" aria-hidden="true" />
+    <i className="rk-c rk-c-br" aria-hidden="true" />
+    {children}
+  </div>
+)
+
+// Pixel art for the hero cube: ten 5x5 bitmaps and five tile color schemes.
+export const RK_HERO_BITS: string[] = [
+  '00000' + '01010' + '00000' + '11111' + '00000',
+  '00100' + '00100' + '11111' + '00100' + '00100',
+  '11111' + '10001' + '10101' + '10001' + '11111',
+  '00001' + '00011' + '00111' + '01111' + '11111',
+  '00000' + '00000' + '11111' + '11111' + '11111',
+  '01110' + '11111' + '11111' + '11110' + '01100',
+  '10000' + '10000' + '10000' + '10000' + '11111',
+  '00101' + '01010' + '00101' + '01010' + '00101',
+  '00000' + '10001' + '01110' + '00000' + '00000',
+  '11111' + '11111' + '11111' + '11111' + '11111',
+]
+
+export const RK_HERO_SCHEMES: Record<string, string[]> = {
+  k: ['#121212', '#f6f7f9'],
+  w: ['#f6f7f9', '#121212'],
+  b: ['#4a82ff', '#f6f7f9'],
+  y: ['#f2e30c', '#121212'],
+  l: ['#dce5a6', '#121212'],
+}
+
+// Each tile is a scheme letter plus a bitmap number.
+export const RK_HERO_FACES: Record<string, string[]> = {
+  top: ['l5', 'k4', 'b9', 'l5', 'w0', 'b2', 'k7', 'k9', 'y3'],
+  left: ['k5', 'b7', 'w9', 'w1', 'b8', 'w3', 'k5', 'b4', 'w6'],
+  right: ['y9', 'y5', 'y7', 'k5', 'y1', 'k6', 'y5', 'k8', 'y4'],
+}
+
+export const RkHeroCube = ({ size = 260 }: { size?: number }) => {
+  const e = 125
+  const dx = 108.25
+  const dy = 62.5
+  const k = 66
+  const face = (name: string, fill: string) => (
+    <>
+      <rect x="0" y="0" width="66" height="66" rx="5" fill={fill} />
+      {RK_HERO_FACES[name].map((spec, i) => {
+        const scheme = RK_HERO_SCHEMES[spec.charAt(0)] || RK_HERO_SCHEMES.k
+        const bits = RK_HERO_BITS[parseInt(spec.charAt(1), 10)] || RK_HERO_BITS[9]
+        const tx = 2 + (i % 3) * 22
+        const ty = 2 + Math.floor(i / 3) * 22
+        return (
+          <g key={name + i} transform={'translate(' + tx + ' ' + ty + ')'}>
+            <rect width="20" height="20" rx="3" fill={scheme[0]} stroke="#0b1038" strokeWidth="0.8" />
+            {bits.split('').map((c, j) => (c === '1'
+              ? <rect key={j} x={2.5 + (j % 5) * 3} y={2.5 + Math.floor(j / 5) * 3} width="3.05" height="3.05" fill={scheme[1]} />
+              : null))}
+          </g>
+        )
+      })}
+    </>
+  )
+  return (
+    <svg viewBox="0 0 220 262" width={size} height={Math.round(size * 262 / 220)} aria-hidden="true" focusable="false">
+      <g transform={'matrix(' + dx / k + ' ' + dy / k + ' 0 ' + e / k + ' 1.75 68.5)'}>{face('left', '#2a45f0')}</g>
+      <g transform={'matrix(' + dx / k + ' ' + (-dy / k) + ' 0 ' + e / k + ' 110 131)'}>{face('right', '#1a32d6')}</g>
+      <g transform={'matrix(' + dx / k + ' ' + (-dy / k) + ' ' + dx / k + ' ' + dy / k + ' 1.75 68.5)'}>{face('top', '#3b5bff')}</g>
+    </svg>
   )
 }
 
@@ -3181,6 +3312,7 @@ export const RkScanStage = () => {
   return (
     <div className="rk-scan">
       <section className="rk-viewer-wrap" aria-label="Camera">
+        <RkFrame>
         <div className={'rk-viewer' + (flash ? ' is-flash' : '')}>
           <video ref={videoRef} className="rk-video" playsInline muted />
           <canvas ref={canvasRef} className="rk-hidden" />
@@ -3195,6 +3327,7 @@ export const RkScanStage = () => {
             <div className="rk-viewer-empty">
               {camState === 'starting' ? <p className="rk-p">Starting the camera...</p> : (
                 <>
+                  <RkHeroCube size={260} />
                   <button type="button" className="rk-btn rk-btn-primary" onClick={() => startCam(facing)}>
                     <Camera size={18} aria-hidden="true" /> Turn on camera
                   </button>
@@ -3204,7 +3337,8 @@ export const RkScanStage = () => {
             </div>
           ) : null}
         </div>
-        <div className="rk-meter" aria-hidden="true"><span style={{ width: Math.round(hold * 100) + '%' }} /></div>
+        </RkFrame>
+        <RkRule value={hold} />
         <p className="rk-status" role="status" aria-live="polite">
           {camOn ? (hint || 'Line the face up with the grid. Detection is automatic.') : 'Camera is off.'}
         </p>
@@ -3394,6 +3528,7 @@ export const RkReviewStage = () => {
               className={'rk-mode' + (mode === o.id ? ' is-on' : '') + (o.soon ? ' is-soon' : '')}
               onClick={() => setMode(o.id)}
             >
+              <span className="rk-mode-dot" aria-hidden="true" />
               <span className="rk-mode-name">{o.name}{o.soon ? <em className="rk-soon">Soon</em> : null}</span>
               <span className="rk-mode-blurb">{o.blurb}</span>
             </button>
@@ -3504,7 +3639,7 @@ export const RkGuide = () => {
           You never need to turn the whole cube.
         </p>
         <div className="rk-stage-body">
-          <div className="rk-cube-box">
+          <RkFrame className="rk-cube-box">
             <RkCube3D
               state={states[Math.min(step, total)] || stickers}
               move={move}
@@ -3512,7 +3647,7 @@ export const RkGuide = () => {
               size={300}
               label={info ? info.headline : 'The cube is solved'}
             />
-          </div>
+          </RkFrame>
           <div className="rk-move-box">
             {curStage && !atEnd ? (
               <p className="rk-stagechip">Step {curStageIdx + 1} of {plan ? plan.length : 0} · {curStage.title}</p>
@@ -3537,7 +3672,7 @@ export const RkGuide = () => {
             )}
           </div>
         </div>
-        <div className="rk-bar" aria-hidden="true"><span style={{ width: (total ? Math.round((Math.min(step, total) / total) * 100) : 100) + '%' }} /></div>
+        <RkRule value={total ? Math.min(step, total) / total : 1} label="Moves done" />
         <div className="rk-row rk-row-wrap rk-controls">
           <button type="button" className="rk-btn" onClick={() => go(step - 1)} disabled={step === 0}><ChevronLeft size={18} aria-hidden="true" /> Back</button>
           <button type="button" className="rk-btn rk-btn-primary" onClick={() => go(step + 1)} disabled={atEnd}>Next <ChevronRight size={18} aria-hidden="true" /></button>
@@ -3658,15 +3793,17 @@ export const RkSolveStage = () => {
         <>
           <h2 className="rk-h2">{mode === 'pro' ? 'Planning your solve' : mode === 'beginner' ? 'Planning the layers' : prepPct < 1 ? 'Getting the solver ready' : 'Searching'}</h2>
           <p className="rk-p">{mode === 'pro' ? 'Finding the shortest cross, the best order for the pairs and the right algorithms...' : mode === 'beginner' ? 'Finding the fewest turns for each step...' : prepPct < 1 ? prepStage || 'Building search tables' : 'Looking for a short solution...'}</p>
-          <div className="rk-bar" aria-hidden="true"><span style={{ width: Math.round(Math.max(0.05, prepPct) * 100) + '%' }} /></div>
+          <RkRule value={Math.max(0.05, prepPct)} />
           <p className="rk-note">This takes a second or two the first time, then the search itself runs for a few seconds.</p>
         </>
       ) : null}
 
       {solution ? (
-        <>
+        <div className="rk-ready">
+          <RkHeroCube size={280} />
+          <div>
           <p className="rk-kicker">{working ? 'Best so far, still searching' : 'Solution ready'}</p>
-          <h2 className="rk-h2">{solution.length === 0 ? 'This cube is already solved' : solution.length + ' moves'}</h2>
+          <h2 className="rk-h2 rk-count">{solution.length === 0 ? 'Already solved' : solution.length + ' moves'}</h2>
           <p className="rk-p rk-mono">{rkMoveNames(solution)}</p>
           <p className="rk-note">
             {mode === 'pro'
@@ -3682,7 +3819,8 @@ export const RkSolveStage = () => {
             </button>
             <button type="button" className="rk-btn rk-btn-quiet" onClick={() => { if (working) stop(); setStage('review') }}>Back to stickers</button>
           </div>
-        </>
+          </div>
+        </div>
       ) : null}
     </section>
   )
@@ -3702,7 +3840,7 @@ export const RkApp = () => {
       const link = document.createElement('link')
       link.id = 'rk-fonts'
       link.rel = 'stylesheet'
-      link.href = 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap'
+      link.href = 'https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Poppins:wght@400;500;600;700&display=swap'
       document.head.appendChild(link)
     }
     const saved = rkLoadLocal()
@@ -3721,21 +3859,15 @@ export const RkApp = () => {
   }, [])
 
   const tabs: { id: RkStage; label: string; enabled: boolean }[] = [
-    { id: 'scan', label: 'Scan', enabled: true },
-    { id: 'review', label: 'Check', enabled: true },
-    { id: 'solve', label: 'Solve', enabled: !!solution },
+    { id: 'scan', label: 'scan', enabled: true },
+    { id: 'review', label: 'check', enabled: true },
+    { id: 'solve', label: 'solve', enabled: !!solution },
   ]
 
   return (
     <div className="rk-app">
       <header className="rk-top">
-        <div className="rk-brand">
-          <RkGlyph />
-          <div>
-            <p className="rk-brand-name">Cube solver</p>
-            <p className="rk-brand-sub">Scan six faces, fix misreads, follow the moves.</p>
-          </div>
-        </div>
+        <RkTally />
         <nav className="rk-tabs" aria-label="Steps">
           {tabs.map((t, i) => (
             <button
@@ -3756,7 +3888,9 @@ export const RkApp = () => {
         {stage === 'solve' ? <RkSolveStage /> : null}
       </main>
       <footer className="rk-foot">
-        <p>The solver runs in your browser and uses no AI. Camera frames are never uploaded.</p>
+        <p className="rk-foot-title">Cube solver.</p>
+        <p className="rk-foot-sub">scan six faces, fix misreads, follow the moves.</p>
+        <p className="rk-foot-note">The solver runs in your browser and uses no AI. Camera frames are never uploaded.</p>
       </footer>
     </div>
   )
