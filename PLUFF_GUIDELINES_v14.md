@@ -732,15 +732,24 @@
   - Authored, not templated: the concept line and the signature device are the Why answers for the whole product. The Why Layer carries the same habit down to every element.
   - Accessibility (Sections 2C and 2D) still always wins.
 
-  **VALID REASONS (any one is enough, etc.):** functional (a user goal), informational (the user needs to know), emotional (a feeling), narrative (pacing, story), brand (identity, memorability), artistic (expression, craft, showing skill), playful (delight, surprise), expectation (the audience already expects it), etc. "Art for art's sake" is a real reason on a showcase, a portfolio or an experiment.
+  **VALID REASONS (any one is enough to justify existing, etc.; it must still pass THE RENT TEST below):** functional (a user goal), informational (the user needs to know), emotional (a feeling), narrative (pacing, story), brand (identity, memorability), artistic (expression, craft, showing skill), playful (delight, surprise), expectation (the audience already expects it, and this product's real content and task call for it), etc. "Art for art's sake" is a real reason on a showcase, a portfolio or an experiment. A reason that merely exists is not enough: "it looks nice", "it is brand", "apps usually have it" and "users expect it" are reasons that must also be worth what they cost on this screen.
 
   **TWO KINDS OF SCREEN (most products have both):**
   - **Expressive** (landing, home, portfolio, brand site, campaign, game menu, empty state, experiment, etc.): experiment boldly. Unusual navigation, scrollytelling, WebGL, physics, odd cursors and other risks are welcome here when they carry the concept. The reason is experience, story, emotion, brand or craft, and a conscious reason is enough.
-  - **Working** (form, checkout, sign in, settings, table, dashboard, editor, etc.): clarity and speed are the experience. The reason is the user's task, what they expect and where they are. An unusual choice needs to make the task easier, not only different.
+  - **Working** (form, checkout, sign in, settings, table, dashboard, editor, etc.): clarity and speed are the experience. The reason is the user's task, what they expect and where they are. An unusual choice needs to make the task easier, not only different. The screen's main job (the list, form, table, editor or content the user came for) is visible on the first screen without scrolling, and decoration, headers and banners shrink first to make room.
   - Mixed products are expressive on the way in and clear where the work happens (Section 2C: story and signature device in the entry points). A pure showcase may be expressive everywhere. Say which it is in the concept line.
   - Runway and grocery store: a bold outfit is right on a runway and wrong in the checkout aisle. Neither is banned. Know which one you are standing in.
 
-  **THE WHY LINE:** One sentence per non-trivial element, state or behavior (menu, dropdown, sidebar item, hover, tooltip, modal, cursor, transition, onboarding step, loading state, icon, field, badge, etc.), written in your own plan before the UI, like the concept line. Format: "[element] exists so that [who] can [do, feel or understand what] when [moment]." Function, feeling, story, brand and art all fit that sentence. It is for your reasoning only, never UI copy and not a code comment. Scale it to the stakes: a cursor effect on a portfolio needs one line, a checkout field needs the full question set below, a plain body paragraph needs no written line (the question is still asked silently). If the sentence cannot be written, rework or remove the element.
+  **THE WHY LINE:** One sentence per non-trivial element, state or behavior (menu, dropdown, sidebar item, hover, tooltip, modal, cursor, transition, onboarding step, loading state, icon, field, badge, etc.), written in your own plan before the UI, like the concept line. Format: "[element] exists so that [who] can [do, feel or understand what] when [moment]. It costs [space, attention, time, effort or load], and that is worth it because [reason]." Function, feeling, story, brand and art all fit that sentence. Write the why lines in your plan or reply before building so they are real and checkable. Never put them in UI copy. Scale it to the stakes: a cursor effect on a portfolio needs one line, a checkout field needs the full question set below, a plain body paragraph needs no written line (the question is still asked silently). If the sentence cannot be written, rework or remove the element.
+
+  **SCREEN JOB FIRST:** Before any element, write one sentence: what is the main job of this screen, meaning what the user came here to do or feel? That job gets the first and biggest space and attention. Every other element is judged by how it serves that job and by what it takes away from it. An element that is bigger, louder, higher or longer than its importance to the job deserves is a cost with no reason, even when it looks good. (On expressive screens the job is the experience, and the concept line is that job.)
+
+  **THREE WHYS (ask all three for every region and element, not only the first):**
+  - Why does it exist at all?
+  - Why is it here, in this position and structure (this navigation, layout, grouping, pattern, etc.)? Do this product's real content and size call for it, or is it simply what apps usually do? Would fewer or different structures serve the job better?
+  - Why is it this big, this loud, this long, this often? Size, prominence and amount of text follow importance to the screen's job.
+
+  **THE RENT TEST:** Every element pays rent in space, attention, time, effort, load or complexity. A valid reason is not enough on its own: the reason must be worth the rent on this screen. A decorative or secondary element that pushes the screen's main job out of view, slows it down or competes with it does not pass, however good its reason sounds. Bold ideas on expressive screens pay their rent by carrying the concept. The test is about unexamined cost, never about boldness.
 
   **THE FLOOR (the minimum so no user is ever lost, even in the boldest design; it limits no style):**
   - [ ] The content can be read: text is legible and not covered or blocked by effects
@@ -838,9 +847,18 @@
   - [ ] Swap test for function: could this screen belong to a different product unchanged?
   - [ ] etc.
 
-  **L. Final review (run before finalizing)**
+  **L. Text and copy (headings, labels, captions, intros, helper text, placeholders, descriptions, etc.)**
+  - [ ] What job does this text do? What happens to the user if it is deleted? If nothing, delete it
+  - [ ] Does it repeat what the interface, the heading or the data already says?
+  - [ ] Is it the right length for its importance, or is it filler that makes the screen look finished?
+  - [ ] Does it say something specific to this product and moment, instead of something that fits any app?
+  - [ ] etc.
+
+  **M. Final review (run before finalizing)**
   - [ ] Walk the screen as the user for five seconds: where do they look, where do they hesitate, what is unclear?
+  - [ ] Name the screen's main job again. Is it visible and dominant on the first screen, or did something else take its space?
   - [ ] List what is ugly, redundant or unexplained. Fix or remove each item
+  - [ ] Subtract pass: name the three elements with the least value for their cost (space, attention, text, effort). Cut, shrink, merge or hide each, or keep it only with a written reason that beats its cost. If nothing was cut or shrunk, the questions were not really asked
   - [ ] Every why line has an answer that does not rest only on "because it is common"
   - [ ] The boldest ideas were kept, not sanded down, and each one has a conscious reason
   - [ ] etc.
@@ -859,7 +877,11 @@
   - Authored, not templated: write a concept line (one sentence) and pick one signature device before writing the UI. Never reuse the centered hero, three feature cards and footer pattern.
   - Never use indigo or purple-blue gradients, or emoji as icons (Section 2D). Avoid the cream or warm off-white plus rust accent pairing unless it is the brand's own. Avoid gradient fills on avatars and icon badges unless something needs them; flat is the default.
   - Inside working app screens use plain familiar patterns, and know why each one fits. Put the story in landing, home, portfolio and empty states, and experiment boldly there.
-  - Why Layer (Section 2F, necessary, never banned, never a limit on creativity): before building any element, state or behavior (the examples in this guideline are samples, "etc." means everything, including what is not named), know why it is there. Any real reason counts: function, feeling, story, brand, art. Write one why line per non-trivial element: "[element] exists so [who] can [do, feel or understand what] when [moment]". Ask what the user expects, how it relates to what is around it and to the screen, whether the info is already shown, who carries the complexity (Tesler), and whether anyone will use it. Expressive screens (landing, portfolio, brand, showcase) may experiment freely, and Awwwards level ambition keeps priority. Working screens (forms, checkout, dashboards) favor clarity. Only "no reason at all" is a problem. Floor: text readable, navigation findable, primary goal reachable, effects proportional to the page's value.
+  - Why Layer (Section 2F, necessary, never banned, never a limit on creativity). Do these steps in order, in your plan or reply, before building. The examples in this guideline are samples, "etc." means everything, including what is not named.
+    1. Name the screen's main job in one sentence. That job gets the first and biggest space.
+    2. For every region and element (structure, navigation, header or banner, text, icon, state, effect, etc.) write one line: "[element] exists so [who] can [do, feel or understand what] when [moment]. It costs [space, attention, time or load] and is worth it because [reason]." Ask three whys: why it exists, why it is here in this structure (not only because apps usually have it, and does this product's real content call for it), and why it is this big, loud or long.
+    3. Subtract pass: name the three weakest elements by value for cost, then cut, shrink, merge or hide each, or keep it with a written reason that beats its cost. If nothing changed, you did not really ask.
+    A reason that exists is not enough, it must also be worth its cost on this screen. Any real reason (function, feeling, story, brand, art) justifies existing. Expressive screens (landing, portfolio, brand, showcase) may experiment freely and Awwwards level ambition keeps priority. On working screens (forms, checkout, dashboards, lists, editors) the main job is visible on the first screen and decoration shrinks first. Also ask what the user expects, whether the info is already shown, and who carries the complexity (Tesler). Floor: text readable, navigation findable, primary goal reachable, effects proportional to the page's value.
   - Choose the product's own fonts, not Inter, Roboto, Open Sans, Lato, Montserrat, Arial or Syne. Defined type scale, body 16px or more, lines 65ch to 75ch.
   - Real-looking sample data with Japanese (romaji), German, Russian, Indonesian or Korean names. No em dashes in copy. Hand-authored SVG favicon for new tatemonos.
   - Every hover effect has a keyboard focus equivalent. Animate only transform and opacity, and only with a purpose.
@@ -1321,7 +1343,8 @@
 
   **WEB**
   - [ ] Design checked against Section 2D: no pattern used only because it looks modern or AI-generated; inspiration from awwwards.com when needed (Section 2C)
-  - [ ] Why Layer applied (Section 2F): every non-trivial element, state and behavior (the lists are samples, etc. means everything) has a real reason (function, feeling, story, brand or art), and anything with no reason was reworked or removed. This never shrinks creative ambition
+  - [ ] Why Layer applied (Section 2F): the screen's main job was named and is visible and dominant on the first screen; every region and element (structure, navigation, header or banner, text, state, effect, etc., the lists are samples and etc. means everything) has a why line that includes its cost, and the reason is worth the cost; anything unjustified was reworked or removed. This never shrinks creative ambition
+  - [ ] Subtract pass done (Section 2F): the three weakest elements by value for cost were cut, shrunk, merged or hidden, or kept with a written reason that beats their cost
   - [ ] Expressive screens kept their boldness; working screens favor clarity; the Floor holds (text readable, navigation findable, primary goal reachable, effects proportional to value)
   - [ ] No information shown twice by accident; no element signals something different from what it does, unless surprise is the intended experience on an expressive screen
   - [ ] Loading, empty, error, onboarding, hover and other interaction states each have a reason tied to the user's experience, not only to looking complete
