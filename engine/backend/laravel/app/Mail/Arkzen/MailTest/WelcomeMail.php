@@ -5,7 +5,7 @@
 // Tatemono: mail-test
 // Subject: Welcome to Arkzen
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:55:58.129084Z
+// Generated: 2026-11-21T15:26:00.293980Z
 // ============================================================
 
 namespace App\Mail\Arkzen\MailTest;

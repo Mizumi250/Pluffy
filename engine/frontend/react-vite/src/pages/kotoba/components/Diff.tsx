@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — Diff [React+Vite]
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:55:51.611Z
+// Generated: 2026-11-21T15:25:56.443Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

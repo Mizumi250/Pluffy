@@ -5,7 +5,7 @@
 // Tatemono: fastapi-test
 // Subject: Welcome to Pluff
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:55:46.556754Z
+// Generated: 2026-11-21T15:25:53.101280Z
 // ============================================================
 
 namespace App\Mail\Arkzen\FastapiTest;

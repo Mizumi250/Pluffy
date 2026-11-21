@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — rubik-solver
 // Source: @arkzen:script (global)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T09:33:10.139Z
+// Generated: 2026-11-21T15:26:08.194Z
 // ============================================================
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -15,12 +15,23 @@
 export const RK_FACES = ['U', 'R', 'F', 'D', 'L', 'B']
 
 export const RK_HEX: Record<string, string> = {
-  U: '#f3f1ea',
-  R: '#d92b3a',
-  F: '#17a34a',
-  D: '#ffd60a',
-  L: '#ff7b00',
-  B: '#1556d9',
+  U: '#f6f7f9',
+  R: '#f0584f',
+  F: '#3dbd6e',
+  D: '#f5dd14',
+  L: '#ff9a2e',
+  B: '#4a82ff',
+}
+
+// Pixel art printed on each sticker of the turning cube. One bitmap per color (5x5, row by row),
+// so the color is still readable and the shape doubles as a second cue for each color.
+export const RK_STICKER_BITS: Record<string, string> = {
+  U: '11111' + '10001' + '10101' + '10001' + '11111',
+  R: '00100' + '00100' + '11111' + '00100' + '00100',
+  F: '00000' + '01010' + '00000' + '11111' + '00000',
+  D: '00001' + '00011' + '00111' + '01111' + '11111',
+  L: '10000' + '10000' + '10000' + '10000' + '11111',
+  B: '00101' + '01010' + '00101' + '01010' + '00101',
 }
 
 export const RK_COLOR_NAME: Record<string, string> = {
@@ -558,7 +569,7 @@ export function rkViewFor(face: string): string {
 }
 
 // ── 3D drawing ───────────────────────────────────────────────────────────────
-export type RkPoly = { pts: number[][]; fill: string; stroke: string; sw: number; z: number }
+export type RkPoly = { pts: number[][]; fill: string; stroke: string; sw: number; z: number; col?: string }
 
 const RK_PERP: Record<string, [RkVec, RkVec]> = {
   x: [[0, 1, 0], [0, 0, 1]],
@@ -625,15 +636,16 @@ export function rkBuildPolys(state: string[], viewName: string, anim?: RkAnim | 
           if (nz <= 0.0001) continue
           const body = quad(0.5, 0).map(project)
           const bz = (body[0][2] + body[1][2] + body[2][2] + body[3][2]) / 4
-          polys.push({ pts: body.map((q) => [q[0], q[1]]), fill: '#0e1013', stroke: '#050607', sw: 0.6, z: bz })
+          polys.push({ pts: body.map((q) => [q[0], q[1]]), fill: '#1a32d6', stroke: '#0b1038', sw: 0.8, z: bz })
           const idx = RK_INDEX[rkKey(center, n)]
           if (idx !== undefined && state[idx]) {
             const st = quad(0.42, 0.006).map(project)
             polys.push({
               pts: st.map((q) => [q[0], q[1]]),
               fill: RK_HEX[state[idx]] || '#444',
-              stroke: inLayer || inHi ? '#ffffff' : 'rgba(0,0,0,0.35)',
-              sw: inLayer || inHi ? 2.2 : 0.5,
+              col: state[idx],
+              stroke: inLayer || inHi ? '#ff86c0' : 'rgba(8,10,40,0.7)',
+              sw: inLayer || inHi ? 2.4 : 0.8,
               z: bz + 0.02,
             })
           }

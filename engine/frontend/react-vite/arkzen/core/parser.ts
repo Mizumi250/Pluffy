@@ -379,6 +379,76 @@ function extractAllNamedSections(content: string, marker: string): ArkzenSection
 // YAML SECTION PARSERS
 // ─────────────────────────────────────────────
 
+// ─────────────────────────────────────────────
+// PARSE OAUTH — v16.0
+// Extracts the optional @arkzen:oauth block. Social sign-in is an opt-in
+// layer on top of `auth: true`; it never replaces email + password.
+//
+//   /* @arkzen:oauth
+//   providers: [google, github, discord]
+//   redirect: /dashboard            # frontend path after a successful sign-in
+//   error_redirect: /login          # frontend path after a failed sign-in
+//   link_verified_email: true       # auto-link to an existing account only when the provider verifies the email
+//   */
+//
+// Client IDs and secrets are NEVER read from the tatemono. They come from the
+// backend's .env (OAUTH_<PROVIDER>_CLIENT_ID / OAUTH_<PROVIDER>_CLIENT_SECRET).
+// ─────────────────────────────────────────────
+
+export const OAUTH_PROVIDERS = [
+  'google', 'github', 'twitter', 'apple', 'microsoft', 'facebook', 'instagram', 'discord',
+] as const
+
+export interface ArkzenOAuthConfig {
+  providers:         string[]
+  redirect:          string
+  errorRedirect:     string
+  linkVerifiedEmail: boolean
+}
+
+function parseOAuth(content: string, name: string, authEnabled: boolean): ArkzenOAuthConfig | undefined {
+  const raw = extractSection(content, 'oauth')
+  if (raw === null) return undefined
+
+  if (!authEnabled) {
+    throw new Error(`[Arkzen Parser] "${name}": @arkzen:oauth requires auth: true in @arkzen:meta`)
+  }
+
+  const parsed = (yaml.load(raw) ?? {}) as Record<string, unknown>
+  const list   = Array.isArray(parsed.providers) ? parsed.providers : []
+  const seen   = new Set<string>()
+  const providers: string[] = []
+
+  for (const entry of list) {
+    // Accept "google" and the alias "x" for twitter, case-insensitively.
+    let id = String(entry).trim().toLowerCase()
+    if (id === 'x') id = 'twitter'
+    if (!(OAUTH_PROVIDERS as readonly string[]).includes(id)) {
+      throw new Error(
+        `[Arkzen Parser] "${name}": unknown OAuth provider "${entry}". Supported: ${OAUTH_PROVIDERS.join(', ')}`,
+      )
+    }
+    if (!seen.has(id)) { seen.add(id); providers.push(id) }
+  }
+
+  if (providers.length === 0) {
+    throw new Error(`[Arkzen Parser] "${name}": @arkzen:oauth needs a non-empty providers list`)
+  }
+
+  const asPath = (v: unknown, fallback: string): string => {
+    const s = typeof v === 'string' && v.trim() ? v.trim() : fallback
+    // Frontend path only. An absolute URL here would be an open redirect.
+    return s.startsWith('/') && !s.startsWith('//') ? s : fallback
+  }
+
+  return {
+    providers,
+    redirect:          asPath(parsed.redirect, '/'),
+    errorRedirect:     asPath(parsed.error_redirect, '/'),
+    linkVerifiedEmail: parsed.link_verified_email === undefined ? true : Boolean(parsed.link_verified_email),
+  }
+}
+
 function parseMeta(content: string): ArkzenMeta {
   const raw = extractSection(content, 'meta')
   if (!raw) throw new Error('[Arkzen Parser] Missing @arkzen:meta section')
@@ -398,11 +468,14 @@ function parseMeta(content: string): ArkzenMeta {
     console.warn(`[Arkzen Parser] ⚠ "${parsed.name}": pwa in @arkzen:meta is deprecated — move to @arkzen:meta:web`)
   }
 
+  const authEnabled = Boolean(parsed.auth ?? false)
+  const oauth = parseOAuth(content, String(parsed.name), authEnabled)
+
   return {
     name:         String(parsed.name),
     version:      String(parsed.version ?? '1.0.0'),
     description:  String(parsed.description ?? ''),
-    auth:         Boolean(parsed.auth ?? false),
+    auth:         authEnabled,
     dependencies: (parsed.dependencies as string[]) ?? [],
     // deprecated fallbacks
     favicon:      parsed.favicon ? String(parsed.favicon) : undefined,
@@ -428,7 +501,9 @@ function parseMeta(content: string): ArkzenMeta {
           })),
         }
       : undefined,
-  }
+    // v16.0: optional social sign-in. Cast keeps each stack's types/index.ts untouched.
+    ...(oauth ? { oauth } : {}),
+  } as ArkzenMeta
 }
 
 // ─────────────────────────────────────────────
@@ -2062,6 +2137,7 @@ const YAML_ONLY_TAGS  = [
   'meta', 'meta:web', 'meta:native',
   'web:config', 'native:config', 'desktop:config',
   'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail',
+  'oauth',
 ]
 
 function validateDslTags(content: string, filePath: string): void {

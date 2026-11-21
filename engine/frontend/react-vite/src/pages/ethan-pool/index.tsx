@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — ethan-pool/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-11-12T01:55:40.836Z
+// Generated: 2026-11-21T15:25:50.144Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

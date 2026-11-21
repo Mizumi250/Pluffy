@@ -16,5 +16,5 @@ export const AUTH_TATEMONOS: string[] = [
   "mail-test",
   "notification-test",
   "roles-test",
-  "shikaku"
+  "oauth-test"
 ];

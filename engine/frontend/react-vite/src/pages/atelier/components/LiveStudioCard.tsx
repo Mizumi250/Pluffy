@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — LiveStudioCard [React+Vite]
 // Source: @arkzen:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:55:34.583Z
+// Generated: 2026-11-21T15:25:45.354Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

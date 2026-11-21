@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FramerDragSection [React+Vite]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:55:29.677Z
+// Generated: 2026-11-21T15:25:43.125Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

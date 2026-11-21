@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — spring-ledger/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-11-12T01:56:06.821Z
+// Generated: 2026-11-21T15:26:12.803Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

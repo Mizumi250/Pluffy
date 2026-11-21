@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — NoteArkzenSeeder
 // Tatemono: spring-test  |  Connection: spring_test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:56:08.042930Z
+// Generated: 2026-11-21T15:26:13.768102Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\SpringTest;

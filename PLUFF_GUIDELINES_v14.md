@@ -4140,7 +4140,7 @@
   | Godot game | `godot-game` |
   | Unity game | `dino-runner`, `unity-scene-starter` |
 
-  Full index of 53 tatemonos (title · description · block families · stacks · size · raw URL):
+  Full index of 52 tatemonos (title · description · block families · stacks · size · raw URL):
 
   - **animation-lab** — (no description in meta)
     families: UI only (no backend blocks) · stacks: web, native, lynx · L (~51k tokens, 158 KB)
@@ -4272,7 +4272,7 @@
     families: api, database, endpoint · stacks: web, native, lynx · M (~20k tokens, 62 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/roles-test/core.tsx
   - **rubik-solver** — (no description in meta)
-    families: UI only (no backend blocks) · stacks: web · L (~53k tokens, 167 KB)
+    families: UI only (no backend blocks) · stacks: web · L (~56k tokens, 175 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/rubik-solver/core.tsx
   - **rust-backend-test** — (no description in meta)
     families: api, database · stacks: web · S (~2k tokens, 7 KB)
@@ -4283,9 +4283,6 @@
   - **shan-shan** — (no description in meta)
     families: UI only (no backend blocks) · stacks: web, native, lynx · L (~38k tokens, 120 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/shan-shan/core.tsx
-  - **shikaku** — (no description in meta)
-    families: api, database, realtime · stacks: web · M (~26k tokens, 80 KB)
-    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/shikaku/core.tsx
   - **spring-ledger** — (no description in meta)
     families: api, database, endpoint · stacks: web · S (~3k tokens, 8 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/spring-ledger/core.tsx

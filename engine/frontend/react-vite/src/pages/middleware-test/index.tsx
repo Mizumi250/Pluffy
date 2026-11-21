@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — middleware-test/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-11-12T01:55:58.290Z
+// Generated: 2026-11-21T15:26:00.453Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

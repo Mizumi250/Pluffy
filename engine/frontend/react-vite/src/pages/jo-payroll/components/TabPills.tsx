@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — TabPills [React+Vite]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:55:49.452Z
+// Generated: 2026-11-21T15:25:54.806Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

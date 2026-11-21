@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — rubik-solver/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-11-12T09:33:10.231Z
+// Generated: 2026-11-21T15:26:08.316Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,14 +10,17 @@ import { motion } from 'framer-motion'
 import { RkApp } from './components/RkApp'
 import { RkCube3D } from './components/RkCube3D'
 import { RkCubeNet } from './components/RkCubeNet'
-import { RkGlyph } from './components/RkGlyph'
+import { RkFrame } from './components/RkFrame'
 import { RkGuide } from './components/RkGuide'
+import { RkHeroCube } from './components/RkHeroCube'
 import { RkMiniFace } from './components/RkMiniFace'
 import { RkMoveToken } from './components/RkMoveToken'
 import { RkReviewStage } from './components/RkReviewStage'
+import { RkRule } from './components/RkRule'
 import { RkScanStage } from './components/RkScanStage'
 import { RkSolveStage } from './components/RkSolveStage'
 import { RkSwatch } from './components/RkSwatch'
+import { RkTally } from './components/RkTally'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { useNavigate } from 'react-router'
 import './styles/global.css'

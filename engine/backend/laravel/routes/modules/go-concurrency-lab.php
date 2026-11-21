@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — go-concurrency-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:55:47.883025Z
+// Generated: 2026-11-21T15:25:53.848171Z
 // Resources: Task
 // Custom controllers: 
 // ============================================================

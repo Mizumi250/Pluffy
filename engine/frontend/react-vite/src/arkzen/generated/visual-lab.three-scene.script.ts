@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — visual-lab/three-scene
 // Source: @arkzen:script:three-scene
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:56:09.289Z
+// Generated: 2026-11-21T15:26:15.372Z
 // ============================================================
 
 import * as THREE from 'three'

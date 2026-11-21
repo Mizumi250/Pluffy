@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — EventLogStoreRequest
 // Tatemono: express-test-2
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:55:44.598561Z
+// Generated: 2026-11-21T15:25:51.905085Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\ExpressTest2;

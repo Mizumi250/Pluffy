@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — HeroSection [React+Vite]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:55:59.600Z
+// Generated: 2026-11-21T15:26:01.450Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

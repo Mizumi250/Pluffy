@@ -33,6 +33,17 @@ export const RK_HEX: Record<string, string> = {
   B: '#4a82ff',
 }
 
+// Pixel art printed on each sticker of the turning cube. One bitmap per color (5x5, row by row),
+// so the color is still readable and the shape doubles as a second cue for each color.
+export const RK_STICKER_BITS: Record<string, string> = {
+  U: '11111' + '10001' + '10101' + '10001' + '11111',
+  R: '00100' + '00100' + '11111' + '00100' + '00100',
+  F: '00000' + '01010' + '00000' + '11111' + '00000',
+  D: '00001' + '00011' + '00111' + '01111' + '11111',
+  L: '10000' + '10000' + '10000' + '10000' + '11111',
+  B: '00101' + '01010' + '00101' + '01010' + '00101',
+}
+
 export const RK_COLOR_NAME: Record<string, string> = {
   U: 'white',
   R: 'red',
@@ -568,7 +579,7 @@ export function rkViewFor(face: string): string {
 }
 
 // ── 3D drawing ───────────────────────────────────────────────────────────────
-export type RkPoly = { pts: number[][]; fill: string; stroke: string; sw: number; z: number }
+export type RkPoly = { pts: number[][]; fill: string; stroke: string; sw: number; z: number; col?: string }
 
 const RK_PERP: Record<string, [RkVec, RkVec]> = {
   x: [[0, 1, 0], [0, 0, 1]],
@@ -642,7 +653,8 @@ export function rkBuildPolys(state: string[], viewName: string, anim?: RkAnim | 
             polys.push({
               pts: st.map((q) => [q[0], q[1]]),
               fill: RK_HEX[state[idx]] || '#444',
-              stroke: inLayer || inHi ? '#f2e30c' : 'rgba(8,10,40,0.7)',
+              col: state[idx],
+              stroke: inLayer || inHi ? '#ff86c0' : 'rgba(8,10,40,0.7)',
               sw: inLayer || inHi ? 2.4 : 0.8,
               z: bz + 0.02,
             })
@@ -2328,18 +2340,18 @@ export function rkSolvePro(start: string[]): { moves: string[]; plan: RkPlanStag
 /* @arkzen:web:script:end */
 
 /* @arkzen:web:style */
-/* Poster look: pale lime paper, one electric blue cube, near-black ink.
+/* Poster look: light pink paper, one electric blue cube, near-black ink, one hot pink accent (--rk-pop).
    Flat only. No shadows, no gradients, no glow. Motion is transform and opacity only. */
 :root {
-  --rk-frame: #e8efbd;
-  --rk-paper: #dce5a6;
-  --rk-paper-2: #c8d38c;
-  --rk-paper-lt: #e9efc4;
+  --rk-frame: #fbe6ef;
+  --rk-paper: #f8d7e6;
+  --rk-paper-2: #ebbad2;
+  --rk-paper-lt: #fdeef4;
   --rk-ink: #121212;
-  --rk-ink-2: #3d4423;
+  --rk-ink-2: #4a2640;
   --rk-blue: #2442f5;
   --rk-blue-deep: #1a32d6;
-  --rk-yellow: #f2e30c;
+  --rk-pop: #ff4f9f;
   --rk-white: #f6f7f9;
   --rk-warn: #a3200f;
   --rk-line: rgba(18, 18, 18, 0.28);
@@ -2477,7 +2489,7 @@ html, body { background: var(--rk-frame); }
 .rk-face-row.is-done .rk-face-name { color: var(--rk-ink-2); }
 .rk-face-name { font-weight: 600; }
 .rk-face-state { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; }
-.rk-face-row.is-now .rk-face-state { color: var(--rk-yellow); }
+.rk-face-row.is-now .rk-face-state { color: var(--rk-pop); }
 .rk-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; width: 30px; height: 30px; padding: 2px; background: var(--rk-blue-deep); border-radius: 4px; }
 .rk-mini i { display: block; border-radius: 1px; background: rgba(8, 10, 40, 0.5); }
 .rk-mini.is-dim { opacity: 0.6; }
@@ -2498,9 +2510,9 @@ html, body { background: var(--rk-frame); }
   border: 2px solid var(--rk-rim); border-radius: 5px; background: var(--rk-paper-2); color: rgba(18, 18, 18, 0.6); cursor: pointer;
 }
 span.rk-st { cursor: default; }
-.rk-st.is-empty { background: repeating-linear-gradient(45deg, #c8d38c, #c8d38c 4px, #dce5a6 4px, #dce5a6 8px); }
+.rk-st.is-empty { background: repeating-linear-gradient(45deg, var(--rk-paper-2), var(--rk-paper-2) 4px, var(--rk-paper) 4px, var(--rk-paper) 8px); }
 .rk-st.is-center { cursor: not-allowed; }
-.rk-st.is-sibling { border-color: var(--rk-yellow); box-shadow: 0 0 0 2px var(--rk-ink), 0 0 0 4px var(--rk-yellow); z-index: 1; }
+.rk-st.is-sibling { border-color: var(--rk-pop); box-shadow: 0 0 0 2px var(--rk-ink), 0 0 0 4px var(--rk-pop); z-index: 1; }
 .rk-st.is-selected { border-color: var(--rk-white); box-shadow: 0 0 0 3px var(--rk-ink), 0 0 0 5px var(--rk-white); z-index: 2; }
 .rk-st.is-swap { border-color: var(--rk-white); box-shadow: 0 0 0 3px #ff9a2e, 0 0 0 5px var(--rk-white); z-index: 2; }
 .rk-st.is-bad { border-color: #ff8a70; border-style: dashed; }
@@ -2519,14 +2531,14 @@ span.rk-st { cursor: default; }
 .rk-pal.is-on { border-color: var(--rk-ink); background: var(--rk-paper-lt); }
 .rk-pal-sw { width: 38px; height: 38px; border: 2px solid var(--rk-rim); border-radius: 9px; }
 .rk-pal-n { padding: 0 6px; border-radius: 4px; font-size: 13px; font-weight: 600; color: var(--rk-ink-2); }
-.rk-pal.is-off .rk-pal-n { background: var(--rk-ink); color: var(--rk-yellow); }
+.rk-pal.is-off .rk-pal-n { background: var(--rk-ink); color: var(--rk-pop); }
 .rk-piece { min-height: 48px; }
 .rk-piece-line { margin: 0 0 2px; }
 .rk-verdict { margin: 14px 0; padding: 14px 16px; border-radius: var(--rk-radius); }
 .rk-verdict .rk-p { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-weight: 600; }
 .rk-verdict .rk-note { margin: 6px 0 0; color: inherit; }
 .rk-verdict.is-ok { background: var(--rk-blue); color: var(--rk-white); }
-.rk-verdict.is-warn { background: var(--rk-ink); color: var(--rk-yellow); }
+.rk-verdict.is-warn { background: var(--rk-ink); color: var(--rk-pop); }
 .rk-rescan { margin: 14px 0 6px; }
 
 .rk-modes { display: grid; margin: 18px 0 12px; border-top: 2px solid var(--rk-ink); }
@@ -2565,14 +2577,14 @@ span.rk-st { cursor: default; }
 .rk-tok { display: inline-flex; align-items: baseline; font-family: 'Pixelify Sans', ui-monospace, Menlo, monospace; font-weight: 700; }
 .rk-tok-f { font-size: 1em; }
 .rk-tok-m { font-size: 0.85em; margin-left: 2px; }
-.rk-big .rk-tok { padding: 10px 22px 6px; border-radius: 12px; background: var(--rk-yellow); color: var(--rk-ink); font-size: 64px; line-height: 1; }
+.rk-big .rk-tok { padding: 10px 22px 6px; border: 2px solid var(--rk-ink); border-radius: 12px; background: var(--rk-pop); color: var(--rk-ink); font-size: 64px; line-height: 1; }
 .rk-controls { margin-top: 12px; }
 .rk-speed { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; }
 .rk-speed select { min-height: 44px; padding: 0 12px; border: 2px solid var(--rk-ink); border-radius: var(--rk-radius); background: var(--rk-paper-lt); color: var(--rk-ink); font: inherit; font-weight: 500; }
 .rk-moves { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .rk-mv { min-width: 48px; min-height: 44px; padding: 0 8px; border: 2px solid var(--rk-ink); border-radius: 8px; background: transparent; color: var(--rk-ink); font-size: 17px; cursor: pointer; }
 .rk-mv.is-past { border-color: transparent; background: var(--rk-paper-2); color: var(--rk-ink-2); }
-.rk-mv.is-now { background: var(--rk-ink); color: var(--rk-yellow); }
+.rk-mv.is-now { background: var(--rk-ink); color: var(--rk-pop); }
 .rk-details { margin-top: 8px; padding: 12px 0; border-top: 1px solid var(--rk-line); }
 .rk-details summary { min-height: 32px; font-weight: 600; cursor: pointer; }
 .rk-details .rk-net { margin-top: 10px; }
@@ -2621,7 +2633,7 @@ import {
   RotateCcw, ScanLine, Eraser, ArrowLeftRight, Paintbrush, Search, Ban,
 } from 'lucide-react'
 import {
-  RK_FACES, RK_HEX, RK_COLOR_NAME, RK_FACE_NAME, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SIBLINGS,
+  RK_FACES, RK_HEX, RK_STICKER_BITS, RK_COLOR_NAME, RK_FACE_NAME, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SIBLINGS,
   RK_VIEWS, RK_SOLVER_SRC,
   rkApplyMove, rkApplyMoves, rkSolvedState, rkIsSolved, rkAnalyze, rkPieceLabel, rkPieceKind,
   rkIsCenter, rkClassify, rkClassifyFace, rkAnchorMeans, rkNearestFace, rkRgbToLab, rkNominalFace,
@@ -2998,15 +3010,15 @@ export const RK_HERO_SCHEMES: Record<string, string[]> = {
   k: ['#121212', '#f6f7f9'],
   w: ['#f6f7f9', '#121212'],
   b: ['#4a82ff', '#f6f7f9'],
-  y: ['#f2e30c', '#121212'],
-  l: ['#dce5a6', '#121212'],
+  p: ['#ff4f9f', '#121212'],
+  l: ['#f8d7e6', '#121212'],
 }
 
 // Each tile is a scheme letter plus a bitmap number.
 export const RK_HERO_FACES: Record<string, string[]> = {
-  top: ['l5', 'k4', 'b9', 'l5', 'w0', 'b2', 'k7', 'k9', 'y3'],
+  top: ['l5', 'k4', 'b9', 'l5', 'w0', 'b2', 'k7', 'k9', 'p3'],
   left: ['k5', 'b7', 'w9', 'w1', 'b8', 'w3', 'k5', 'b4', 'w6'],
-  right: ['y9', 'y5', 'y7', 'k5', 'y1', 'k6', 'y5', 'k8', 'y4'],
+  right: ['p9', 'p5', 'p7', 'k5', 'p1', 'k6', 'p5', 'k8', 'p4'],
 }
 
 export const RkHeroCube = ({ size = 260 }: { size?: number }) => {
@@ -3105,8 +3117,8 @@ export const RkCubeNet = ({
 // ── canvas cube with the turning layer ───────────────────────────────────────
 
 export const RkCube3D = ({
-  state, move, animate = true, size = 300, label,
-}: { state: string[]; move?: string | null; animate?: boolean; size?: number; label: string }) => {
+  state, move, animate = true, size = 300, label, art = true,
+}: { state: string[]; move?: string | null; animate?: boolean; size?: number; label: string; art?: boolean }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -3142,6 +3154,26 @@ export const RkCube3D = ({
         ctx.lineWidth = p.sw
         ctx.strokeStyle = p.stroke
         ctx.stroke()
+        const bits = art && p.col && p.pts.length === 4 ? RK_STICKER_BITS[p.col] : ''
+        if (bits) {
+          const c = p.pts.map((q) => [size / 2 + q[0] * scale, size / 2 + q[1] * scale + size * 0.02])
+          const at = (s: number, t: number) => [
+            (1 - s) * (1 - t) * c[0][0] + s * (1 - t) * c[1][0] + s * t * c[2][0] + (1 - s) * t * c[3][0],
+            (1 - s) * (1 - t) * c[0][1] + s * (1 - t) * c[1][1] + s * t * c[2][1] + (1 - s) * t * c[3][1],
+          ]
+          const m = 0.14
+          const cs = (1 - 2 * m) / 5
+          ctx.beginPath()
+          for (let j = 0; j < 25; j++) {
+            if (bits.charAt(j) !== '1') continue
+            const s0 = m + (j % 5) * cs
+            const t0 = m + Math.floor(j / 5) * cs
+            const a = at(s0, t0), b = at(s0 + cs, t0), d = at(s0 + cs, t0 + cs), e = at(s0, t0 + cs)
+            ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(d[0], d[1]); ctx.lineTo(e[0], e[1]); ctx.closePath()
+          }
+          ctx.fillStyle = 'rgba(18, 18, 18, 0.78)'
+          ctx.fill()
+        }
       }
     }
 

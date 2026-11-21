@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — PostController
 // Tatemono: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:55:54.569495Z
+// Generated: 2026-11-21T15:25:57.589571Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Kotoba;

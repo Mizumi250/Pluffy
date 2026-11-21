@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — WorksSection [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:55:56.557Z
+// Generated: 2026-11-21T15:25:59.420Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -2,20 +2,20 @@
 // ARKZEN GENERATED COMPONENT — RkApp [React+Vite]
 // Source: @arkzen:components (rubik-solver)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T09:33:10.114Z
+// Generated: 2026-11-21T15:26:08.169Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { RK_BAD_SOLUTION_MSG, RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_MODE_OPTIONS, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolutionWorks, rkSolveBeginner, rkSolvePro, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
+import { RK_BAD_SOLUTION_MSG, RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_MODE_OPTIONS, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STICKER_BITS, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolutionWorks, rkSolveBeginner, rkSolvePro, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
 import { ArrowLeftRight, Ban, Camera, Check, ChevronLeft, ChevronRight, Copy, Eraser, Lock, Paintbrush, Pause, Play, RotateCcw, ScanLine, Search, Upload } from 'lucide-react'
 import { create } from 'zustand'
 import type { RkMode, RkPlanStage, RkPlanPart, RkLab, RkReport, RkPoly, RkStage, RkSolveStatus, RkTool, RkStoreState, RkCamState } from '@/arkzen/generated/rubik-solver.scripts'
 import { useRkSolver, useRkStore } from './hooks'
-import { RkGlyph } from './RkGlyph'
 import { RkReviewStage } from './RkReviewStage'
 import { RkScanStage } from './RkScanStage'
 import { RkSolveStage } from './RkSolveStage'
+import { RkTally } from './RkTally'
 
 export const RkApp = () => {
   const stage = useRkStore((s) => s.stage)
@@ -29,7 +29,7 @@ export const RkApp = () => {
       const link = document.createElement('link')
       link.id = 'rk-fonts'
       link.rel = 'stylesheet'
-      link.href = 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap'
+      link.href = 'https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Poppins:wght@400;500;600;700&display=swap'
       document.head.appendChild(link)
     }
     const saved = rkLoadLocal()
@@ -48,21 +48,15 @@ export const RkApp = () => {
   }, [])
 
   const tabs: { id: RkStage; label: string; enabled: boolean }[] = [
-    { id: 'scan', label: 'Scan', enabled: true },
-    { id: 'review', label: 'Check', enabled: true },
-    { id: 'solve', label: 'Solve', enabled: !!solution },
+    { id: 'scan', label: 'scan', enabled: true },
+    { id: 'review', label: 'check', enabled: true },
+    { id: 'solve', label: 'solve', enabled: !!solution },
   ]
 
   return (
     <div className="rk-app">
       <header className="rk-top">
-        <div className="rk-brand">
-          <RkGlyph />
-          <div>
-            <p className="rk-brand-name">Cube solver</p>
-            <p className="rk-brand-sub">Scan six faces, fix misreads, follow the moves.</p>
-          </div>
-        </div>
+        <RkTally />
         <nav className="rk-tabs" aria-label="Steps">
           {tabs.map((t, i) => (
             <button
@@ -83,7 +77,9 @@ export const RkApp = () => {
         {stage === 'solve' ? <RkSolveStage /> : null}
       </main>
       <footer className="rk-foot">
-        <p>The solver runs in your browser and uses no AI. Camera frames are never uploaded.</p>
+        <p className="rk-foot-title">Cube solver.</p>
+        <p className="rk-foot-sub">scan six faces, fix misreads, follow the moves.</p>
+        <p className="rk-foot-note">The solver runs in your browser and uses no AI. Camera frames are never uploaded.</p>
       </footer>
     </div>
   )

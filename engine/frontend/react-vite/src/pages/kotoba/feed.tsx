@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — kotoba/feed [React+Vite]
 // Layout: +auth:shell | Auth: true | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-11-12T01:55:52.169Z
+// Generated: 2026-11-21T15:25:56.773Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

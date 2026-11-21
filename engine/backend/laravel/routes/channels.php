@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Broadcast;
 // DO NOT EDIT DIRECTLY. Arkzen manages this file.
 // ============================================================
 
-
 // Module: body-mail-notification
 Broadcast::channel('body-mail-notification.{id}', function ($user, $id = null) {
     return (int) $user->id === (int) $id;
@@ -79,8 +78,3 @@ Broadcast::channel('queue-flow.{queueId}', function () {
     return true;
 });
 
-// Module: shikaku
-Broadcast::channel('shikaku.project.{id}', function ($user, $id = null) {
-    if (!$user) return false;
-    return ['id' => $user->id, 'name' => $user->name];
-});

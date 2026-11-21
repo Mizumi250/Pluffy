@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Note
 // Tatemono: rust-backend-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:56:04.246137Z
+// Generated: 2026-11-21T15:26:08.684688Z
 // ============================================================
 
 namespace App\Models\Arkzen\RustBackendTest;

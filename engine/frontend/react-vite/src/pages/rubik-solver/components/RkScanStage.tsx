@@ -2,17 +2,20 @@
 // ARKZEN GENERATED COMPONENT — RkScanStage [React+Vite]
 // Source: @arkzen:components (rubik-solver)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T09:33:10.106Z
+// Generated: 2026-11-21T15:26:08.163Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { RK_BAD_SOLUTION_MSG, RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_MODE_OPTIONS, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolutionWorks, rkSolveBeginner, rkSolvePro, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
+import { RK_BAD_SOLUTION_MSG, RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_MODE_OPTIONS, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STICKER_BITS, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolutionWorks, rkSolveBeginner, rkSolvePro, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
 import { ArrowLeftRight, Ban, Camera, Check, ChevronLeft, ChevronRight, Copy, Eraser, Lock, Paintbrush, Pause, Play, RotateCcw, ScanLine, Search, Upload } from 'lucide-react'
 import { create } from 'zustand'
 import type { RkMode, RkPlanStage, RkPlanPart, RkLab, RkReport, RkPoly, RkStage, RkSolveStatus, RkTool, RkStoreState, RkCamState } from '@/arkzen/generated/rubik-solver.scripts'
 import { useRkCamera, useRkInterval, useRkStore } from './hooks'
+import { RkFrame } from './RkFrame'
+import { RkHeroCube } from './RkHeroCube'
 import { RkMiniFace } from './RkMiniFace'
+import { RkRule } from './RkRule'
 
 export const RkScanStage = () => {
   const scanIndex = useRkStore((s) => s.scanIndex)
@@ -158,6 +161,7 @@ export const RkScanStage = () => {
   return (
     <div className="rk-scan">
       <section className="rk-viewer-wrap" aria-label="Camera">
+        <RkFrame>
         <div className={'rk-viewer' + (flash ? ' is-flash' : '')}>
           <video ref={videoRef} className="rk-video" playsInline muted />
           <canvas ref={canvasRef} className="rk-hidden" />
@@ -172,6 +176,7 @@ export const RkScanStage = () => {
             <div className="rk-viewer-empty">
               {camState === 'starting' ? <p className="rk-p">Starting the camera...</p> : (
                 <>
+                  <RkHeroCube size={260} />
                   <button type="button" className="rk-btn rk-btn-primary" onClick={() => startCam(facing)}>
                     <Camera size={18} aria-hidden="true" /> Turn on camera
                   </button>
@@ -181,7 +186,8 @@ export const RkScanStage = () => {
             </div>
           ) : null}
         </div>
-        <div className="rk-meter" aria-hidden="true"><span style={{ width: Math.round(hold * 100) + '%' }} /></div>
+        </RkFrame>
+        <RkRule value={hold} />
         <p className="rk-status" role="status" aria-live="polite">
           {camOn ? (hint || 'Line the face up with the grid. Detection is automatic.') : 'Camera is off.'}
         </p>

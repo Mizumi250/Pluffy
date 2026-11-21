@@ -1,0 +1,29 @@
+// ============================================================
+// ARKZEN GENERATED COMPONENT — RkRule [React+Vite]
+// Source: @arkzen:components (rubik-solver)
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: 2026-11-21T15:26:07.882Z
+// ============================================================
+
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { RK_BAD_SOLUTION_MSG, RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_MODE_OPTIONS, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STICKER_BITS, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolutionWorks, rkSolveBeginner, rkSolvePro, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
+import { ArrowLeftRight, Ban, Camera, Check, ChevronLeft, ChevronRight, Copy, Eraser, Lock, Paintbrush, Pause, Play, RotateCcw, ScanLine, Search, Upload } from 'lucide-react'
+import { create } from 'zustand'
+import type { RkMode, RkPlanStage, RkPlanPart, RkLab, RkReport, RkPoly, RkStage, RkSolveStatus, RkTool, RkStoreState, RkCamState } from '@/arkzen/generated/rubik-solver.scripts'
+
+export const RkRule = ({ value, label }: { value: number; label?: string }) => {
+  const v = Math.max(0, Math.min(1, value))
+  if (label) {
+    return (
+      <div className="rk-rule" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(v * 100)}>
+        <span style={{ transform: 'scaleX(' + v + ')' }} />
+      </div>
+    )
+  }
+  return (
+    <div className="rk-rule" aria-hidden="true">
+      <span style={{ transform: 'scaleX(' + v + ')' }} />
+    </div>
+  )
+};

@@ -5,7 +5,7 @@
 // Tatemono: aspnet-test
 // Type: Custom Route Controller (no model/resource)
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:routes block in the tatemono instead.
-// Generated: 2026-11-12T01:55:33.568412Z
+// Generated: 2026-11-21T15:25:44.516313Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\AspnetTest;
