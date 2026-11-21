@@ -13,7 +13,7 @@
 
   0. **Optional, second tier:** if the repo has a `Library/` folder with a relevant reference for the UI task, use it to learn the owner's taste (Section 2C, Design Rule #2). This guideline and the tatemono index (Section 31) come first. Skip `Library/` silently if it is missing or has nothing relevant.
   1. **Always read Part A** (core rules, especially Sections 3D, 2D and 29).
-     **For all design, copy and sample data, follow Sections 2C and 2D on every task:** anti-AI-looking UI, real-looking data entries with Japanese (romaji), German, Russian, Indonesian or Korean names, and no em dashes.
+     **For all design, copy and sample data, follow Sections 2C and 2D on every task:** anti-AI-looking UI, real-looking data entries with Japanese (romaji), German, Russian, Indonesian or Korean names, and no em dashes. Then think through Section 2F (the Why Layer) for every element, state and behavior: it is necessary but never a ban and never a limit on creativity.
   1b. **Optional, if you can run shell commands:** if you are unsure of a block's shape or want boilerplate fast, `node mizumi.js block <tatemono> <block> --dry` prints a correct starting block, and `node mizumi.js new <name> --template=<id>` creates a tatemono. See Section 1H. This never replaces this document; it is a shortcut.
   2. Find your task in the table below and read only the sections listed.
   3. Section numbers are stable labels, not a sequence. The document is grouped into Parts, so numbers are not in numeric order (for example Section 18 sits in Part C beside the other backend blocks). "SECTION 8" always means the same section.
@@ -35,7 +35,7 @@
   | Login, register, protected pages | [4](#section-4--auth), [8](#section-8--arkzenapi) |
   | Social sign-in (Google, GitHub, Apple, ...) | [4](#section-4--auth), [4B](#section-4b--arkzenoauth-social-sign-in), [26B](#section-26b--frontend-data-fetching) |
   | Web pages, layouts, error pages, components | [19](#section-19--arkzenweblayoutname), [21](#section-21--arkzenwebpagename), [22](#️-section-22--weberror404--weberror500), [23](#section-23--arkzenwebcomponentsidentifier) |
-  | Styling, animation, scripts, assets | [2](#section-2--styling-policy), [2C](#section-2c--design-aesthetic--fallback-defaults-always-overrideable), [2D](#️-section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned), [2E](#section-2e--design-defaults-digest), [20](#section-20--arkzenwebstyle--arkzenwebstylename), [24](#section-24--arkzenwebanimation), [24C/D](#section-24cd--arkzenwebscript--arkzenwebscriptname), [25](#section-25--assets) |
+  | Styling, animation, scripts, assets | [2](#section-2--styling-policy), [2C](#section-2c--design-aesthetic--fallback-defaults-always-overrideable), [2D](#️-section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned), [2F](#section-2f--the-why-layer-necessary-never-banned), [2E](#section-2e--design-defaults-digest), [20](#section-20--arkzenwebstyle--arkzenwebstylename), [24](#section-24--arkzenwebanimation), [24C/D](#section-24cd--arkzenwebscript--arkzenwebscriptname), [25](#section-25--assets) |
   | Imports and calling the API from the frontend | [26](#section-26--available-imports), [26B](#section-26b--frontend-data-fetching) |
   | Mobile app (Expo / React Native) | [23B](#section-23b--expo--bare-rn-arkzenimportexpo--arkzenimportrn), [19B](#section-19b--arkzennativelayoutname-expo--bare-rn), [20B](#section-20b--native-styles), [21B](#section-21b--arkzennativepagename-expo--bare-rn), [22B](#section-22b--arkzennativeerror404--500-expo--bare-rn), [24B](#section-24b--native-animation-stack-split), [24E](#section-24e--native-scripts-stack-split) |
   | Lynx | [25L](#section-25l--lynx-blocks) |
@@ -57,6 +57,7 @@
     - [SECTION 2 - STYLING POLICY](#section-2--styling-policy)
     - [SECTION 2C - DESIGN AESTHETIC & FALLBACK (defaults, always overrideable)](#section-2c--design-aesthetic--fallback-defaults-always-overrideable)
     - [⚠️ SECTION 2D: ANTI-AI-LOOKING UI GUARDRAILS (avoid by default, never banned)](#️-section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned)
+    - [SECTION 2F - THE WHY LAYER (necessary, never banned)](#section-2f--the-why-layer-necessary-never-banned)
     - [SECTION 2E - DESIGN DEFAULTS DIGEST](#section-2e--design-defaults-digest)
     - [SECTION 3 - TATEMONO FILE RULES](#section-3--tatemono-file-rules)
     - [⚠️ SECTION 3D - DSL TAG FORMAT RULES (CRITICAL)](#️-section-3d--dsl-tag-format-rules-critical)
@@ -411,7 +412,7 @@
   - Before writing any new web UI, decide two things and let them drive the layout: **(a) a concept line**, one sentence about what this product is and how it should feel, and **(b) one signature device** that makes it unmistakable, such as an unusual grid, oversized cropped type, an index or table of contents as navigation, a strong asymmetric split, a hand-drawn element, or an unexpected reading order.
   - If a page could be swapped into another product unchanged, it is a template, so redesign it.
   - Typefaces: choose the display face and the text face for this product, from outside the overused list in Section 2D, with a defined type scale and real contrast of scale and weight.
-  - Uniqueness and story come before SaaS convention. Where SaaS conventions are necessary (sidebar, table, form, list-detail inside the working parts of an app), use them plainly and put the story and the signature device in the entry points: landing, home, portfolio, brand and empty states. Never trade clarity of a task for an idea.
+  - Uniqueness and story come before SaaS convention. Where SaaS conventions are necessary (sidebar, table, form, list-detail inside the working parts of an app), use them plainly and put the story and the signature device in the entry points: landing, home, portfolio, brand and empty states. Never trade clarity of a task for an idea. Familiar patterns still pass through the Why Layer (Section 2F): use them because you know why they fit this user and this task, not only because apps usually have them. This never limits the expressive entry points.
 
   Accessibility (contrast, readability, keyboard focus) always wins.
 
@@ -476,7 +477,7 @@
 
   ### Design requirements
 
-  - [ ] Every component must have a reason to exist
+  - [ ] Every component must have a reason to exist (any real reason counts: function, feeling, story, brand, art; the method is Section 2F)
   - [ ] Use hierarchy instead of decorating everything
   - [ ] Use consistent iconography
   - [ ] Choose typography according to the product's identity
@@ -708,6 +709,136 @@
 
   * * *
 
+## SECTION 2F - THE WHY LAYER (necessary, never banned)
+
+  **WHAT THIS IS:** A layer of thinking, not a style. It is not a ban list (Section 2D never bans) and not a requirement list (it demands no element, pattern or look). It makes exactly one thing absolutely necessary: **knowing why before building**. Every honest answer is allowed: "because the user must finish this task", "because it makes the brand feel tactile", "because this is an art piece". The only problem is having no answer at all, which means a pattern was copied because apps usually have it.
+
+  **SCOPE (read this twice):** Every example in this section is a sample. The lists of components, states, behaviors and questions here, and everywhere else in this guideline, are illustrations, and "etc." means everything: every element, state, interaction, flow, screen, piece of copy and piece of content, including ones never named in this document and ones that do not exist yet. Web, native, Lynx, desktop and game UI are all included. Never read a list as "only these".
+
+  **HOW IT FITS WITH THE REST (a layer on top, not a conflict):**
+  - Section 2C priority order is unchanged: the request, then the product's identity and the house preference, then the fallback. The Why Layer works inside every look and never picks or restricts the look.
+  - Awwwards level creativity (Design Rule #1) keeps the highest priority for taste and ambition. The Why Layer never asks for a smaller idea, only for an intentional one. If it ever seems to push toward a safer, flatter or more generic result, creativity wins, unless the Floor below would break.
+  - Section 2D's core principle already says every visual decision serves identity, hierarchy, usability or intended experience. The Why Layer is the method for checking that, and it is how "every component must have a reason to exist" gets answered.
+  - Authored, not templated: the concept line and the signature device are the Why answers for the whole product. The Why Layer carries the same habit down to every element.
+  - Accessibility (Sections 2C and 2D) still always wins.
+
+  **VALID REASONS (any one is enough, etc.):** functional (a user goal), informational (the user needs to know), emotional (a feeling), narrative (pacing, story), brand (identity, memorability), artistic (expression, craft, showing skill), playful (delight, surprise), expectation (the audience already expects it), etc. "Art for art's sake" is a real reason on a showcase, a portfolio or an experiment.
+
+  **TWO KINDS OF SCREEN (most products have both):**
+  - **Expressive** (landing, home, portfolio, brand site, campaign, game menu, empty state, experiment, etc.): experiment boldly. Unusual navigation, scrollytelling, WebGL, physics, odd cursors and other risks are welcome here when they carry the concept. The reason is experience, story, emotion, brand or craft, and a conscious reason is enough.
+  - **Working** (form, checkout, sign in, settings, table, dashboard, editor, etc.): clarity and speed are the experience. The reason is the user's task, what they expect and where they are. An unusual choice needs to make the task easier, not only different.
+  - Mixed products are expressive on the way in and clear where the work happens (Section 2C: story and signature device in the entry points). A pure showcase may be expressive everywhere. Say which it is in the concept line.
+  - Runway and grocery store: a bold outfit is right on a runway and wrong in the checkout aisle. Neither is banned. Know which one you are standing in.
+
+  **THE WHY LINE:** One sentence per non-trivial element, state or behavior (menu, dropdown, sidebar item, hover, tooltip, modal, cursor, transition, onboarding step, loading state, icon, field, badge, etc.), written in your own plan before the UI, like the concept line. Format: "[element] exists so that [who] can [do, feel or understand what] when [moment]." Function, feeling, story, brand and art all fit that sentence. It is for your reasoning only, never UI copy and not a code comment. Scale it to the stakes: a cursor effect on a portfolio needs one line, a checkout field needs the full question set below, a plain body paragraph needs no written line (the question is still asked silently). If the sentence cannot be written, rework or remove the element.
+
+  **THE FLOOR (the minimum so no user is ever lost, even in the boldest design; it limits no style):**
+  - [ ] The content can be read: text is legible and not covered or blocked by effects
+  - [ ] The user can work out how to navigate and scroll within seconds. Hidden or unusual navigation is welcome when the design itself teaches it
+  - [ ] The primary goal of the page can be reached (contact, buy, play, read, sign in, etc.)
+  - [ ] Keyboard focus and reduced motion are respected (Section 2D)
+  - [ ] The cost matches the value: effects do not make a simple page slow or make the machine struggle
+
+  Friction that is part of the intended experience is fine. Friction nobody intended (hunting for how to scroll, hover effects covering the text, a heavy page for a simple About) means the question was never asked.
+
+  **FRICTION CHECK (final self-check):** Intentional design guides the eye to what matters, keeps text readable and feels responsive. Unquestioned design makes the user hunt, hides what they are reading, or spends heavy effort on little value.
+
+  ### THE QUESTIONS
+
+  These are samples. Ask every other question the situation raises. A question not listed here is still a valid question, and "etc." in any group means all of it.
+
+  **A. Existence**
+  - [ ] Why is this here at all?
+  - [ ] What changes for the user (function, feeling, story) if it is removed? If nothing, remove it
+  - [ ] Is it here for the experience, or only because apps usually have it or to look finished?
+  - [ ] Who needs it and when? Does it need to be visible all the time?
+  - [ ] etc.
+
+  **B. The user and the moment**
+  - [ ] Who is this user: first time, returning, rushed, expert, on a phone, etc.?
+  - [ ] What are they trying to do or feel right now? What did they just do? What comes next?
+  - [ ] What do they already know, and what do they expect to happen?
+  - [ ] What is their attention and emotional state here (calm, stressed, mid-task, browsing, etc.)?
+  - [ ] etc.
+
+  **C. Relationships**
+  - [ ] How does this relate to the elements around it, the page and the whole flow?
+  - [ ] Is the same information already on screen? Show each fact once, in the best place, unless the repetition is the point (rhythm, emphasis, a deliberate echo)
+  - [ ] Does it duplicate, contradict or compete with another element for attention?
+  - [ ] Could grouping or reorganizing make it more meaningful (identity as a workspace, related actions together, etc.)?
+  - [ ] Is there one clear primary action per area?
+  - [ ] etc.
+
+  **D. Signals and meaning**
+  - [ ] What does this signal to the user: icon, label, color, position, direction, motion, sound, etc.?
+  - [ ] Does the signal match what actually happens? In working screens a first-time user should be able to predict the result. In expressive work an unexpected signal is fine when surprise is the point
+  - [ ] Does the label say the outcome, not only the category?
+  - [ ] Is the same thing represented the same way everywhere in the product?
+  - [ ] etc.
+
+  **E. Context and environment**
+  - [ ] Does the element's behavior depend on where it sits (top, bottom, edge, corner, scroll position, etc.)?
+  - [ ] Does it adapt when space, viewport or device changes (collision with an edge, small screen, touch, keyboard only, no hover, etc.)?
+  - [ ] Does it survive the extremes: very long text, no data, thousands of items, slow network, offline, etc.?
+  - [ ] etc.
+
+  **F. Information**
+  - [ ] What is the most important piece of information here? Is it seen first?
+  - [ ] Does the user need this data, or does the system already know it?
+  - [ ] What will the user do with this data? If nothing, consider not showing it
+  - [ ] Can detail appear on demand (preview, hover, expand, etc.) so the user can decide before committing to a click?
+  - [ ] Is it shown at the moment it is useful, not earlier or later?
+  - [ ] etc.
+
+  **G. Complexity (Tesler's law)**
+  - [ ] Complexity cannot be removed, only moved. Who carries it here: the user or the system?
+  - [ ] Can the system infer, default, remember, derive or pre-fill instead of asking?
+  - [ ] Can a question wait until the moment it is actually needed?
+  - [ ] Is this step asking for something the product truly requires, or something merely nice to have?
+  - [ ] Does moving the complexity to the system shorten the user's path without hiding something they must control?
+  - [ ] etc.
+
+  **H. Onboarding, tours, help text, hints, etc.**
+  - [ ] Will users actually read this? Most skip tours and long intros
+  - [ ] Can the interface teach itself instead (clear labels, good defaults, an empty state that shows the first action, etc.)?
+  - [ ] If it is skippable and rarely read, a blank is often better than a tour
+  - [ ] If the product needs important data up front, let onboarding collect that data instead of only explaining the app
+  - [ ] Does it exist to help, or only to look thorough? If it stays, it can still be playful and brand-led instead of a generic tour
+  - [ ] etc.
+
+  **I. States and feedback**
+  - [ ] For every loading, skeleton, spinner, optimistic, empty, error, success and disabled state (etc.): why this one?
+  - [ ] How long is the wait, what does the user need to know, what can they do meanwhile?
+  - [ ] Does a skeleton match the real layout, and does instant content skip it?
+  - [ ] Does the empty state say what to do next? Does the error say what happened and how to fix it?
+  - [ ] etc.
+
+  **J. Interaction details (hover, focus, animation, sound, cursor, scroll, etc.)**
+  - [ ] What does this tell or make the user feel that they did not already know or feel?
+  - [ ] Does the same information exist for touch and keyboard users?
+  - [ ] Does motion explain a change (where something came from, where it went) or carry the concept, instead of only decorating?
+  - [ ] Could hover reveal the most useful data about the destination so the user can decide faster?
+  - [ ] etc.
+
+  **K. The whole product**
+  - [ ] What is the purpose of this entire product, and the one thing users come to do or feel?
+  - [ ] Is it a purpose-driven product (business, brand, product, launch) or a showcase (portfolio, art, experiment)? Decide how much function each choice must carry from that
+  - [ ] How does this screen serve the purpose, and how does the design express the product's tone?
+  - [ ] What would make a user leave (friction, confusion, mistrust, ugliness, etc.)? What makes them stay (value fast, clarity, trust, delight, etc.)?
+  - [ ] Swap test for function: could this screen belong to a different product unchanged?
+  - [ ] etc.
+
+  **L. Final review (run before finalizing)**
+  - [ ] Walk the screen as the user for five seconds: where do they look, where do they hesitate, what is unclear?
+  - [ ] List what is ugly, redundant or unexplained. Fix or remove each item
+  - [ ] Every why line has an answer that does not rest only on "because it is common"
+  - [ ] The boldest ideas were kept, not sanded down, and each one has a conscious reason
+  - [ ] etc.
+
+  **Reminder:** everything above is a sample. "etc." means all, including every component, state, behavior and question not mentioned. The rule is the habit of asking why, not the examples used to show it.
+
+  * * *
+
 ## SECTION 2E - DESIGN DEFAULTS DIGEST (short form of 2C and 2D, for @arkzen:web:page, @arkzen:web:components, @arkzen:web:layout, @arkzen:web:style, @arkzen:native:page, @arkzen:native:components, @arkzen:native:layout, @arkzen:native:style)
 
   Short version for tools that only send a small excerpt. Sections 2C and 2D are the full rules and win on any difference.
@@ -717,7 +848,8 @@
   - Fallback look: near-black (`#111111`) and near-white (`#f5f5f5`) with neutral grays. Never pure `#000` or `#fff`, no cream, no accent color, no shadows, gradients, glass or glow, square corners or one small radius.
   - Authored, not templated: write a concept line (one sentence) and pick one signature device before writing the UI. Never reuse the centered hero, three feature cards and footer pattern.
   - Never use indigo or purple-blue gradients, or emoji as icons (Section 2D). Avoid the cream or warm off-white plus rust accent pairing unless it is the brand's own. Avoid gradient fills on avatars and icon badges unless something needs them; flat is the default.
-  - Inside working app screens use plain familiar patterns. Put the story in landing, home, portfolio and empty states.
+  - Inside working app screens use plain familiar patterns, and know why each one fits. Put the story in landing, home, portfolio and empty states, and experiment boldly there.
+  - Why Layer (Section 2F, necessary, never banned, never a limit on creativity): before building any element, state or behavior (the examples in this guideline are samples, "etc." means everything, including what is not named), know why it is there. Any real reason counts: function, feeling, story, brand, art. Write one why line per non-trivial element: "[element] exists so [who] can [do, feel or understand what] when [moment]". Ask what the user expects, how it relates to what is around it and to the screen, whether the info is already shown, who carries the complexity (Tesler), and whether anyone will use it. Expressive screens (landing, portfolio, brand, showcase) may experiment freely, and Awwwards level ambition keeps priority. Working screens (forms, checkout, dashboards) favor clarity. Only "no reason at all" is a problem. Floor: text readable, navigation findable, primary goal reachable, effects proportional to the page's value.
   - Choose the product's own fonts, not Inter, Roboto, Open Sans, Lato, Montserrat, Arial or Syne. Defined type scale, body 16px or more, lines 65ch to 75ch.
   - Real-looking sample data with Japanese (romaji), German, Russian, Indonesian or Korean names. No em dashes in copy. Hand-authored SVG favicon for new tatemonos.
   - Every hover effect has a keyboard focus equivalent. Animate only transform and opacity, and only with a purpose.
@@ -1179,6 +1311,10 @@
 
   **WEB**
   - [ ] Design checked against Section 2D: no pattern used only because it looks modern or AI-generated; inspiration from awwwards.com when needed (Section 2C)
+  - [ ] Why Layer applied (Section 2F): every non-trivial element, state and behavior (the lists are samples, etc. means everything) has a real reason (function, feeling, story, brand or art), and anything with no reason was reworked or removed. This never shrinks creative ambition
+  - [ ] Expressive screens kept their boldness; working screens favor clarity; the Floor holds (text readable, navigation findable, primary goal reachable, effects proportional to value)
+  - [ ] No information shown twice by accident; no element signals something different from what it does, unless surprise is the intended experience on an expressive screen
+  - [ ] Loading, empty, error, onboarding, hover and other interaction states each have a reason tied to the user's experience, not only to looking complete
   - [ ] If `Library/` has a relevant reference, it informed the taste without being copied verbatim; the guideline and tatemono index still came first (Section 2C, Design Rule #2)
   - [ ] Look chosen by priority: request first, then the product's identity and the house preference, then the near-monotone fallback only if nothing else decides (Section 2C)
   - [ ] If the request named a product: the recognition check passed (someone who knows it would recognize the layout, navigation and component shapes in two seconds) (Section 2C, Design Rule #3 step 7)
