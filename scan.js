@@ -13,6 +13,7 @@
  */
 
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { createRequire } from 'node:module'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -45,6 +46,7 @@ const YAML_ONLY_TAGS = new Set([
   'events',
   'notifications',
   'mail',
+  'oauth',
 ])
 const BODY_SEPARATOR_TAGS = new Set(['endpoint', 'handler', 'middleware', 'policy'])
 
@@ -53,6 +55,12 @@ function isYamlOnlyTag(tag) {
     YAML_ONLY_TAGS.has(tag) ||
     /^(database|api|realtime|events|notifications|mail):/.test(tag)
   )
+}
+
+// Unity blocks are YAML closed by a bare */ line. Only unity:scene:<name> also writes an
+// optional :end marker after it, which belongs to the block when present.
+function isBareClosedTag(tag) {
+  return tag.startsWith('unity:')
 }
 
 function isInline(tag) {
@@ -85,7 +93,7 @@ function splitBlocks(src) {
     }
 
     let end
-    if (isYamlOnlyTag(tag)) {
+    if (isYamlOnlyTag(tag) || isBareClosedTag(tag)) {
       let closeLine = lineIndex + 1
       while (closeLine < lines.length && lines[closeLine].trim() !== '*/') closeLine += 1
       if (closeLine === lines.length) {
@@ -98,6 +106,13 @@ function splitBlocks(src) {
         end += lines[i].length + 1
       }
       end -= 1
+      if (isBareClosedTag(tag)) {
+        let next = closeLine + 1
+        while (next < lines.length && lines[next].trim() === '') next += 1
+        if (next < lines.length && lines[next].trim() === `/* @arkzen:${tag}:end */`) {
+          for (let i = closeLine + 1; i <= next; i += 1) end += lines[i].length + 1
+        }
+      }
     } else {
       const closeMarker = `/* @arkzen:${tag}:end */`
       const closeStart = src.indexOf(closeMarker, start + line.length)
@@ -188,8 +203,33 @@ function getValidatorLocation() {
   }
 }
 
+// The engine copies engine/shared/arkzen/engine-core into every stack's arkzen/core/ when it starts,
+// so the copy checked into a stack folder can be older than the shared source (it then rejects newer
+// blocks such as @arkzen:oauth and the frame blocks). Validate with the shared source: copy it next
+// to the stack's node_modules for the scan, and remove the copy when the scan ends.
+const SHARED_CORE = path.join(SCRIPT_DIR, 'engine', 'shared', 'arkzen', 'engine-core')
+
+function useSharedCore(packageDir) {
+  const validator = path.join(SHARED_CORE, 'validator.ts')
+  if (!fs.existsSync(validator)) return null
+  const target = path.join(packageDir, '.scan-core')
+  fs.rmSync(target, { recursive: true, force: true })
+  fs.mkdirSync(target, { recursive: true })
+  for (const file of fs.readdirSync(SHARED_CORE)) {
+    if (file.endsWith('.ts')) fs.copyFileSync(path.join(SHARED_CORE, file), path.join(target, file))
+  }
+  process.on('exit', () => fs.rmSync(target, { recursive: true, force: true }))
+  return path.join(target, 'validator.ts')
+}
+
 async function loadValidator() {
-  const { activeStack, validationDir, packageDir, validatorPath } = getValidatorLocation()
+  const { activeStack, validationDir, packageDir, validatorPath: stackValidatorPath } = getValidatorLocation()
+  let validatorPath = stackValidatorPath
+  try {
+    validatorPath = useSharedCore(packageDir) || stackValidatorPath
+  } catch (error) {
+    console.warn(`Could not use the shared engine core (${error instanceof Error ? error.message : String(error)}); using the ${activeStack} copy.`)
+  }
   if (!fs.existsSync(validatorPath)) {
     throw new Error(`No validator found for active web stack "${activeStack}": ${validatorPath}`)
   }
@@ -238,6 +278,45 @@ function validateWithEngine(validateTatemono, filePath, validationDir) {
     console.log = originalLog
     console.error = originalError
   }
+}
+
+// Godot and Unity tatemonos have no web or native pages, so the web/native validator cannot judge
+// them. Their generators are the real validator: generating into a temp folder throws on any invalid
+// block. Returns null for tatemonos that are not games.
+async function validateGameTatemono(src, filePath) {
+  const godot = /^[ \t]*\/\*\s*@arkzen:godot:/m.test(src)
+  const unity = /^[ \t]*\/\*\s*@arkzen:unity:/m.test(src)
+  if (!godot && !unity) return null
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'pluffy-scan-game-'))
+  const originalLog = console.log
+  console.log = () => {}
+  try {
+    if (godot) {
+      const { generateGodotProject } = await import(pathToFileURL(path.join(SCRIPT_DIR, 'engine', 'game', 'godot', 'generator.js')).href)
+      generateGodotProject({ tatemonoPath: filePath, outputDir: out })
+    } else {
+      const { generateUnityProject } = await import(pathToFileURL(path.join(SCRIPT_DIR, 'engine', 'game', 'unity', 'generator.js')).href)
+      generateUnityProject({ tatemonoPath: filePath, outputDir: out })
+    }
+    return { valid: true, errors: [], warnings: [] }
+  } catch (error) {
+    return { valid: false, errors: [`${godot ? 'Godot' : 'Unity'} generator: ${error instanceof Error ? error.message : String(error)}`], warnings: [] }
+  } finally {
+    console.log = originalLog
+    fs.rmSync(out, { recursive: true, force: true })
+  }
+}
+
+// A tatemono written for another backend (cs, ts, py, java, go, rs) is reported as "inactive" when
+// arkzen.json points at Laravel. That is a choice of backend, not a mistake in the blocks, so it
+// is kept as a warning and the tatemono still goes into the training data.
+const INACTIVE_BACKEND = /has no :[a-z]+ variant for backend|inactive on /
+
+function withoutInactiveBackendErrors(result) {
+  const inactive = result.errors.filter(error => INACTIVE_BACKEND.test(error))
+  if (!inactive.length) return result
+  const errors = result.errors.filter(error => !INACTIVE_BACKEND.test(error))
+  return { ...result, valid: result.valid || errors.length === 0, errors, warnings: [...result.warnings, ...inactive] }
 }
 
 function getDescription(existing, name) {
@@ -300,11 +379,13 @@ async function main() {
     const filePath = path.join(TAT_DIR, name, 'core.tsx')
     const src = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n')
     const { blocks, problems } = splitBlocks(src)
-    const validation = validateWithEngine(
-      validator.validateTatemono,
-      filePath,
-      validator.validationDir
-    ).result
+    const validation = withoutInactiveBackendErrors(
+      (await validateGameTatemono(src, filePath)) ?? validateWithEngine(
+        validator.validateTatemono,
+        filePath,
+        validator.validationDir
+      ).result
+    )
     const meta = metaDescription(src)
     const description = getDescription(existingDesc, name).trim() || meta
     const estimatedTokens = estimateTokens(`${SYSTEM_PROMPT}\n${description}\n${src}`)
