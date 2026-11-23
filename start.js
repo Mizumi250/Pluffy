@@ -304,6 +304,11 @@ function checkSetup() {
       console.log('\n  ✗ Rust packages are missing. Run: node mizumi.js deps install rust\n')
       process.exit(1)
     }
+    const envFile = path.join(BACKEND_DIR, '.env')
+    if (!fs.existsSync(envFile) && fs.existsSync(path.join(BACKEND_DIR, '.env.example'))) {
+      fs.copyFileSync(path.join(BACKEND_DIR, '.env.example'), envFile)
+      console.log('  ✓ Created engine/backend/rust/.env from .env.example')
+    }
   } else {
   const artisan = path.join(BACKEND_DIR, 'artisan')
   if (!fs.existsSync(artisan)) {
