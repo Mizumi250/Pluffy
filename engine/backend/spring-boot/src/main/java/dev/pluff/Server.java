@@ -52,7 +52,20 @@ public class Server implements CommandLineRunner {
   @RestController
   @CrossOrigin(origins = "*", allowedHeaders = "*")
   public static class CatchAllController {
-    private static final String SECRET = Support.env("ARKZEN_ENGINE_SECRET", "arkzen-engine-secret");
+    // No built-in password. If ARKZEN_ENGINE_SECRET is not set, /arkzen/build and /arkzen/remove stay closed.
+    private static final String SECRET = Support.env("ARKZEN_ENGINE_SECRET", "");
+    static {
+      if (SECRET.isBlank()) {
+        System.err.println("[Pluff] ARKZEN_ENGINE_SECRET is not set. /arkzen/build and /arkzen/remove are closed until you set it in .env.");
+      }
+    }
+
+    private static boolean secretMatches(String provided) {
+      if (SECRET.isBlank() || provided == null) return false;
+      return java.security.MessageDigest.isEqual(
+          provided.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+          SECRET.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
     private static final List<String> METHODS = List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS");
 
     @RequestMapping(value = "/**", method = {
@@ -93,7 +106,7 @@ public class Server implements CommandLineRunner {
         return json(Map.of("engine", "1.0.0", "project", "expo", "modules", List.of()), 200);
       }
       if (!"POST".equals(method)) return json(Map.of("message", "Not Found"), 404);
-      if (!SECRET.equals(request.getHeader("x-arkzen-secret")))
+      if (!secretMatches(request.getHeader("x-arkzen-secret")))
         return json(Map.of("message", "Invalid engine secret."), 403);
       if (path.equals("/arkzen/build")) {
         Map<String, Object> result = Build.buildTatemono(body);
