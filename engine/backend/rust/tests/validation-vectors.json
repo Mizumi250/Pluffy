@@ -1,0 +1,960 @@
+[
+ {
+  "rule": "required",
+  "pass": true,
+  "value": "x"
+ },
+ {
+  "rule": "required",
+  "pass": false,
+  "value": ""
+ },
+ {
+  "rule": "required",
+  "pass": false
+ },
+ {
+  "rule": "required",
+  "pass": false,
+  "value": null
+ },
+ {
+  "rule": "required|nullable",
+  "pass": false,
+  "value": null
+ },
+ {
+  "rule": "nullable|string",
+  "pass": true,
+  "value": null
+ },
+ {
+  "rule": "nullable",
+  "pass": true
+ },
+ {
+  "rule": "sometimes|required",
+  "pass": true
+ },
+ {
+  "rule": "sometimes|required",
+  "pass": false,
+  "value": ""
+ },
+ {
+  "rule": "present",
+  "pass": false
+ },
+ {
+  "rule": "present",
+  "pass": true,
+  "value": null
+ },
+ {
+  "rule": "filled",
+  "pass": false,
+  "value": ""
+ },
+ {
+  "rule": "filled",
+  "pass": true,
+  "value": "x"
+ },
+ {
+  "rule": "filled",
+  "pass": true
+ },
+ {
+  "rule": "prohibited",
+  "pass": false,
+  "value": "x"
+ },
+ {
+  "rule": "prohibited",
+  "pass": true
+ },
+ {
+  "rule": "prohibited",
+  "pass": true,
+  "value": ""
+ },
+ {
+  "rule": "string",
+  "pass": true,
+  "value": "a"
+ },
+ {
+  "rule": "string",
+  "pass": false,
+  "value": 5
+ },
+ {
+  "rule": "integer",
+  "pass": true,
+  "value": 5
+ },
+ {
+  "rule": "integer",
+  "pass": true,
+  "value": "5"
+ },
+ {
+  "rule": "integer",
+  "pass": true,
+  "value": "-5"
+ },
+ {
+  "rule": "integer",
+  "pass": false,
+  "value": "5.5"
+ },
+ {
+  "rule": "integer",
+  "pass": false,
+  "value": 5.5
+ },
+ {
+  "rule": "integer",
+  "pass": false,
+  "value": true
+ },
+ {
+  "rule": "numeric",
+  "pass": true,
+  "value": 5
+ },
+ {
+  "rule": "numeric",
+  "pass": true,
+  "value": "5.5"
+ },
+ {
+  "rule": "numeric",
+  "pass": true,
+  "value": "-3"
+ },
+ {
+  "rule": "numeric",
+  "pass": false,
+  "value": "abc"
+ },
+ {
+  "rule": "numeric",
+  "pass": false,
+  "value": true
+ },
+ {
+  "rule": "boolean",
+  "pass": true,
+  "value": true
+ },
+ {
+  "rule": "boolean",
+  "pass": true,
+  "value": false
+ },
+ {
+  "rule": "boolean",
+  "pass": true,
+  "value": 1
+ },
+ {
+  "rule": "boolean",
+  "pass": true,
+  "value": 0
+ },
+ {
+  "rule": "boolean",
+  "pass": true,
+  "value": "1"
+ },
+ {
+  "rule": "boolean",
+  "pass": true,
+  "value": "0"
+ },
+ {
+  "rule": "boolean",
+  "pass": true,
+  "value": "true"
+ },
+ {
+  "rule": "boolean",
+  "pass": true,
+  "value": "false"
+ },
+ {
+  "rule": "boolean",
+  "pass": false,
+  "value": "yes"
+ },
+ {
+  "rule": "boolean",
+  "pass": false,
+  "value": 2
+ },
+ {
+  "rule": "accepted",
+  "pass": true,
+  "value": "yes"
+ },
+ {
+  "rule": "accepted",
+  "pass": true,
+  "value": "on"
+ },
+ {
+  "rule": "accepted",
+  "pass": true,
+  "value": 1
+ },
+ {
+  "rule": "accepted",
+  "pass": true,
+  "value": "1"
+ },
+ {
+  "rule": "accepted",
+  "pass": true,
+  "value": true
+ },
+ {
+  "rule": "accepted",
+  "pass": true,
+  "value": "true"
+ },
+ {
+  "rule": "accepted",
+  "pass": false,
+  "value": "no"
+ },
+ {
+  "rule": "accepted",
+  "pass": false,
+  "value": false
+ },
+ {
+  "rule": "accepted",
+  "pass": false,
+  "value": 0
+ },
+ {
+  "rule": "declined",
+  "pass": true,
+  "value": "no"
+ },
+ {
+  "rule": "declined",
+  "pass": true,
+  "value": "off"
+ },
+ {
+  "rule": "declined",
+  "pass": true,
+  "value": 0
+ },
+ {
+  "rule": "declined",
+  "pass": true,
+  "value": "0"
+ },
+ {
+  "rule": "declined",
+  "pass": true,
+  "value": false
+ },
+ {
+  "rule": "declined",
+  "pass": true,
+  "value": "false"
+ },
+ {
+  "rule": "declined",
+  "pass": false,
+  "value": "yes"
+ },
+ {
+  "rule": "declined",
+  "pass": false,
+  "value": true
+ },
+ {
+  "rule": "email",
+  "pass": true,
+  "value": "a@b.co"
+ },
+ {
+  "rule": "email",
+  "pass": false,
+  "value": "a@b"
+ },
+ {
+  "rule": "email",
+  "pass": false,
+  "value": "a b@c.co"
+ },
+ {
+  "rule": "url",
+  "pass": true,
+  "value": "https://example.com/x"
+ },
+ {
+  "rule": "url",
+  "pass": true,
+  "value": "mailto:a@b.co"
+ },
+ {
+  "rule": "url",
+  "pass": false,
+  "value": "example.com"
+ },
+ {
+  "rule": "url",
+  "pass": false,
+  "value": "http://"
+ },
+ {
+  "rule": "array",
+  "pass": true,
+  "value": [
+   1
+  ]
+ },
+ {
+  "rule": "array",
+  "pass": true,
+  "value": {
+   "a": 1
+  }
+ },
+ {
+  "rule": "array",
+  "pass": false,
+  "value": "x"
+ },
+ {
+  "rule": "date",
+  "pass": true,
+  "value": "2024-01-15"
+ },
+ {
+  "rule": "date",
+  "pass": true,
+  "value": "2024-01-15T10:30:00Z"
+ },
+ {
+  "rule": "date",
+  "pass": true,
+  "value": "2024-02-29"
+ },
+ {
+  "rule": "date",
+  "pass": false,
+  "value": "not a date"
+ },
+ {
+  "rule": "date",
+  "pass": false,
+  "value": "2024-13-40"
+ },
+ {
+  "rule": "json",
+  "pass": true,
+  "value": "{\"a\":1}"
+ },
+ {
+  "rule": "json",
+  "pass": false,
+  "value": "{bad"
+ },
+ {
+  "rule": "uuid",
+  "pass": true,
+  "value": "123e4567-e89b-12d3-a456-426614174000"
+ },
+ {
+  "rule": "uuid",
+  "pass": false,
+  "value": "123"
+ },
+ {
+  "rule": "alpha",
+  "pass": true,
+  "value": "abC"
+ },
+ {
+  "rule": "alpha",
+  "pass": false,
+  "value": "ab1"
+ },
+ {
+  "rule": "alpha_num",
+  "pass": true,
+  "value": "ab1"
+ },
+ {
+  "rule": "alpha_num",
+  "pass": false,
+  "value": "ab-1"
+ },
+ {
+  "rule": "alpha_dash",
+  "pass": true,
+  "value": "ab-1_x"
+ },
+ {
+  "rule": "alpha_dash",
+  "pass": false,
+  "value": "ab 1"
+ },
+ {
+  "rule": "ip",
+  "pass": true,
+  "value": "127.0.0.1"
+ },
+ {
+  "rule": "ip",
+  "pass": true,
+  "value": "::1"
+ },
+ {
+  "rule": "ip",
+  "pass": false,
+  "value": "999.1.1.1"
+ },
+ {
+  "rule": "ipv4",
+  "pass": true,
+  "value": "10.0.0.1"
+ },
+ {
+  "rule": "ipv4",
+  "pass": false,
+  "value": "::1"
+ },
+ {
+  "rule": "ipv6",
+  "pass": true,
+  "value": "::1"
+ },
+ {
+  "rule": "ipv6",
+  "pass": false,
+  "value": "10.0.0.1"
+ },
+ {
+  "rule": "lowercase",
+  "pass": true,
+  "value": "abc"
+ },
+ {
+  "rule": "lowercase",
+  "pass": false,
+  "value": "aBc"
+ },
+ {
+  "rule": "uppercase",
+  "pass": true,
+  "value": "ABC"
+ },
+ {
+  "rule": "uppercase",
+  "pass": false,
+  "value": "AbC"
+ },
+ {
+  "rule": "starts_with:ab,cd",
+  "pass": true,
+  "value": "abc"
+ },
+ {
+  "rule": "starts_with:ab,cd",
+  "pass": true,
+  "value": "cdx"
+ },
+ {
+  "rule": "starts_with:ab,cd",
+  "pass": false,
+  "value": "xyz"
+ },
+ {
+  "rule": "ends_with:ab,cd",
+  "pass": true,
+  "value": "xab"
+ },
+ {
+  "rule": "ends_with:ab,cd",
+  "pass": false,
+  "value": "xyz"
+ },
+ {
+  "rule": "doesnt_start_with:ab",
+  "pass": true,
+  "value": "xab"
+ },
+ {
+  "rule": "doesnt_start_with:ab",
+  "pass": false,
+  "value": "abx"
+ },
+ {
+  "rule": "doesnt_end_with:ab",
+  "pass": true,
+  "value": "abx"
+ },
+ {
+  "rule": "doesnt_end_with:ab",
+  "pass": false,
+  "value": "xab"
+ },
+ {
+  "rule": "decimal:2",
+  "pass": true,
+  "value": "1.50"
+ },
+ {
+  "rule": "decimal:2",
+  "pass": false,
+  "value": "1.5"
+ },
+ {
+  "rule": "decimal:1,2",
+  "pass": false,
+  "value": "1.234"
+ },
+ {
+  "rule": "decimal:1,2",
+  "pass": true,
+  "value": "1.23"
+ },
+ {
+  "rule": "digits:3",
+  "pass": true,
+  "value": "123"
+ },
+ {
+  "rule": "digits:3",
+  "pass": true,
+  "value": 123
+ },
+ {
+  "rule": "digits:3",
+  "pass": false,
+  "value": "12"
+ },
+ {
+  "rule": "digits:3",
+  "pass": false,
+  "value": "12a"
+ },
+ {
+  "rule": "min:3",
+  "pass": true,
+  "value": "abc"
+ },
+ {
+  "rule": "min:3",
+  "pass": false,
+  "value": "ab"
+ },
+ {
+  "rule": "max:3",
+  "pass": true,
+  "value": "abc"
+ },
+ {
+  "rule": "max:3",
+  "pass": false,
+  "value": "abcd"
+ },
+ {
+  "rule": "numeric|min:3",
+  "pass": true,
+  "value": "5"
+ },
+ {
+  "rule": "numeric|min:3",
+  "pass": false,
+  "value": "2"
+ },
+ {
+  "rule": "max:5",
+  "pass": false,
+  "value": 6
+ },
+ {
+  "rule": "max:5",
+  "pass": true,
+  "value": 5
+ },
+ {
+  "rule": "max:1",
+  "pass": false,
+  "value": [
+   1,
+   2
+  ]
+ },
+ {
+  "rule": "max:2",
+  "pass": true,
+  "value": [
+   1,
+   2
+  ]
+ },
+ {
+  "rule": "size:3",
+  "pass": true,
+  "value": "abc"
+ },
+ {
+  "rule": "size:3",
+  "pass": false,
+  "value": "ab"
+ },
+ {
+  "rule": "between:2,4",
+  "pass": true,
+  "value": "abc"
+ },
+ {
+  "rule": "between:2,4",
+  "pass": false,
+  "value": "a"
+ },
+ {
+  "rule": "between:2,4",
+  "pass": false,
+  "value": "abcde"
+ },
+ {
+  "rule": "gt:5",
+  "pass": true,
+  "value": 6
+ },
+ {
+  "rule": "gt:5",
+  "pass": false,
+  "value": 5
+ },
+ {
+  "rule": "gte:5",
+  "pass": true,
+  "value": 5
+ },
+ {
+  "rule": "gte:5",
+  "pass": false,
+  "value": 4
+ },
+ {
+  "rule": "lt:5",
+  "pass": true,
+  "value": 4
+ },
+ {
+  "rule": "lt:5",
+  "pass": false,
+  "value": 5
+ },
+ {
+  "rule": "lte:5",
+  "pass": true,
+  "value": 5
+ },
+ {
+  "rule": "lte:5",
+  "pass": false,
+  "value": 6
+ },
+ {
+  "rule": "gt:other",
+  "pass": true,
+  "value": 4,
+  "data": {
+   "other": 3
+  }
+ },
+ {
+  "rule": "gt:other",
+  "pass": false,
+  "value": 2,
+  "data": {
+   "other": 3
+  }
+ },
+ {
+  "rule": "lte:other",
+  "pass": true,
+  "value": 3,
+  "data": {
+   "other": 3
+  }
+ },
+ {
+  "rule": "in:a,b",
+  "pass": true,
+  "value": "a"
+ },
+ {
+  "rule": "in:a,b",
+  "pass": false,
+  "value": "c"
+ },
+ {
+  "rule": "in:1,2",
+  "pass": true,
+  "value": 1
+ },
+ {
+  "rule": "not_in:a,b",
+  "pass": true,
+  "value": "c"
+ },
+ {
+  "rule": "not_in:a,b",
+  "pass": false,
+  "value": "a"
+ },
+ {
+  "rule": "regex:/^a+$/",
+  "pass": true,
+  "value": "aaa"
+ },
+ {
+  "rule": "regex:/^a+$/",
+  "pass": false,
+  "value": "b"
+ },
+ {
+  "rule": "regex:/^a+$/i",
+  "pass": true,
+  "value": "AAA"
+ },
+ {
+  "rule": "not_regex:/^a+$/",
+  "pass": true,
+  "value": "b"
+ },
+ {
+  "rule": "not_regex:/^a+$/",
+  "pass": false,
+  "value": "aaa"
+ },
+ {
+  "rule": "confirmed",
+  "pass": true,
+  "value": "x",
+  "data": {
+   "field_confirmation": "x"
+  }
+ },
+ {
+  "rule": "confirmed",
+  "pass": false,
+  "value": "x",
+  "data": {
+   "field_confirmation": "y"
+  }
+ },
+ {
+  "rule": "confirmed",
+  "pass": false,
+  "value": "x"
+ },
+ {
+  "rule": "same:other",
+  "pass": true,
+  "value": "a",
+  "data": {
+   "other": "a"
+  }
+ },
+ {
+  "rule": "same:other",
+  "pass": false,
+  "value": "b",
+  "data": {
+   "other": "a"
+  }
+ },
+ {
+  "rule": "different:other",
+  "pass": true,
+  "value": "b",
+  "data": {
+   "other": "a"
+  }
+ },
+ {
+  "rule": "different:other",
+  "pass": false,
+  "value": "a",
+  "data": {
+   "other": "a"
+  }
+ },
+ {
+  "rule": "required_if:other,yes",
+  "pass": false,
+  "data": {
+   "other": "yes"
+  }
+ },
+ {
+  "rule": "required_if:other,yes",
+  "pass": true,
+  "data": {
+   "other": "no"
+  }
+ },
+ {
+  "rule": "required_if:other,yes",
+  "pass": true,
+  "value": "x",
+  "data": {
+   "other": "yes"
+  }
+ },
+ {
+  "rule": "required_unless:other,yes",
+  "pass": true,
+  "data": {
+   "other": "yes"
+  }
+ },
+ {
+  "rule": "required_unless:other,yes",
+  "pass": false,
+  "data": {
+   "other": "no"
+  }
+ },
+ {
+  "rule": "required_with:other",
+  "pass": false,
+  "data": {
+   "other": "x"
+  }
+ },
+ {
+  "rule": "required_with:other",
+  "pass": true
+ },
+ {
+  "rule": "required_with_all:a,b",
+  "pass": false,
+  "data": {
+   "a": 1,
+   "b": 2
+  }
+ },
+ {
+  "rule": "required_with_all:a,b",
+  "pass": true,
+  "data": {
+   "a": 1
+  }
+ },
+ {
+  "rule": "required_without:other",
+  "pass": false
+ },
+ {
+  "rule": "required_without:other",
+  "pass": true,
+  "data": {
+   "other": "x"
+  }
+ },
+ {
+  "rule": "required_without_all:a,b",
+  "pass": false
+ },
+ {
+  "rule": "required_without_all:a,b",
+  "pass": true,
+  "data": {
+   "a": 1
+  }
+ },
+ {
+  "rule": "prohibited_if:other,yes",
+  "pass": false,
+  "value": "x",
+  "data": {
+   "other": "yes"
+  }
+ },
+ {
+  "rule": "prohibited_if:other,yes",
+  "pass": true,
+  "value": "x",
+  "data": {
+   "other": "no"
+  }
+ },
+ {
+  "rule": "prohibited_unless:other,yes",
+  "pass": false,
+  "value": "x",
+  "data": {
+   "other": "no"
+  }
+ },
+ {
+  "rule": "prohibited_unless:other,yes",
+  "pass": true,
+  "value": "x",
+  "data": {
+   "other": "yes"
+  }
+ },
+ {
+  "rule": "accepted_if:other,yes",
+  "pass": false,
+  "value": "no",
+  "data": {
+   "other": "yes"
+  }
+ },
+ {
+  "rule": "accepted_if:other,yes",
+  "pass": true,
+  "value": "yes",
+  "data": {
+   "other": "yes"
+  }
+ },
+ {
+  "rule": "accepted_if:other,yes",
+  "pass": true,
+  "value": "no",
+  "data": {
+   "other": "no"
+  }
+ },
+ {
+  "rule": "accepted_if:other,yes",
+  "pass": false,
+  "data": {
+   "other": "yes"
+  }
+ },
+ {
+  "rule": "required|string|max:5",
+  "pass": false,
+  "value": "abcdef"
+ },
+ {
+  "rule": "required|string|max:5",
+  "pass": true,
+  "value": "abc"
+ },
+ {
+  "rule": "bail|required|min:5|email",
+  "pass": false,
+  "value": "ab"
+ }
+]

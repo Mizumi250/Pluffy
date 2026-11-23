@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/fastapi-test/auth')->gr
 // ============================================================
 // ARKZEN GENERATED ROUTES — fastapi-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-21T15:25:52.789564Z
+// Generated: 2026-11-23T13:04:20.935543Z
 // Resources: Ticket, JobResult
 // Custom controllers: ProbeController
 // ============================================================

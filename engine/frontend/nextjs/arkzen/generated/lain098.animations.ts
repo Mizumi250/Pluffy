@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — lain098
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:51.774Z
+// Generated: 2026-11-23T13:04:31.725Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -16,7 +16,8 @@ export const lain098Animations = (
   onOrbitReady: () => void,
   onNavReady: () => void,
 ) => {
-    const ctx = gsap.context(() => {
+  
+  const ctx = gsap.context(() => {
 
     // 1. Draw the script SVG paths (background hero text)
     const paths = document.querySelectorAll('.script-path')

@@ -106,7 +106,7 @@ export function roleMiddleware(...roles: string[]): RequestHandler {
     const request: Request = (req as any).__pluff
     const user = request?.user()
     if (!user) return renderError(res, new AuthenticationException())
-    if (!roles.includes(user.role)) return renderError(res, new HttpException(403, 'Forbidden'))
+    if (!roles.includes(user.role)) return renderError(res, new HttpException(403, 'Forbidden. Insufficient role.'))
     next()
   }
 }

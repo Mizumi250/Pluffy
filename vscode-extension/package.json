@@ -1,35 +1,29 @@
 {
   "name": "pluff-tatemono",
   "displayName": "Pluff Tatemono",
-  "description": "Tatemono syntax highlighting and completions across Pluff web, mobile, desktop, backend, frame, free-file, Godot, and Unity DSLs.",
-  "version": "0.2.0",
+  "description": "Tatemono language support for Pluff: highlighting, snippets, live linting (same rules as mizumi check), outline, go-to-definition, quick fixes and an Add Block command.",
+  "version": "0.3.0",
   "publisher": "mizumi250",
   "license": "MIT",
-  "engines": {
-    "vscode": "^1.85.0"
-  },
-  "categories": [
-    "Programming Languages",
-    "Snippets"
-  ],
+  "repository": { "type": "git", "url": "https://github.com/Mizumi250/Pluffy.git" },
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Programming Languages", "Snippets", "Linters"],
   "main": "./extension.js",
   "activationEvents": [
-    "onLanguage:tatemono"
+    "onLanguage:tatemono",
+    "workspaceContains:**/tatemonos/*/core.tsx"
   ],
+  "scripts": {
+    "sync": "node scripts/sync-scaffold.js",
+    "package": "node scripts/sync-scaffold.js && npx @vscode/vsce package --no-dependencies"
+  },
   "contributes": {
     "languages": [
       {
         "id": "tatemono",
-        "aliases": [
-          "Tatemono",
-          "Pluff Tatemono"
-        ],
-        "extensions": [
-          ".tatemono"
-        ],
-        "filenamePatterns": [
-          "**/tatemonos/*/core.tsx"
-        ],
+        "aliases": ["Tatemono", "Pluff Tatemono"],
+        "extensions": [".tatemono"],
+        "filenamePatterns": ["**/tatemonos/*/core.tsx"],
         "configuration": "./language-configuration.json"
       }
     ],
@@ -54,77 +48,60 @@
         }
       }
     ],
+    "commands": [
+      { "command": "pluffy.addBlock", "title": "Add Block…", "category": "Pluffy" },
+      { "command": "pluffy.check", "title": "Check This Tatemono", "category": "Pluffy" },
+      { "command": "pluffy.checkAll", "title": "Check All Tatemonos in Workspace", "category": "Pluffy" },
+      { "command": "pluffy.newTatemono", "title": "New Tatemono (mizumi new)", "category": "Pluffy" },
+      { "command": "pluffy.showScaffoldSource", "title": "Show Which scaffold.js Is Used", "category": "Pluffy" }
+    ],
+    "menus": {
+      "editor/context": [
+        { "command": "pluffy.addBlock", "when": "editorLangId == tatemono", "group": "1_modification@90" }
+      ],
+      "commandPalette": [
+        { "command": "pluffy.addBlock", "when": "editorLangId == tatemono" },
+        { "command": "pluffy.check", "when": "editorLangId == tatemono" }
+      ]
+    },
+    "configuration": {
+      "title": "Pluffy",
+      "properties": {
+        "pluffy.lint.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show tatemono errors and warnings as you type (the same rules as `node mizumi.js check`)."
+        },
+        "pluffy.backend": {
+          "type": "string",
+          "default": "auto",
+          "enum": ["auto", "php", "ts", "py", "java", "cs", "go", "rs"],
+          "enumDescriptions": [
+            "No backend variant: skip variant-coverage warnings",
+            "Laravel (PHP)", "Express (TypeScript)", "FastAPI (Python)", "Spring Boot (Java)", "ASP.NET Core (C#)", "Go (Chi)", "Rust (Axum)"
+          ],
+          "description": "Active backend variant. Used to warn about blocks missing a variant body and to preselect the variant in Add Block."
+        },
+        "pluffy.useWorkspaceScaffold": {
+          "type": "boolean",
+          "default": true,
+          "description": "If the open workspace contains scaffold.js, use its linter and scanner instead of the copy bundled in the extension."
+        }
+      }
+    },
     "configurationDefaults": {
       "editor.tokenColorCustomizations": {
         "textMateRules": [
-          {
-            "scope": "entity.name.tag.tatemono.shared",
-            "settings": {
-              "foreground": "#e5c07b",
-              "fontStyle": "bold"
-            }
-          },
-          {
-            "scope": "entity.name.tag.tatemono.web",
-            "settings": {
-              "foreground": "#61afef",
-              "fontStyle": "bold"
-            }
-          },
-          {
-            "scope": "entity.name.tag.tatemono.native",
-            "settings": {
-              "foreground": "#c678dd",
-              "fontStyle": "bold"
-            }
-          },
-          {
-            "scope": "entity.name.tag.tatemono.desktop",
-            "settings": {
-              "foreground": "#56b6c2",
-              "fontStyle": "bold"
-            }
-          },
-          {
-            "scope": "entity.name.tag.tatemono.backend",
-            "settings": {
-              "foreground": "#e06c75",
-              "fontStyle": "bold"
-            }
-          },
-          {
-            "scope": "entity.name.tag.tatemono.game",
-            "settings": {
-              "foreground": "#e5a84b",
-              "fontStyle": "bold"
-            }
-          },
-          {
-            "scope": "storage.type.tatemono.game",
-            "settings": {
-              "foreground": "#d19a66",
-              "fontStyle": "bold"
-            }
-          },
-          {
-            "scope": "storage.type.variant.tatemono",
-            "settings": {
-              "foreground": "#d19a66",
-              "fontStyle": "bold"
-            }
-          },
-          {
-            "scope": "entity.name.section.tatemono",
-            "settings": {
-              "foreground": "#98c379"
-            }
-          },
-          {
-            "scope": "punctuation.definition.tag.tatemono",
-            "settings": {
-              "foreground": "#7f848e"
-            }
-          }
+          { "scope": "entity.name.tag.tatemono.shared", "settings": { "foreground": "#e5c07b", "fontStyle": "bold" } },
+          { "scope": "entity.name.tag.tatemono.web", "settings": { "foreground": "#61afef", "fontStyle": "bold" } },
+          { "scope": "entity.name.tag.tatemono.native", "settings": { "foreground": "#c678dd", "fontStyle": "bold" } },
+          { "scope": "entity.name.tag.tatemono.desktop", "settings": { "foreground": "#56b6c2", "fontStyle": "bold" } },
+          { "scope": "entity.name.tag.tatemono.backend", "settings": { "foreground": "#e06c75", "fontStyle": "bold" } },
+          { "scope": "entity.name.tag.tatemono.game", "settings": { "foreground": "#e5a84b", "fontStyle": "bold" } },
+          { "scope": "storage.type.tatemono.game", "settings": { "foreground": "#d19a66", "fontStyle": "bold" } },
+          { "scope": "storage.type.variant.tatemono", "settings": { "foreground": "#d19a66", "fontStyle": "bold" } },
+          { "scope": "entity.name.section.tatemono", "settings": { "foreground": "#98c379" } },
+          { "scope": "punctuation.definition.tag.tatemono", "settings": { "foreground": "#7f848e" } }
         ]
       }
     }

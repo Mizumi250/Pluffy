@@ -1,281 +1,628 @@
+'use strict'
+// Pluff Tatemono for VS Code
+//
+//   lib/snippets.js   hand-tuned completions (block snippets, closers, layout lines, oauth providers)
+//   lib/scaffold.mjs  bundled copy of Pluffy's scaffold.js (see scripts/sync-scaffold.js). Provides
+//                     the linter, the source scanner and every block builder, so the editor and
+//                     `node mizumi.js check|block` can never disagree.
+//
+// If the open workspace has its own scaffold.js, its linter/scanner win (setting:
+// pluffy.useWorkspaceScaffold), so the extension follows your newest rules without a rebuild.
+
 const vscode = require('vscode')
+const path = require('path')
+const fs = require('fs')
+const { pathToFileURL } = require('url')
+const { completionProvider } = require('./lib/snippets')
 
-const backendVariants = [
-  { token: 'php', language: 'PHP' },
-  { token: 'ts', language: 'TypeScript / Express' },
-  { token: 'py', language: 'Python / FastAPI' },
-  { token: 'java', language: 'Java / Spring Boot' },
-  { token: 'cs', language: 'C# / ASP.NET Core' },
-  { token: 'go', language: 'Go' },
-  { token: 'rs', language: 'Rust' },
-]
+const LANG = 'tatemono'
+const SELECTOR = { language: LANG }
+const VARIANT_TOKENS = new Set(['php', 'ts', 'py', 'java', 'cs', 'go', 'rs', 'expo', 'rn', 'lynx'])
+const PAGE_KEYS = ['web:page', 'native:page', 'lynx:page']
+const LAYOUT_KEYS = ['web:layout', 'native:layout', 'lynx:layout']
+const escapeRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-const shapeDBlocks = ['endpoint', 'handler', 'middleware', 'policy', 'listener']
-const shapeBBlocks = ['jobs', 'console', 'notifications']
+let ctx, output, diagnostics, statusItem
+const importCache = new Map()
+const timers = new Map()
 
-function yamlSnippet(label, tag, body) {
-  return {
-    label,
-    detail: 'Tatemono YAML block',
-    insertText: new vscode.SnippetString(`/* @arkzen:${tag}\n${body}\n*/`),
+const log = msg => output && output.appendLine(`[${new Date().toISOString().slice(11, 19)}] ${msg}`)
+const cfg = () => vscode.workspace.getConfiguration('pluffy')
+
+// ─── scaffold loading ──────────────────────────────────────────
+
+function importFresh(file) {
+  const stat = fs.statSync(file)
+  const key = `${file}:${stat.mtimeMs}`
+  if (!importCache.has(key)) importCache.set(key, import(pathToFileURL(file).href + '?v=' + Math.floor(stat.mtimeMs)))
+  return importCache.get(key)
+}
+
+function workspaceFolderFor(doc) {
+  return (doc && vscode.workspace.getWorkspaceFolder(doc.uri)) || (vscode.workspace.workspaceFolders || [])[0]
+}
+
+async function getScaffold(doc) {
+  const bundled = await importFresh(path.join(ctx.extensionPath, 'lib', 'scaffold.mjs'))
+  let api = { ...bundled, origin: 'bundled' }
+  if (!cfg().get('useWorkspaceScaffold', true)) return api
+  const folder = workspaceFolderFor(doc)
+  const file = folder && path.join(folder.uri.fsPath, 'scaffold.js')
+  if (!file || !fs.existsSync(file)) return api
+  try {
+    const ws = await importFresh(file)
+    if (typeof ws.lintSource === 'function' && typeof ws.scanSource === 'function') {
+      api = { ...api, lintSource: ws.lintSource, scanSource: ws.scanSource, parseLayoutDecl: ws.parseLayoutDecl || api.parseLayoutDecl, origin: 'workspace' }
+      const full = ['BLOCKS', 'blockByKey', 'normalizeName', 'crossCheck', 'candidatesFor', 'hasTag', 'eolOf'].every(k => ws[k])
+      if (full) api = { ...api, ...Object.fromEntries(['BLOCKS', 'blockByKey', 'normalizeName', 'crossCheck', 'candidatesFor', 'hasTag', 'eolOf', 'closest'].filter(k => ws[k]).map(k => [k, ws[k]])) }
+    }
+  } catch (e) {
+    log(`workspace scaffold.js ignored: ${e.message}`)
+  }
+  return api
+}
+
+function backendVariant() {
+  const v = cfg().get('backend', 'auto')
+  return v && v !== 'auto' ? v : null
+}
+
+function slugFor(doc) {
+  const m = /[\\/]tatemonos[\\/]([^\\/]+)[\\/]core\.tsx$/.exec(doc.uri.fsPath)
+  if (m) return m[1]
+  const t = /([^\\/]+)\.tatemono$/.exec(doc.uri.fsPath)
+  return t ? t[1] : undefined
+}
+
+// ─── diagnostics ───────────────────────────────────────────────
+
+function toDiagnostic(doc, finding, severity) {
+  const line = Math.min(Math.max((finding.line || 1) - 1, 0), Math.max(doc.lineCount - 1, 0))
+  const l = doc.lineAt(line)
+  const start = l.firstNonWhitespaceCharacterIndex || 0
+  const d = new vscode.Diagnostic(new vscode.Range(line, start, line, l.range.end.character), finding.msg, severity)
+  d.source = 'pluffy'
+  return d
+}
+
+// `mizumi check` also verifies, on disk, that the meta:web favicon exists. lintSource is pure, so repeat it here.
+function diskWarnings(doc, api) {
+  if (!/[\\/]tatemonos[\\/][^\\/]+[\\/]core\.tsx$/.test(doc.uri.fsPath)) return []
+  const dir = path.dirname(doc.uri.fsPath)
+  const out = []
+  for (const o of api.scanSource(doc.getText()).openers) {
+    if (o.tag !== 'meta:web') continue
+    const m = /^\s*favicon:\s*(\S+)/m.exec(o.yaml || '')
+    const fav = m && /^\/tatemonos\/[^/]+\/assets\/(.+)$/.exec(m[1].replace(/^["']|["']$/g, ''))
+    if (fav && !fs.existsSync(path.join(dir, 'assets', fav[1]))) out.push({ msg: `favicon assets/${fav[1]} does not exist yet (meta:web points at it)`, line: o.line })
+  }
+  return out
+}
+
+async function lintInto(doc) {
+  const api = await getScaffold(doc)
+  const res = api.lintSource(doc.getText(), { variant: backendVariant(), slug: slugFor(doc) })
+  const warnings = [...res.warnings, ...diskWarnings(doc, api)]
+  const list = [
+    ...res.errors.map(f => toDiagnostic(doc, f, vscode.DiagnosticSeverity.Error)),
+    ...warnings.map(f => toDiagnostic(doc, f, vscode.DiagnosticSeverity.Warning)),
+  ]
+  diagnostics.set(doc.uri, list)
+  return { errors: res.errors.length, warnings: warnings.length }
+}
+
+async function refreshDiagnostics(doc) {
+  if (doc.languageId !== LANG || !cfg().get('lint.enable', true)) {
+    diagnostics.delete(doc.uri)
+  } else {
+    try { await lintInto(doc) } catch (e) { log(`lint failed for ${doc.uri.fsPath}: ${e.message}`) }
+  }
+  updateStatus()
+}
+
+function scheduleRefresh(doc) {
+  const key = doc.uri.toString()
+  clearTimeout(timers.get(key))
+  timers.set(key, setTimeout(() => { timers.delete(key); refreshDiagnostics(doc) }, 250))
+}
+
+function updateStatus() {
+  const ed = vscode.window.activeTextEditor
+  if (!ed || ed.document.languageId !== LANG || !cfg().get('lint.enable', true)) return statusItem.hide()
+  const list = diagnostics.get(ed.document.uri) || []
+  const errors = list.filter(d => d.severity === vscode.DiagnosticSeverity.Error).length
+  const warnings = list.length - errors
+  statusItem.text = errors ? `$(error) Pluffy ${errors}` : warnings ? `$(warning) Pluffy ${warnings}` : '$(check) Pluffy'
+  statusItem.tooltip = errors || warnings ? `${errors} error(s), ${warnings} warning(s). Click to open Problems.` : 'Tatemono is clean (same rules as mizumi check).'
+  statusItem.command = 'workbench.actions.view.problems'
+  statusItem.show()
+}
+
+// ─── block geometry (outline, folding, definitions) ────────────
+
+function blockRanges(doc, api) {
+  const text = doc.getText()
+  const lines = text.split(/\r?\n/)
+  const model = api.scanSource(text)
+  const out = []
+  for (const o of model.openers) {
+    if (o.decl !== undefined) continue
+    const start = o.line - 1
+    const endRe = new RegExp('^\\s*/\\*\\s*@arkzen:' + escapeRe(o.tag) + ':end\\s*\\*/')
+    let end = -1
+    for (let i = start; i < lines.length; i++) if (endRe.test(lines[i])) { end = i; break }
+    if (end < 0) for (let i = start; i < lines.length; i++) if (lines[i].includes('*/')) { end = i; break }
+    out.push({ o, start, end: end < 0 ? start : end })
+  }
+  return { lines, model, blocks: out }
+}
+
+function symbolKind(tag) {
+  const k = vscode.SymbolKind
+  const [head, second] = tag.split(':')
+  if (head === 'web' || head === 'native') {
+    if (second === 'page') return k.File
+    if (second === 'layout') return k.Namespace
+    if (second === 'components') return k.Class
+    if (second === 'style') return k.Property
+    if (second === 'error') return k.Constant
+    if (second === 'config') return k.Module
+    return k.Function
+  }
+  switch (head) {
+    case 'meta': case 'oauth': case 'desktop': return k.Module
+    case 'database': return k.Struct
+    case 'api': return k.Interface
+    case 'routes': return k.Namespace
+    case 'endpoint': case 'handler': case 'policy': case 'middleware': return k.Method
+    case 'listener': case 'events': case 'realtime': return k.Event
+    case 'jobs': case 'console': case 'notifications': case 'mail': return k.Function
+    case 'file': return k.File
+    case 'godot': case 'unity': return k.Object
+    default: return k.Variable
   }
 }
 
-function gameYamlSnippet(engine, label, tag, body) {
-  return {
-    label,
-    detail: `${engine} game DSL YAML block with matching closing marker`,
-    insertText: new vscode.SnippetString(
-      `/* @arkzen:${tag}\n${body}\n*/\n/* @arkzen:${tag}:end */`
-    ),
-  }
+const symbolProvider = {
+  async provideDocumentSymbols(doc) {
+    const api = await getScaffold(doc)
+    const { lines, blocks } = blockRanges(doc, api)
+    return blocks
+      .filter(b => !/^(import|resolved):/.test(b.o.tag))
+      .map(b => {
+        const range = new vscode.Range(b.start, 0, b.end, (lines[b.end] || '').length)
+        const sel = new vscode.Range(b.start, 0, b.start, (lines[b.start] || '').length)
+        return new vscode.DocumentSymbol(`@arkzen:${b.o.tag}`, '', symbolKind(b.o.tag), range, sel)
+      })
+  },
 }
 
-function codeSnippet(label, tag, body = '${1:}') {
-  return {
-    label,
-    detail: 'Tatemono code block (opening and closing tags included)',
-    insertText: new vscode.SnippetString(
-      `/* @arkzen:${tag} */\n${body}\n/* @arkzen:${tag}:end */`
-    ),
-  }
+const foldingProvider = {
+  async provideFoldingRanges(doc) {
+    const api = await getScaffold(doc)
+    return blockRanges(doc, api).blocks
+      .filter(b => b.end > b.start)
+      .map(b => new vscode.FoldingRange(b.start, b.end, vscode.FoldingRangeKind.Region))
+  },
 }
 
-function parentLayoutSnippet(label, tag, parent, body) {
-  return {
-    label,
-    detail: 'Tatemono layout with a parent layout',
-    insertText: new vscode.SnippetString(
-      `/* @arkzen:${tag}\nparent: \${1:${parent}}\n*/\n${body}\n/* @arkzen:${tag}:end */`
-    ),
+// ─── hover ─────────────────────────────────────────────────────
+
+function blockForTag(api, tag) {
+  if (!api.BLOCKS) return null
+  const segs = tag.split(':')
+  const tries = []
+  if (segs.includes('lynx') && (segs[0] === 'native')) {
+    const kind = segs[1]
+    if (kind === 'style') tries.push(segs.length > 3 ? 'lynx:style:name' : 'lynx:style')
+    else if (kind === 'error') tries.push(`lynx:error:${segs[2]}`)
+    else tries.push(`lynx:${kind}`)
   }
+  for (let n = segs.length; n >= 1; n--) {
+    const head = segs.slice(0, n)
+    tries.push(head.join(':'), head.filter(s => !VARIANT_TOKENS.has(s)).join(':'))
+    tries.push(head.join(':') + ':name')
+  }
+  for (const key of tries) { const b = api.BLOCKS.find(x => x.key === key); if (b) return b }
+  return null
 }
 
-function backendSnippetItems(marker, shape) {
-  return backendVariants.map(({ token, language }) => {
-    const tag = `${marker}:${token}:$1`
-    const closeTag = `${marker}:${token}:$1:end`
-    const isMail = marker === 'mail'
-    const isShapeB = shape === 'B'
-    const yaml = isMail
-      ? 'subject: "${2:Welcome}"\ndata:\n  name: ${3:string}\n  app_name: ${4:string}'
-      : marker === 'jobs'
-        ? 'queue: ${2:default}\ntries: ${3:3}\ntimeout: ${4:60}'
-        : marker === 'console'
-          ? 'signature: ${2:tatemono:command}\ndescription: ${3:Describe this command}'
-          : 'channels: [database]\nmessage: ${2:Notification message}'
-    const open = isShapeB
-      ? `/* @arkzen:${tag}\n${yaml}\n*/`
-      : `/* @arkzen:${tag}\n*/`
-    const body = isMail ? '${5:<h1>Mail content</h1>}' : isShapeB ? '${5:}' : '${4:}'
-    return {
-      label: `${marker}:${token}:…`,
-      detail: `${language} body with matching opening and closing tags`,
-      insertText: new vscode.SnippetString(`${open}\n${body}\n/* @arkzen:${closeTag} */`),
+const hoverProvider = {
+  async provideHover(doc, pos) {
+    const range = doc.getWordRangeAtPosition(pos, /@arkzen:[A-Za-z0-9:_+.{}-]+/)
+    if (!range) return undefined
+    const tag = doc.getText(range).slice('@arkzen:'.length).replace(/:end$/, '')
+    const api = await getScaffold(doc)
+
+    const layout = /^(web:page|native:page(?::lynx)?):layout:(.+)$/.exec(tag)
+    if (layout) {
+      const d = api.parseLayoutDecl(layout[2])
+      const parts = []
+      if (d.guard) parts.push(`**${d.guard}** guard`)
+      if (d.layout) parts.push(`layout chain **${d.layout}**`)
+      const md = new vscode.MarkdownString(`**Inline page layout line**  \n${parts.join(' + ') || 'default layout'}  \nPlace it directly after the page opener (no \`:end\`).`)
+      return new vscode.Hover(md, range)
+    }
+
+    const b = blockForTag(api, tag)
+    if (!b) return undefined
+    const lines = [`**@arkzen:${b.key}**  `, `${b.sub}  `, `_${b.group}_`]
+    if (b.variants) lines.push('', `Variants: ${b.variants.list.map(v => '`:' + v + '`').join(' ')}${b.variants.optional ? ' (or shared, no suffix)' : ''}`)
+    if (b.once) lines.push('', 'Write it once per tatemono.')
+    return new vscode.Hover(new vscode.MarkdownString(lines.join('\n')), range)
+  },
+}
+
+// ─── go to definition ──────────────────────────────────────────
+
+function locate(doc, lines, re) {
+  const out = []
+  lines.forEach((l, i) => { if (re.test(l)) out.push(new vscode.Location(doc.uri, new vscode.Position(i, Math.max(l.indexOf('@arkzen'), 0)))) })
+  return out
+}
+
+const openerRe = (family, name) => new RegExp(`^\\s*/\\*\\s*@arkzen:${family}:${escapeRe(name)}(?![\\w:+-])`)
+
+const definitionProvider = {
+  async provideDefinition(doc, pos) {
+    const api = await getScaffold(doc)
+    const { lines, blocks } = blockRanges(doc, api)
+    const line = lines[pos.line] || ''
+    let m
+
+    // page layout line -> the layout block
+    if ((m = /@arkzen:(web:page|native:page(?::lynx)?):layout:([^\s*]+)/.exec(line))) {
+      const d = api.parseLayoutDecl(m[2])
+      if (d.layout) {
+        const family = m[1] === 'web:page' ? 'web:layout' : m[1].includes('lynx') ? 'native:layout:lynx' : 'native:layout'
+        return locate(doc, lines, openerRe(family, d.layout))
+      }
+    }
+
+    // parent: x inside a layout -> parent layout block
+    if ((m = /^\s*parent:\s*["']?([A-Za-z0-9_-]+)/.exec(line))) {
+      for (let i = pos.line; i >= 0; i--) {
+        const mm = /\/\*\s*@arkzen:(web:layout|native:layout:lynx|native:layout):[A-Za-z0-9_-]+/.exec(lines[i])
+        if (mm) return locate(doc, lines, openerRe(mm[1], m[1]))
+      }
+    }
+
+    // routes handler: x -> handler bodies
+    if ((m = /^\s*(?:-\s*)?handler:\s*["']?([A-Za-z0-9_]+)/.exec(line))) {
+      return locate(doc, lines, new RegExp(`^\\s*/\\*\\s*@arkzen:handler:(?:[a-z]+:)?${escapeRe(m[1])}(?![\\w-])`))
+    }
+
+    // listeners: [A, B] -> listener bodies
+    if (/listeners:\s*\[/.test(line)) {
+      const w = doc.getWordRangeAtPosition(pos, /[A-Za-z0-9_]+/)
+      if (w) return locate(doc, lines, new RegExp(`^\\s*/\\*\\s*@arkzen:listener:(?:[a-z]+:)?${escapeRe(doc.getText(w))}(?![\\w-])`))
+    }
+
+    // endpoint body -> endpoint key inside the api block
+    if ((m = /@arkzen:endpoint:(?:[a-z]+:)?([A-Za-z0-9_]+)/.exec(line)) && !/:end\b/.test(line)) {
+      const out = []
+      for (const b of blocks.filter(x => x.o.family === 'api')) {
+        let inEndpoints = false
+        for (let i = b.start; i <= b.end; i++) {
+          if (/^\s*endpoints:\s*$/.test(lines[i])) { inEndpoints = true; continue }
+          if (inEndpoints && new RegExp(`^\\s+${escapeRe(m[1])}:\\s*$`).test(lines[i])) out.push(new vscode.Location(doc.uri, new vscode.Position(i, lines[i].search(/\S/))))
+        }
+      }
+      if (out.length) return out
+    }
+
+    // endpoint key inside an api block -> endpoint bodies
+    const km = /^\s{2,}([A-Za-z0-9_]+):\s*$/.exec(line)
+    if (km) {
+      const b = blocks.find(x => x.o.family === 'api' && pos.line > x.start && pos.line <= x.end)
+      if (b && lines.slice(b.start, pos.line).some(l => /^\s*endpoints:\s*$/.test(l))) {
+        return locate(doc, lines, new RegExp(`^\\s*/\\*\\s*@arkzen:endpoint:(?:[a-z]+:)?${escapeRe(km[1])}(?![\\w-])`))
+      }
+    }
+    return undefined
+  },
+}
+
+// ─── quick fixes ───────────────────────────────────────────────
+
+// A real block opener: not an :end marker, not a nested import pair, not an inline page layout line.
+const OPENER_RE = /^\s*\/\*\s*@arkzen:(?!import:|resolved:)(?![^\s*]*:page:(?:lynx:)?layout:)([A-Za-z0-9:_+.{}-]+)/
+const isOpenerLine = l => { const m = OPENER_RE.exec(l); return !!m && !m[1].endsWith(':end') }
+
+function fixAction(title, doc, diag, build) {
+  const action = new vscode.CodeAction(title, vscode.CodeActionKind.QuickFix)
+  action.diagnostics = [diag]
+  action.isPreferred = true
+  const edit = new vscode.WorkspaceEdit()
+  build(edit)
+  action.edit = edit
+  return action
+}
+
+const actionProvider = {
+  provideCodeActions(doc, range, context) {
+    const lines = doc.getText().split(/\r?\n/)
+    const eol = doc.eol === vscode.EndOfLine.CRLF ? '\r\n' : '\n'
+    const actions = []
+    for (const d of context.diagnostics) {
+      if (d.source !== 'pluffy') continue
+      let m
+
+      if ((m = /^@arkzen:(\S+) is missing its closing \/\* @arkzen:\S+:end \*\/$/.exec(d.message))) {
+        const tag = m[1]
+        actions.push(fixAction(`Add closing /* @arkzen:${tag}:end */`, doc, d, edit => {
+          let next = lines.length
+          for (let j = d.range.start.line + 1; j < lines.length; j++) if (isOpenerLine(lines[j])) { next = j; break }
+          let k = next - 1
+          while (k > d.range.start.line && !lines[k].trim()) k--
+          edit.insert(doc.uri, new vscode.Position(k, (lines[k] || '').length), `${eol}/* @arkzen:${tag}:end */`)
+        }))
+      } else if (/^@arkzen:oauth requires auth: true/.test(d.message)) {
+        actions.push(fixAction('Set auth: true in @arkzen:meta', doc, d, edit => {
+          const open = lines.findIndex(l => /^\s*\/\*\s*@arkzen:meta\s*$/.test(l))
+          if (open < 0) return
+          let close = open + 1
+          while (close < lines.length && !lines[close].includes('*/')) close++
+          for (let i = open + 1; i < close; i++) {
+            if (/^\s*auth:/.test(lines[i])) return edit.replace(doc.uri, new vscode.Range(i, 0, i, lines[i].length), 'auth: true')
+          }
+          let at = open
+          for (let i = open + 1; i < close; i++) if (/^\s*name:/.test(lines[i])) { at = i; break }
+          edit.insert(doc.uri, new vscode.Position(at, lines[at].length), `${eol}auth: true`)
+        }))
+      } else if ((m = /^@arkzen:(\S+?): .*Did you mean "([^"]+)"\?/.exec(d.message))) {
+        const tag = m[1]
+        const fixed = tag.slice(0, tag.lastIndexOf(':') + 1) + m[2]
+        actions.push(fixAction(`Rename block to @arkzen:${fixed}`, doc, d, edit => {
+          const openRe = new RegExp(escapeRe('@arkzen:' + tag) + '(?![\\w:+-])')
+          const opener = openRe.exec(lines[d.range.start.line])
+          if (opener) edit.replace(doc.uri, new vscode.Range(d.range.start.line, opener.index, d.range.start.line, opener.index + opener[0].length), '@arkzen:' + fixed)
+          const closeRe = new RegExp(escapeRe('@arkzen:' + tag + ':end'))
+          for (let i = d.range.start.line + 1; i < lines.length; i++) {
+            const c = closeRe.exec(lines[i])
+            if (c) { edit.replace(doc.uri, new vscode.Range(i, c.index, i, c.index + c[0].length), '@arkzen:' + fixed + ':end'); break }
+          }
+        }))
+      }
+    }
+    return actions
+  },
+}
+
+// ─── commands ──────────────────────────────────────────────────
+
+const fail = msg => { vscode.window.showErrorMessage(`Pluffy: ${msg}`); return undefined }
+const pick = (items, placeHolder) => vscode.window.showQuickPick(items, { placeHolder, matchOnDescription: true, ignoreFocusOut: true })
+const input = (prompt, value) => vscode.window.showInputBox({ prompt, value, ignoreFocusOut: true })
+
+async function addBlock() {
+  const editor = vscode.window.activeTextEditor
+  if (!editor || editor.document.languageId !== LANG) return fail('open a tatemono (tatemonos/<name>/core.tsx) first.')
+  const doc = editor.document
+  const api = await getScaffold(doc)
+  if (!api.BLOCKS) return fail('the block registry is missing. Run: node scripts/sync-scaffold.js')
+
+  const source = doc.getText()
+  const slug = slugFor(doc) || path.basename(path.dirname(doc.uri.fsPath))
+  const gameKind = /@arkzen:godot:project/.test(source) ? 'godot' : /@arkzen:unity:project/.test(source) ? 'unity' : null
+  const visible = api.BLOCKS.filter(b => (gameKind ? b.game === gameKind : !b.game))
+
+  // 1. which block
+  const groups = new Map()
+  for (const b of visible) { if (!groups.has(b.group)) groups.set(b.group, []); groups.get(b.group).push(b) }
+  const items = []
+  for (const [group, list] of groups) {
+    items.push({ label: group, kind: vscode.QuickPickItemKind.Separator })
+    for (const b of list) items.push({ label: b.key, description: b.sub, block: b })
+  }
+  const chosen = await pick(items, gameKind ? `Add a ${gameKind} block…` : 'Add which block?')
+  if (!chosen) return
+  const block = chosen.block
+  if (block.needs) { const problem = block.needs(source); if (problem) return fail(problem) }
+
+  // 2. variant (backend or native target)
+  let variant = null
+  if (block.variants) {
+    const { list, optional, labels, backend } = block.variants
+    const active = backend ? backendVariant() : null
+    const opts = list.map(x => ({ label: `:${x}`, description: `${labels[x]}${x === active ? '  (active backend)' : ''}`, value: x }))
+    opts.sort((a, b) => (b.value === active) - (a.value === active))
+    if (optional) opts.unshift({ label: 'shared', description: 'YAML only, works on every backend', value: null })
+    const v = await pick(opts, backend ? 'Which backend variant?' : 'Which native target?')
+    if (!v) return
+    variant = v.value
+  }
+
+  // 3. names
+  const flags = {}
+  let names = [null]
+  if (block.name || block.composite) {
+    const model0 = api.scanSource(source)
+    const cands = api.candidatesFor(block, model0, variant)
+    if (cands) {
+      if (cands.missing) return fail(cands.missing)
+      const open = cands.all.filter(n => !cands.done.has(n))
+      if (!open.length) return vscode.window.showInformationMessage(`Pluffy: every ${cands.what} already has a body${variant ? ` for :${variant}` : ''}.`)
+      if (open.length === 1) names = [open[0]]
+      else { const p = await pick(open.map(n => ({ label: n })), `Which ${cands.what}?`); if (!p) return; names = [p.label] }
+    } else if (block.name && block.name.choices) {
+      const p = await pick(block.name.choices.map(n => ({ label: n })), block.name.prompt)
+      if (!p) return
+      names = [p.label]
+    } else {
+      const v = await input(block.name.prompt, block.name.def)
+      if (v === undefined) return
+      names = [v]
+    }
+  }
+
+  // 4. extras some blocks need
+  if (block.extra) {
+    const v = await input(block.extra.prompt, block.extra.def)
+    if (v === undefined) return
+    flags[block.extra.key] = v
+  }
+  if (block.key === 'file') {
+    const p = String(flags.path || '').replace(/\\/g, '/')
+    if (!p || p.split('/').includes('..') || /^[A-Za-z]:/.test(p)) return fail(`path "${flags.path || ''}" is not allowed: use a relative path without .. or a drive letter.`)
+    flags.path = p
+  }
+  if (block.key === 'unity:project') {
+    const m = await pick([{ label: 'runner', description: 'dinosaur runner template' }, { label: 'scene', description: 'general scene mode' }], 'Unity project mode')
+    if (!m) return
+    if (m.label === 'scene') flags.mode = 'scene'
+  }
+  if (PAGE_KEYS.includes(block.key)) {
+    const v = await vscode.window.showInputBox({ prompt: 'Layout line (optional)', placeHolder: 'e.g. +auth, +guest, app. Empty = none', ignoreFocusOut: true })
+    if (v === undefined) return
+    if (v.trim() && v.trim() !== 'none') flags.layout = v.trim()
+  }
+  if (LAYOUT_KEYS.includes(block.key)) {
+    const v = await vscode.window.showInputBox({ prompt: 'Parent layout (optional)', placeHolder: 'Empty = no parent', ignoreFocusOut: true })
+    if (v === undefined) return
+    if (v.trim()) flags.parent = v.trim()
+  }
+
+  // 5. build against an in-memory copy, exactly like `mizumi block`
+  const eol = api.eolOf(source)
+  const trimmed = source.replace(/\s*$/, '')
+  let candidate = source
+  const written = [], notes = []
+  const work = block.composite ? names.flatMap(n => block.composite.map(k => [api.blockByKey(k), n])) : names.map(n => [block, n])
+  for (const [b, rawName] of work) {
+    let name = null
+    if (b.name) {
+      const r = api.normalizeName(b, rawName, flags)
+      if (r.error) return fail(r.error)
+      name = r.value
+      if (r.note && !notes.includes(r.note)) notes.push(r.note)
+      if (b.name.choices && !b.name.choices.includes(name)) return fail(`"${name}" is not a valid ${b.key} choice. Use: ${b.name.choices.join(', ')}.`)
+    }
+    const model = api.scanSource(candidate)
+    const problem = api.crossCheck(b, name, variant, model, false)
+    if (problem) return fail(problem)
+
+    const f = { ...flags }
+    if (b.key === 'web:page' && !f.layout && /^true$/i.test((model.meta && model.meta.auth) || '')) {
+      const guard = /^(login|register|signup|sign-in|sign-up|forgot-password|reset-password)$/.test(name) ? '+guest' : /^(dashboard|account|profile|settings|admin)$/.test(name) ? '+auth' : null
+      if (guard) { f.layout = guard; notes.push(`page "${name}": added layout ${guard} because auth is on`) }
+    }
+    const tag = b.tag(name, variant)
+    if (api.hasTag(candidate, tag)) return fail(`@arkzen:${tag} already exists in this file.`)
+    const snippet = b.build({ name, slug, variant, flags: f })
+    candidate = candidate.replace(/\s*$/, '') + eol + eol + snippet.replace(/\n/g, eol)
+    written.push(tag)
+  }
+
+  // 6. never leave the tatemono worse than it was
+  const lv = backendVariant()
+  const before = api.lintSource(source, { variant: lv, slug })
+  const after = api.lintSource(candidate, { variant: lv, slug })
+  const known = new Set(before.errors.map(e => e.msg))
+  const fresh = after.errors.filter(e => !known.has(e.msg))
+  if (fresh.length) {
+    const answer = await vscode.window.showWarningMessage(
+      `Adding ${written.map(t => '@arkzen:' + t).join(', ')} would add ${fresh.length} error(s): ${fresh.slice(0, 2).map(e => e.msg).join(' | ')}`,
+      { modal: true }, 'Insert anyway')
+    if (answer !== 'Insert anyway') return
+  }
+
+  // 7. write into the editor buffer (undoable, no file clobbering)
+  const insertion = candidate.slice(trimmed.length)
+  const start = doc.positionAt(trimmed.length)
+  const end = doc.positionAt(source.length)
+  await editor.edit(eb => eb.replace(new vscode.Range(start, end), insertion))
+  const reveal = editor.document.positionAt(trimmed.length + (trimmed ? 2 * eol.length : 0))
+  editor.selection = new vscode.Selection(reveal, reveal)
+  editor.revealRange(new vscode.Range(reveal, reveal), vscode.TextEditorRevealType.AtTop)
+  vscode.window.showInformationMessage(`Pluffy: added ${written.map(t => '@arkzen:' + t).join(', ')}${notes.length ? '. ' + notes.join(' ') : ''}`)
+}
+
+async function checkActive() {
+  const doc = vscode.window.activeTextEditor && vscode.window.activeTextEditor.document
+  if (!doc || doc.languageId !== LANG) return fail('open a tatemono first.')
+  const r = await lintInto(doc)
+  updateStatus()
+  vscode.commands.executeCommand('workbench.actions.view.problems')
+  vscode.window.showInformationMessage(r.errors || r.warnings ? `Pluffy: ${r.errors} error(s), ${r.warnings} warning(s).` : 'Pluffy: tatemono is clean.')
+}
+
+async function checkAll() {
+  const files = [
+    ...(await vscode.workspace.findFiles('**/tatemonos/*/core.tsx', '**/node_modules/**')),
+    ...(await vscode.workspace.findFiles('**/*.tatemono', '**/node_modules/**')),
+  ]
+  if (!files.length) return vscode.window.showInformationMessage('Pluffy: no tatemonos found in this workspace.')
+  let errors = 0, warnings = 0, bad = 0
+  await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Pluffy: checking tatemonos' }, async progress => {
+    for (const uri of files) {
+      progress.report({ message: path.basename(path.dirname(uri.fsPath)) })
+      try {
+        const r = await lintInto(await vscode.workspace.openTextDocument(uri))
+        errors += r.errors; warnings += r.warnings; if (r.errors) bad++
+      } catch (e) { log(`check failed for ${uri.fsPath}: ${e.message}`) }
     }
   })
+  updateStatus()
+  vscode.commands.executeCommand('workbench.actions.view.problems')
+  vscode.window.showInformationMessage(`Pluffy: ${files.length} tatemonos checked, ${errors} error(s) in ${bad}, ${warnings} warning(s).`)
 }
 
-function frontendItems() {
-  const items = [
-    yamlSnippet('meta', 'meta', 'name: ${1:my-tatemono}\nversion: 1.0.0\ndescription: ${2:Description}\nauth: false'),
-    yamlSnippet('meta:web', 'meta:web', 'title: ${1:App title}\ndescription: ${2:Description}'),
-    yamlSnippet('meta:native', 'meta:native', 'label: ${1:App title}\nexpo:\n  bundle_id: ${2:com.example.app}\n  scheme: ${3:myapp}'),
-    yamlSnippet('web:config', 'web:config', 'toast:\n  position: top-right\n  duration: 3000'),
-    yamlSnippet('native:config', 'native:config', 'theme:\n  primary: "${1:#6366f1}"\n  background: "${2:#ffffff}"'),
-    yamlSnippet('desktop:config', 'desktop:config', 'window:\n  title: "${1:My app}"\n  width: ${2:1200}\n  height: ${3:800}'),
-    yamlSnippet('database:<table>', 'database:${1:items}', 'table: ${1:items}\ntimestamps: true\ncolumns:\n  name:\n    type: string\n    length: 255\n    nullable: false'),
-    yamlSnippet('api:<name>', 'api:${1:items}', 'model: ${2:Item}\ncontroller: ${3:ItemController}\nprefix: /api/${4:tatemono}\nmiddleware: []\nresource: true\nendpoints:\n  index:\n    method: GET\n    route: /\n    description: ${5:List items}\n    response:\n      type: collection'),
-    yamlSnippet('routes', 'routes', 'controller: ${1:CustomController}\nmiddleware: []\nroutes:\n  - method: GET\n    route: /${2:health}\n    handler: ${3:health}'),
-    {
-      label: 'realtime:<channel>',
-      detail: 'Realtime channel configuration',
-      insertText: new vscode.SnippetString('/* @arkzen:realtime:${1:channel}\nauth: ${2:authenticated}\n*/\n/* @arkzen:realtime:${1:channel}:end */'),
-    },
-    {
-      label: 'events:<name>',
-      detail: 'Events and listeners configuration',
-      insertText: new vscode.SnippetString('/* @arkzen:events:${1:events}\nlisteners: [${2:LogEvent}]\n*/\n/* @arkzen:events:${1:events}:end */'),
-    },
-    codeSnippet('web:components:<name>', 'web:components:${1:shared}', "'use client'\n\nimport React from 'react'\n\nexport const ${2:MyComponent} = () => <div>${3:Content}</div>"),
-    codeSnippet('web:layout:<name>', 'web:layout:${1:app}', "'use client'\n\nimport React from 'react'\n\nexport const ${2:AppLayout} = ({ children }: { children: React.ReactNode }) => <>{children}</>"),
-    parentLayoutSnippet('web:layout:<name> (parent)', 'web:layout:${2:panel}', 'shell', 'import React from \'react\'\n\nexport const ${3:PanelLayout} = ({ children }: { children: React.ReactNode }) => <>{children}</>'),
-    codeSnippet('web:page:<name>', 'web:page:${1:index}', '/* @arkzen:web:page:layout:guest */\n\nconst ${2:IndexPage} = () => <main>${3:Content}</main>'),
-    codeSnippet('web:error:404', 'web:error:404', 'export default function NotFoundPage() { return <main>Not found</main> }'),
-    codeSnippet('web:error:500', 'web:error:500', 'export default function ServerErrorPage({ reset }: { reset: () => void }) { return <button onClick={reset}>Try again</button> }'),
-    codeSnippet('web:animation', 'web:animation', 'export const pageVariants = { initial: { opacity: 0 }, animate: { opacity: 1 } }'),
-    codeSnippet('web:script', 'web:script', 'export const ${1:helper} = () => ${2:null}'),
-    codeSnippet('web:script:<name>', 'web:script:${1:helpers}', 'export const ${2:helper} = () => ${3:null}'),
-    codeSnippet('web:style', 'web:style', ':root {\n  --color-primary: ${1:#6366f1};\n}'),
-    codeSnippet('web:style:<Component>', 'web:style:${1:Component}', '.${2:component} {\n  color: ${3:#111827};\n}'),
-    codeSnippet('native:components:<name>', 'native:components:${1:shared}', "import React from 'react'\nimport { View, Text } from 'react-native'\n\nexport const ${2:Card} = () => <View><Text>${3:Content}</Text></View>"),
-    codeSnippet('native:layout:<name>', 'native:layout:${1:app}', "import React from 'react'\nimport { View } from 'react-native'\n\nexport const ${2:AppLayout} = ({ children }: { children: React.ReactNode }) => <View style={{ flex: 1 }}>{children}</View>"),
-    parentLayoutSnippet('native:layout:<name> (parent)', 'native:layout:${2:panel}', 'app', 'import React from \'react\'\nimport { View } from \'react-native\'\n\nexport const ${3:PanelLayout} = ({ children }: { children: React.ReactNode }) => <View style={{ flex: 1 }}>{children}</View>'),
-    codeSnippet('native:page:<name>', 'native:page:${1:index}', "import React from 'react'\nimport { View, Text } from 'react-native'\n\nconst ${2:IndexScreen} = () => <View><Text>${3:Content}</Text></View>"),
-    codeSnippet('native:error:404', 'native:error:404', "import React from 'react'\nimport { View, Text } from 'react-native'\n\nconst NotFoundScreen = () => <View><Text>Not found</Text></View>"),
-    codeSnippet('native:error:500', 'native:error:500', "import React from 'react'\nimport { View, Text } from 'react-native'\n\nconst ErrorScreen = () => <View><Text>Something went wrong</Text></View>"),
-    codeSnippet('native:animation:expo', 'native:animation:expo', "import { useSharedValue, withTiming } from 'react-native-reanimated'\n\nexport function useFadeIn() {\n  const opacity = useSharedValue(0)\n  return { opacity, start: () => { opacity.value = withTiming(1) } }\n}"),
-    codeSnippet('native:animation:rn', 'native:animation:rn', "import { useSharedValue, withTiming } from 'react-native-reanimated'\n\nexport function useFadeIn() {\n  const opacity = useSharedValue(0)\n  return { opacity, start: () => { opacity.value = withTiming(1) } }\n}"),
-    codeSnippet('native:animation:lynx', 'native:animation:lynx', "import { useState, useEffect } from '@lynx-js/react'\n\nexport const ${1:useFadeSlideIn} = (delay = 0) => {\n  const [visible, setVisible] = useState(false)\n  useEffect(() => {\n    const timeout = setTimeout(() => setVisible(true), delay)\n    return () => clearTimeout(timeout)\n  }, [])\n  return {\n    style: {\n      opacity: visible ? 1 : 0,\n      transform: [{ translateY: visible ? 0 : 16 }],\n      transition: 'opacity 350ms ease-out, transform 350ms ease-out',\n    },\n  }\n}"),
-    codeSnippet('native:script:expo', 'native:script:expo', 'export const ${1:API_TIMEOUT} = ${2:8000}'),
-    codeSnippet('native:script:rn', 'native:script:rn', 'export const ${1:API_TIMEOUT} = ${2:8000}'),
-    codeSnippet('native:script:lynx', 'native:script:lynx', 'export const ${1:API_TIMEOUT} = ${2:8000}'),
-    codeSnippet('native:script:expo:<name>', 'native:script:expo:${1:helpers}', 'export const ${2:helper} = () => ${3:null}'),
-    codeSnippet('native:script:rn:<name>', 'native:script:rn:${1:helpers}', 'export const ${2:helper} = () => ${3:null}'),
-    codeSnippet('native:script:lynx:<name>', 'native:script:lynx:${1:helpers}', 'export const ${2:helper} = () => ${3:null}'),
-    codeSnippet('native:style', 'native:style', '.card {\n  background-color: ${1:#ffffff};\n}'),
-    codeSnippet('native:style:<name>', 'native:style:${1:shared}', '.card {\n  background-color: ${2:#ffffff};\n}'),
-    codeSnippet('native:components:lynx:<name>', 'native:components:lynx:${1:shared}', "import { type ReactNode } from '@lynx-js/react'\n\nexport const ${2:Card} = ({ children }: { children: ReactNode }) => <view>{children}</view>"),
-    codeSnippet('native:layout:lynx:<name>', 'native:layout:lynx:${1:app}', "import { type ReactNode } from '@lynx-js/react'\n\nexport const ${2:AppLayout} = ({ children }: { children: ReactNode }) => <view>{children}</view>"),
-    parentLayoutSnippet('native:layout:lynx:<name> (parent)', 'native:layout:lynx:${2:panel}', 'app', "import { type ReactNode } from '@lynx-js/react'\n\nexport const ${3:PanelLayout} = ({ children }: { children: ReactNode }) => <view>{children}</view>"),
-    codeSnippet('native:page:lynx:<name>', 'native:page:lynx:${1:index}', "import { useState } from '@lynx-js/react'\n\nconst ${2:IndexLynxPage} = () => <view><text>${3:Content}</text></view>"),
-    codeSnippet('native:error:404:lynx', 'native:error:404:lynx', 'const NotFoundLynx = () => <view><text>Not found</text></view>'),
-    codeSnippet('native:error:500:lynx', 'native:error:500:lynx', 'const ErrorLynx = () => <view><text>Something went wrong</text></view>'),
-    codeSnippet('native:style:lynx', 'native:style:lynx', '.card {\n  background-color: ${1:#ffffff};\n}'),
-    codeSnippet('native:style:lynx:<name>', 'native:style:lynx:${1:shared}', '.card {\n  background-color: ${2:#ffffff};\n}'),
-
-    codeSnippet('native:frame:expo', 'native:frame:expo', "import React from 'react'\nimport { Tabs } from 'expo-router'\nimport { StatusBar } from 'expo-status-bar'\n\nexport default function ${1:MyLayout}() {\n  return (\n    <>\n      <StatusBar style=\"light\" />\n      <Tabs screenOptions={{ headerShown: true }}>\n        <Tabs.Screen name=\"index\" options={{ title: '${2:Home}' }} />\n      </Tabs>\n    </>\n  )\n}"),
-    codeSnippet('native:frame:rn', 'native:frame:rn', "import React from 'react'\nimport { View, StatusBar } from 'react-native'\n\nexport const screenOptions = { headerShown: true }\n\nexport const Frame = ({ children }: { children: React.ReactNode }) => (\n  <View style={{ flex: 1 }}>\n    <StatusBar barStyle=\"light-content\" />\n    {children}\n  </View>\n)"),
-    codeSnippet('native:frame:lynx', 'native:frame:lynx', "import { type ReactNode } from '@lynx-js/react'\n\nexport const Frame = ({ children }: { module: string; page: string; children: ReactNode }) => (\n  <view style={{ flex: 1 }}>{children}</view>\n)"),
-    codeSnippet('desktop:frame:electron', 'desktop:frame:electron', "export const windowOptions = { width: ${1:1200}, height: ${2:800} }\n\nexport function setup(ctx) {\n  ${3:// menus, tray, shortcuts, ctx.onEvent(channel, handler)}\n}"),
-    codeSnippet('desktop:frame:tauri', 'desktop:frame:tauri', "pub fn frame(app: &mut tauri::App) -> Result<(), Box<dyn Error>> {\n    ${1:// menus, tray, events}\n    Ok(())\n}"),
-    {
-      label: 'file:<id>',
-      detail: 'Free file block: writes any text file to a path you choose',
-      insertText: new vscode.SnippetString('/* @arkzen:file:${1:landing}\npath: ${2:index.html}\n*/\n${3:}\n/* @arkzen:file:${1:landing}:end */'),
-    },
-  ]
-
-  items.push(
-    {
-      label: 'import:expo / import:rn pair',
-      detail: 'Paired import blocks for Expo and bare React Native',
-      insertText: new vscode.SnippetString(
-        `/* @arkzen:import:expo */\nimport { \${1:View, Text} } from 'react-native'\n/* @arkzen:import:expo:end */\n\n/* @arkzen:import:rn */\nimport { \${2:View, Text} } from 'react-native'\n/* @arkzen:import:rn:end */`
-      ),
-    },
-    {
-      label: 'module:rs',
-      detail: 'Rust module body with matching opening and closing tags',
-      insertText: new vscode.SnippetString(
-        '/* @arkzen:module:rs\n*/\npub fn ${1:helper}() -> ${2:bool} { ${3:true} }\n/* @arkzen:module:rs:end */'
-      ),
-    }
-  )
-  return items
+function newTatemono() {
+  const folder = (vscode.workspace.workspaceFolders || []).find(f => fs.existsSync(path.join(f.uri.fsPath, 'mizumi.js')))
+  if (!folder) return fail('open the Pluffy repo (the folder that contains mizumi.js) to scaffold a tatemono.')
+  const terminal = vscode.window.createTerminal({ name: 'Pluffy', cwd: folder.uri.fsPath })
+  terminal.show()
+  terminal.sendText('node mizumi.js new')
 }
 
-function backendItems() {
-  const items = []
-  for (const marker of shapeDBlocks) items.push(...backendSnippetItems(marker, 'D'))
-  for (const marker of shapeBBlocks) items.push(...backendSnippetItems(marker, 'B'))
-  items.push(...backendSnippetItems('mail', 'B'))
-  return items
+async function showScaffoldSource() {
+  const doc = vscode.window.activeTextEditor && vscode.window.activeTextEditor.document
+  const api = await getScaffold(doc)
+  vscode.window.showInformationMessage(`Pluffy: using the ${api.origin} scaffold.js (${api.BLOCKS ? api.BLOCKS.length : '?'} block builders).`)
 }
 
-function gameItems() {
-  return [
-    gameYamlSnippet('Godot', 'godot:project', 'godot:project', 'godot_version: "4.x"\nname: \${1:My Godot Game}\nmain_scene: res://scenes/main.tscn\nrenderer: forward_plus'),
-    gameYamlSnippet('Godot', 'godot:world', 'godot:world', 'tile_size: 1\ngrid_width: 40\ngrid_depth: 40\nblock_height: 0.6\nworld_margin: 2\nseed: 42\nprops: {}\nnpcs: {}'),
-    gameYamlSnippet('Godot', 'godot:input', 'godot:input', 'actions:\n  move_left:\n    deadzone: 0.2\n    keys: [A, LEFT]'),
-    gameYamlSnippet('Godot', 'godot:assets', 'godot:assets', 'textures:\n  player:\n    source: assets/player.png\n    filter: nearest'),
-    gameYamlSnippet('Godot', 'godot:scene:<name>', 'godot:scene:\${1:main}', 'path: res://scenes/main.tscn\nroot:\n  name: Main\n  type: Node3D\nnodes: []'),
-    gameYamlSnippet('Godot', 'godot:behavior:player', 'godot:behavior:player', 'script: res://scripts/player.gd\nscene: res://scenes/player.tscn\nlanguage: gdscript\nextends: CharacterBody3D\nmovement:\n  input: [move_left, move_right, move_up, move_down]\n  speed: 4.0'),
-    gameYamlSnippet('Godot', 'godot:behavior:camera', 'godot:behavior:camera', 'script: res://scripts/camera_follow.gd\nnode: Camera3D\ntarget: Player\nprojection: perspective\nfollow:\n  offset: [0, 4, -7]\n  smoothing: 8'),
-    gameYamlSnippet('Godot', 'godot:multiplayer', 'godot:multiplayer', 'enabled: true\nport: 24567\nmax_clients: 8\nsync_rate: 20\ndefault_address: 127.0.0.1'),
-    gameYamlSnippet('Godot', 'godot:export', 'godot:export', 'presets:\n  windows:\n    runnable: true'),
-    gameYamlSnippet('Unity', 'unity:project (scene mode)', 'unity:project', 'mode: scene\nunity_version: 6000.0.38f1\nname: \${1:My Unity Game}\nmain_scene: Assets/Scenes/Main.unity\nwidth: 1280\nheight: 720'),
-    gameYamlSnippet('Unity', 'unity:project (dino runner)', 'unity:project', 'unity_version: 6000.0.38f1\nname: \${1:My Dino Runner}\nwidth: 1280\nheight: 720\npixels_per_unit: 100'),
-    gameYamlSnippet('Unity', 'unity:game', 'unity:game', 'type: dino_runner\ndinosaur: dino\nobstacle: cactus\njump_key: Space\ngravity: -30\njump_velocity: 12.5\nground_y: -2\nscroll_speed: 7.5\nspawn_interval_min: 1.1\nspawn_interval_max: 2'),
-    gameYamlSnippet('Unity', 'unity:visuals', 'unity:visuals', 'background_color: "#b3e0f5"\nground_color: "#338a4f"\ncamera_size: 5\nground_width: 24'),
-    gameYamlSnippet('Unity', 'unity:controls', 'unity:controls', 'restart_key: R\npointer_enabled: true'),
-    gameYamlSnippet('Unity', 'unity:scene:<name>', 'unity:scene:\${1:main}', 'path: Assets/Scenes/Main.unity\nnodes:\n  - name: MainCamera\n    type: camera\n    main: true\n    position: [0, 0, -10]'),
-    gameYamlSnippet('Unity', 'unity:environment', 'unity:environment', 'ambient_color: "#a9c7d7"\nambient_intensity: 0.8\nfog_enabled: true\nfog_color: "#c5e0dc"\nfog_density: 0.008'),
-    gameYamlSnippet('Unity', 'unity:assets', 'unity:assets', 'dino:\n  source: assets/dino.svg\ncactus:\n  source: assets/cactus.svg'),
-    gameYamlSnippet('Unity', 'unity:export', 'unity:export', 'targets: [windows, linux, webgl]'),
-  ]
-}
-
-function completionProvider() {
-  const items = [...frontendItems(), ...backendItems(), ...gameItems()]
-  return {
-    provideCompletionItems(document, position) {
-      const line = document.lineAt(position.line).text
-      const before = line.slice(0, position.character)
-      const openTag = before.match(/\/\*\s*@arkzen:([A-Za-z0-9:_{}.+-]+)(\s*\*\/)?$/)
-
-      if (openTag && isClosableTag(openTag[1])) {
-        const close = new vscode.CompletionItem(
-          `Close @arkzen:${openTag[1]}`,
-          vscode.CompletionItemKind.Snippet
-        )
-        close.detail = 'Insert matching Tatemono closing marker'
-        close.insertText = new vscode.SnippetString(closingSuffix(openTag[1], Boolean(openTag[2])))
-        close.range = new vscode.Range(position.line, position.character, position.line, position.character)
-        return [close]
-      }
-
-      function closingSuffix(tag, hasInlineClose) {
-        const marker = tag.split(':')[0]
-        if (marker === 'godot' || marker === 'unity') {
-          return `\n\${1:}\n*/\n/* @arkzen:${tag}:end */`
-        }
-
-        if (['jobs', 'console', 'notifications', 'mail'].includes(marker)) {
-          const yaml = marker === 'jobs'
-            ? 'queue: ${1:default}\ntries: ${2:3}\ntimeout: ${3:60}'
-            : marker === 'console'
-              ? 'signature: ${1:tatemono:command}\ndescription: ${2:Describe this command}'
-              : marker === 'mail'
-                ? 'subject: "${1:Welcome}"\ndata:\n  name: ${2:string}\n  app_name: ${3:string}'
-                : 'channels: [database]\nmessage: ${1:Notification message}'
-          const body = marker === 'mail' ? '${4:<h1>Mail content</h1>}' : '${4:}'
-          return `\n${yaml}\n*/\n${body}\n/* @arkzen:${tag}:end */`
-        }
-
-        if (marker === 'file') {
-          return `\npath: \${1:index.html}\n*/\n\${2:}\n/* @arkzen:${tag}:end */`
-        }
-
-        if (/^(?:web|native):layout:/.test(tag) && !hasInlineClose) {
-          return `\nparent: \${1:parent-layout}\n*/\n\${2:}\n/* @arkzen:${tag}:end */`
-        }
-
-        const separator = ['endpoint', 'handler', 'middleware', 'policy', 'listener', 'module'].includes(marker)
-          ? '\n*/'
-          : ''
-        return `${separator}\n\${1:}\n/* @arkzen:${tag}:end */`
-      }
-
-      function isClosableTag(tag) {
-        return /^(?:(?:endpoint|handler|middleware|policy|listener|jobs|console|notifications|mail):(?:(?:php|ts|py|java|cs|go|rs):)?[A-Za-z0-9_-]+|module:rs|(?:web:(?:components|layout|page):[A-Za-z0-9_-]+|web:error:(?:404|500)|web:(?:animation|script|style)(?::[A-Za-z0-9_-]+)?)|(?:native:(?:components|layout|page):(?:(?:expo|rn|lynx):)?[A-Za-z0-9_-]+|native:error:(?:404|500)(?::(?:expo|rn|lynx))?|native:(?:animation|script):(?:expo|rn|lynx)(?::[A-Za-z0-9_-]+)?|native:style(?::(?:lynx:)?[A-Za-z0-9_-]+)?)|(?:godot:(?:project|world|input|assets|scene:[A-Za-z0-9_-]+|behavior:(?:player|camera)|multiplayer|export)|unity:(?:project|game|visuals|controls|scene:[A-Za-z0-9_-]+|environment|assets|export))|import:(?:expo|rn)|native:frame:(?:expo|rn|lynx)|desktop:frame:(?:electron|tauri)|file:[A-Za-z0-9_-]+)$/.test(tag)
-      }
-
-      const markerStart = before.lastIndexOf('/* @arkzen:')
-      if (markerStart < 0) return undefined
-
-      const range = new vscode.Range(position.line, markerStart, position.line, position.character)
-      return items.map(({ label, detail, insertText }) => {
-        const item = new vscode.CompletionItem(label, vscode.CompletionItemKind.Snippet)
-        item.detail = detail
-        item.insertText = insertText
-        item.range = range
-        return item
-      })
-    },
-  }
-}
+// ─── lifecycle ─────────────────────────────────────────────────
 
 function activate(context) {
-  const provider = vscode.languages.registerCompletionItemProvider(
-    { language: 'tatemono' },
-    completionProvider(),
-    '@',
-    ':'
+  ctx = context
+  output = vscode.window.createOutputChannel('Pluffy')
+  diagnostics = vscode.languages.createDiagnosticCollection('pluffy')
+  statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 50)
+
+  const reg = (id, fn) => vscode.commands.registerCommand(id, fn)
+  const refreshAll = () => vscode.workspace.textDocuments.forEach(refreshDiagnostics)
+  const watcher = vscode.workspace.createFileSystemWatcher('**/scaffold.js')
+
+  context.subscriptions.push(
+    output, diagnostics, statusItem, watcher,
+    vscode.languages.registerCompletionItemProvider(SELECTOR, completionProvider(), '@', ':', '+', '[', ','),
+    vscode.languages.registerHoverProvider(SELECTOR, hoverProvider),
+    vscode.languages.registerDocumentSymbolProvider(SELECTOR, symbolProvider),
+    vscode.languages.registerFoldingRangeProvider(SELECTOR, foldingProvider),
+    vscode.languages.registerDefinitionProvider(SELECTOR, definitionProvider),
+    vscode.languages.registerCodeActionsProvider(SELECTOR, actionProvider, { providedCodeActionKinds: [vscode.CodeActionKind.QuickFix] }),
+    reg('pluffy.addBlock', addBlock),
+    reg('pluffy.check', checkActive),
+    reg('pluffy.checkAll', checkAll),
+    reg('pluffy.newTatemono', newTatemono),
+    reg('pluffy.showScaffoldSource', showScaffoldSource),
+    vscode.workspace.onDidOpenTextDocument(scheduleRefresh),
+    vscode.workspace.onDidChangeTextDocument(e => scheduleRefresh(e.document)),
+    vscode.workspace.onDidSaveTextDocument(refreshDiagnostics),
+    vscode.workspace.onDidCloseTextDocument(d => { diagnostics.delete(d.uri); updateStatus() }),
+    vscode.workspace.onDidChangeConfiguration(e => { if (e.affectsConfiguration('pluffy')) refreshAll() }),
+    vscode.window.onDidChangeActiveTextEditor(updateStatus),
+    watcher.onDidChange(refreshAll),
+    watcher.onDidCreate(refreshAll),
   )
-  context.subscriptions.push(provider)
+
+  refreshAll()
+  updateStatus()
 }
 
-function deactivate() {}
+function deactivate() {
+  for (const t of timers.values()) clearTimeout(t)
+}
 
 module.exports = { activate, deactivate }

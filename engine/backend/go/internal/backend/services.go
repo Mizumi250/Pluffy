@@ -63,6 +63,13 @@ func (s engineServices) allow(w http.ResponseWriter, r *http.Request, registrati
 				return false
 			}
 		default:
+			if strings.HasPrefix(name, "role:") {
+				// role:admin,editor — same contract as Laravel's generated CheckRole middleware.
+				if !s.allowRole(w, r, registration, strings.TrimPrefix(name, "role:")) {
+					return false
+				}
+				continue
+			}
 			writeJSON(w, http.StatusNotImplemented, map[string]string{
 				"message": fmt.Sprintf("Middleware %q is not implemented by the Go engine", name),
 			})
@@ -70,6 +77,34 @@ func (s engineServices) allow(w http.ResponseWriter, r *http.Request, registrati
 		}
 	}
 	return true
+}
+
+// allowRole implements the generic role:<a>,<b> middleware. It requires the module's auth to be
+// enabled (the users table carries the role column) and answers like Laravel: 401 when no user
+// resolves, 403 "Forbidden. Insufficient role." when the user's role is not listed.
+func (s engineServices) allowRole(w http.ResponseWriter, r *http.Request, registration Registration, roles string) bool {
+	if !registration.Auth {
+		writeJSON(w, http.StatusNotImplemented, map[string]string{
+			"message": "Authentication middleware is not enabled for this module",
+		})
+		return false
+	}
+	user, _, ok, err := s.handler.resolveAuthUser(r, registration.Name)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to resolve authenticated user"})
+		return false
+	}
+	if !ok {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"message": "Unauthenticated."})
+		return false
+	}
+	for _, role := range strings.Split(roles, ",") {
+		if strings.TrimSpace(role) == user.Role {
+			return true
+		}
+	}
+	writeJSON(w, http.StatusForbidden, map[string]string{"message": "Forbidden. Insufficient role."})
+	return false
 }
 
 // ------------------------------------------------------------------- CRUD

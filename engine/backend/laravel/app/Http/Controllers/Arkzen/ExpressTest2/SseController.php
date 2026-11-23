@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED — Lynx SSE bridge for express-test-2
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-21T15:25:52.438241Z
+// Generated: 2026-11-23T13:04:20.362191Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\ExpressTest2;

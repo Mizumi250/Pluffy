@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CSSTransformsSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:25:26.021Z
+// Generated: 2026-11-23T13:03:49.268Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

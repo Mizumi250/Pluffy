@@ -12,6 +12,7 @@ mod mail;
 #[doc(hidden)]
 pub mod oauth;
 mod realtime;
+mod validation;
 
 mod generated_registry {
     include!(concat!(env!("OUT_DIR"), "/generated_registry.rs"));
@@ -836,14 +837,22 @@ async fn dispatch(
                                 }
                             }
                         }
-                        let required_role = required_role.trim_start_matches("role:");
-                        if !authenticated_user
-                            .as_ref()
-                            .is_some_and(|user| user.role == required_role)
+                        let required_roles = required_role.trim_start_matches("role:");
+                        let Some(user) = authenticated_user.as_ref() else {
+                            return (
+                                StatusCode::UNAUTHORIZED,
+                                Json(json!({"message": "Unauthenticated."})),
+                            )
+                                .into_response();
+                        };
+                        // role:admin,editor — same contract as Laravel's generated CheckRole middleware.
+                        if !required_roles
+                            .split(',')
+                            .any(|role| role.trim() == user.role)
                         {
                             return (
                                 StatusCode::FORBIDDEN,
-                                Json(json!({"message": format!("Role {required_role} required")})),
+                                Json(json!({"message": "Forbidden. Insufficient role."})),
                             )
                                 .into_response();
                         }

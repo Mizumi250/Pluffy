@@ -417,42 +417,8 @@ fn validation_supported(validation: Option<&Value>) -> bool {
         .and_then(Value::as_object)
         .map(|rules| {
             rules.values().all(|rule| {
-                rule.as_str().is_some_and(|rule| {
-                    rule.split('|').all(|rule| {
-                        let (name, argument) = rule.split_once(':').unwrap_or((rule, ""));
-                        let valid_rule = matches!(
-                            name,
-                            "required"
-                                | "sometimes"
-                                | "nullable"
-                                | "file"
-                                | "image"
-                                | "mimes"
-                                | "mimetypes"
-                                | "string"
-                                | "integer"
-                                | "numeric"
-                                | "boolean"
-                                | "array"
-                                | "email"
-                                | "in"
-                                | "unique"
-                                | "max"
-                                | "min"
-                        );
-                        valid_rule
-                            && if matches!(name, "max" | "min") {
-                                argument.parse::<f64>().is_ok()
-                            } else if name == "in" {
-                                !argument.is_empty()
-                                    && argument.split(',').all(|option| !option.is_empty())
-                            } else if name == "unique" {
-                                valid_unique_argument(argument)
-                            } else {
-                                argument.is_empty()
-                            }
-                    })
-                })
+                rule.as_str()
+                    .is_some_and(crate::validation::rule_set_supported)
             })
         })
         .unwrap_or(validation.is_none())
@@ -1431,8 +1397,56 @@ fn validate_unique_values(
             };
             if exists {
                 return Some(validation_error(vec![format!(
-                    "The {field} field must be unique."
+                    "The {field} has already been taken."
                 )]));
+            }
+        }
+    }
+    for (field, rule_set) in rules {
+        let Some(value) = body.get(field).filter(|value| !value.is_null()) else {
+            continue;
+        };
+        let Some(rule_set) = rule_set.as_str() else {
+            continue;
+        };
+        for rule in rule_set.split('|').filter(|rule| {
+            rule.split_once(':')
+                .map_or(*rule == "exists", |(name, _)| name == "exists")
+        }) {
+            let Some((exists_table, exists_column)) = unique_rule_target(rule, table, field) else {
+                return Some(validation_error(vec![format!(
+                    "The exists rule for {field} has an unsupported table or column."
+                )]));
+            };
+            if !table_exists(connection, &exists_table) {
+                return Some(validation_error(vec![format!(
+                    "The exists rule for {field} references unknown table {exists_table}."
+                )]));
+            }
+            let sql = format!(
+                "SELECT 1 FROM {} WHERE {} = ?1 LIMIT 1",
+                quote(&exists_table),
+                quote(&exists_column)
+            );
+            let found = connection
+                .query_row(
+                    &sql,
+                    crate::db::params_from_iter(vec![sql_value(value)]),
+                    |row| row.get::<_, i64>(0),
+                )
+                .optional();
+            match found {
+                Ok(Some(_)) => {}
+                Ok(None) => {
+                    return Some(validation_error(vec![format!(
+                        "The selected {field} is invalid."
+                    )]))
+                }
+                Err(error) => {
+                    return Some(internal_error(format!(
+                        "Could not validate exists rule on {exists_table}.{exists_column}: {error}"
+                    )))
+                }
             }
         }
     }
@@ -1465,10 +1479,11 @@ fn validate_fields(
     let errors = endpoint["validation"]
         .as_object()
         .map(|rules| {
-            rules
-                .iter()
-                .filter_map(|(field, rule)| {
-                    validate_rule(field, body.get(field), rule.as_str().unwrap_or_default())
+            crate::validation::expand_keys(rules, body)
+                .into_iter()
+                .flat_map(|(field, rule)| {
+                    let value = crate::validation::get_path(body, &field);
+                    crate::validation::validate_field(&field, value, &rule, body)
                 })
                 .collect::<Vec<_>>()
         })
@@ -1504,88 +1519,6 @@ fn validate_fields(
         ]));
     }
     None
-}
-
-fn validate_rule(field: &str, value: Option<&Value>, rule: &str) -> Option<String> {
-    let rules: Vec<_> = rule.split('|').collect();
-    if rules.contains(&"sometimes") && value.is_none() {
-        return None;
-    }
-    if rules.contains(&"required")
-        && value.map_or(true, |value| {
-            value.is_null() || value.as_str().is_some_and(|value| value.trim().is_empty())
-        })
-    {
-        return Some(format!("The {field} field is required."));
-    }
-    let Some(value) = value else { return None };
-    if value.is_null() && rules.contains(&"nullable") {
-        return None;
-    }
-    for rule in rules {
-        let (name, argument) = rule.split_once(':').unwrap_or((rule, ""));
-        let invalid = match name {
-            "required" | "sometimes" | "nullable" | "unique" => false,
-            "string" => !value.is_string(),
-            "integer" => {
-                !(value.is_i64()
-                    || value
-                        .as_str()
-                        .is_some_and(|value| value.parse::<i64>().is_ok()))
-            }
-            "numeric" => {
-                !(value.is_number()
-                    || value
-                        .as_str()
-                        .is_some_and(|value| value.parse::<f64>().is_ok()))
-            }
-            "boolean" => !(value.is_boolean() || matches!(value.as_i64(), Some(0 | 1))),
-            "array" => !(value.is_array() || value.is_object()),
-            "email" => !value
-                .as_str()
-                .is_some_and(|email| email.contains('@') && email.contains('.')),
-            "in" => {
-                let value = value
-                    .as_str()
-                    .map(str::to_owned)
-                    .unwrap_or_else(|| value.to_string());
-                !argument.split(',').any(|option| option == value)
-            }
-            "max" => exceeds_limit(value, argument),
-            "min" => below_limit(value, argument),
-            _ => {
-                return Some(format!(
-                    "Validation rule \"{name}\" is not supported by the Rust engine."
-                ))
-            }
-        };
-        if invalid {
-            return Some(format!(
-                "The {field} field failed the {name} validation rule."
-            ));
-        }
-    }
-    None
-}
-
-fn exceeds_limit(value: &Value, argument: &str) -> bool {
-    let limit = argument.parse::<f64>().unwrap_or(f64::INFINITY);
-    value
-        .as_str()
-        .map(|value| value.chars().count() as f64 > limit)
-        .or_else(|| value.as_array().map(|value| value.len() as f64 > limit))
-        .or_else(|| value.as_f64().map(|value| value > limit))
-        .unwrap_or(false)
-}
-
-fn below_limit(value: &Value, argument: &str) -> bool {
-    let limit = argument.parse::<f64>().unwrap_or(f64::NEG_INFINITY);
-    value
-        .as_str()
-        .map(|value| (value.chars().count() as f64) < limit)
-        .or_else(|| value.as_array().map(|value| (value.len() as f64) < limit))
-        .or_else(|| value.as_f64().map(|value| value < limit))
-        .unwrap_or(false)
 }
 
 fn writable_fields(body: &Map<String, Value>, columns: Vec<String>) -> Vec<(String, Value)> {
@@ -1962,11 +1895,15 @@ mod tests {
 
     #[test]
     fn unknown_validation_rules_are_explicit_errors() {
-        assert!(
-            validate_rule("name", Some(&json!("x")), "required|alpha_dash")
-                .unwrap()
-                .contains("not supported")
+        let body = serde_json::Map::new();
+        let errors = crate::validation::validate_field(
+            "name",
+            Some(&json!("x")),
+            "required|date_format:Y-m-d",
+            &body,
         );
+        assert!(errors.iter().any(|error| error.contains("not supported")));
+        assert!(!crate::validation::rule_set_supported("required|date_format:Y-m-d"));
     }
 
     #[test]
@@ -2005,7 +1942,7 @@ mod tests {
         assert!(duplicate["errors"][0]
             .as_str()
             .unwrap()
-            .contains("must be unique"));
+            .contains("has already been taken"));
 
         let (status, invalid_role) = store(
             &connection,
@@ -2018,7 +1955,7 @@ mod tests {
         assert!(invalid_role["errors"][0]
             .as_str()
             .unwrap()
-            .contains("in validation"));
+            .contains("selected role is invalid"));
 
         let (status, created) = store(
             &connection,

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — CheckController
 // Tatemono: aspnet-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-21T15:25:44.488890Z
+// Generated: 2026-11-23T13:03:54.246530Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\AspnetTest;

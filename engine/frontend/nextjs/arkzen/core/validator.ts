@@ -396,7 +396,11 @@ function detectCircularDeps(databases: ArkzenDatabase[]): string[] {
   for (const db of databases) {
     const d = new Set<string>()
     for (const col of Object.values(db.columns)) {
-      if (col.foreign) d.add(col.foreign.split('.')[0])
+      if (!col.foreign) continue
+      const referenced = col.foreign.split('.')[0]
+      // A table may point to itself (comment replies, category trees, manager of an employee).
+      // That is not a loop between tables, so it is not counted as a dependency.
+      if (referenced !== db.table) d.add(referenced)
     }
     deps.set(db.table, d)
   }

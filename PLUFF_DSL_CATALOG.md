@@ -16,7 +16,7 @@ generator.
 | `@arkzen:web:config` | Web runtime configuration. |
 | `@arkzen:native:config` | Native theme, fonts, and other native configuration. |
 | `@arkzen:desktop:config` | Shared desktop window settings used by Electron and Tauri shells. |
-| `@arkzen:oauth` | Optional social sign-in (Google, GitHub, X, Apple, Microsoft, Facebook, Instagram, Discord) on top of `auth: true`. Provider secrets live in the backend `.env`. |
+| `@arkzen:oauth` | Optional social sign-in (Google, GitHub, X, Apple, Microsoft, Facebook, Instagram, Discord). Requires `auth: true` in `@arkzen:meta`, is written once, and keeps provider secrets in the backend `.env`. |
 
 ## Data, APIs, and backend behavior
 
@@ -33,7 +33,7 @@ where supported; a code body belongs to its backend variant.
 | `@arkzen:handler:<backend>:name` | Supplies custom code for a named custom-route handler. |
 | `@arkzen:policy:<backend>:method` | Implements a named authorization policy method. |
 | `@arkzen:middleware:<backend>:name` | Defines reusable backend middleware. |
-| `@arkzen:realtime:identifier` | Declares realtime channel configuration and, when needed, backend channel authorization code. |
+| `@arkzen:realtime:identifier` | Declares realtime channel configuration and, when needed, backend channel authorization code. A block that has a `channel:` key is a broadcast event rather than a channel registration. |
 | `@arkzen:events[:identifier]` | Declares events and their listeners. |
 | `@arkzen:listener:<backend>:Name` | Implements a backend event listener. |
 | `@arkzen:jobs[:backend]:identifier` | Configures a background job and optionally provides its backend job body. |
@@ -47,7 +47,7 @@ where supported; a code body belongs to its backend variant.
 | DSL marker | Purpose |
 |---|---|
 | `@arkzen:web:page:name` | Declares a web page and its route. |
-| `@arkzen:web:page:layout:<declaration>` | Inline page setting for a built-in guard and/or named layout; it is not a standalone block. |
+| `@arkzen:web:page:layout:<declaration>` | Inline page setting for a built-in guard and/or named layout (`+auth`, `+guest`, `+auth:<layout>`, `+guest:<layout>`, or `<layout>`; plain `auth`/`guest` are still accepted); it is not a standalone block. |
 | `@arkzen:web:layout:name` | Defines a reusable web page wrapper; may declare a parent layout. |
 | `@arkzen:web:components:name` | Defines reusable web components and shared hooks, stores, types, constants, and utilities. |
 | `@arkzen:web:style` | Defines global web CSS. |
@@ -139,3 +139,8 @@ Game blocks are separate export targets; they are not web or native UI blocks.
 
 - Tatemono files reference files under `tatemonos/<name>/assets/`; the `assets/`
   folder itself is not a DSL block.
+- `node mizumi.js new`, `block` and `check` create, extend and verify a
+  Tatemono (`scaffold.js`). `crud` (a database plus its api resource in one
+  step) and `realtime:event` are scaffold shortcuts, not separate DSL markers.
+  The VS Code extension reuses the same scaffold for its linting and its
+  Add Block command.

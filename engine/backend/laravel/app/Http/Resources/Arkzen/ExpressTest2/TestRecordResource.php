@@ -4,7 +4,7 @@
 // ARKZEN GENERATED RESOURCE — TestRecordResource
 // Tatemono: express-test-2
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-21T15:25:51.927361Z
+// Generated: 2026-11-23T13:04:19.892989Z
 // ============================================================
 
 namespace App\Http\Resources\Arkzen\ExpressTest2;

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — MessagingController
 // Tatemono: express-test-2
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-21T15:25:51.922568Z
+// Generated: 2026-11-23T13:04:19.887713Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\ExpressTest2;

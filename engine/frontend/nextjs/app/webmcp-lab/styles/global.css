@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Karla:wght@400;600&display=swap');
+:root { --wm-bg: #e6eceb; --wm-surface: #f4f7f6; --wm-ink: #13262a; --wm-sub: #53666a; --wm-line: rgba(19, 38, 42, 0.2); --wm-chain: #f0c02f; --wm-ok: #2f7a52; --wm-bad: #a63d36; }
+.wm-root { background: var(--wm-bg); color: var(--wm-ink); font-family: 'Karla', sans-serif; font-size: 1rem; line-height: 1.5; min-height: 100vh; }
+.wm-root h1, .wm-root h2, .wm-root .wm-name { font-family: 'Bricolage Grotesque', sans-serif; }
+.wm-root :focus-visible { outline: 3px solid var(--wm-chain); outline-offset: 2px; }
+.wm-panel { background: var(--wm-surface); border: 1.5px solid var(--wm-ink); border-radius: 6px; padding: 1rem; display: grid; gap: 0.8rem; align-content: start; }
+.wm-panel h2 { font-size: 1.1rem; font-weight: 700; padding-bottom: 0.5rem; border-bottom: 2px dashed var(--wm-line); }
+.wm-rows { list-style: none; padding: 0; margin: 0; display: grid; }
+.wm-row { display: grid; grid-template-columns: 1fr auto auto; gap: 0.75rem; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--wm-line); }
+.wm-row:last-child { border-bottom: 0; }
+.wm-name { font-weight: 700; }
+.wm-price { font-weight: 600; white-space: nowrap; }
+.wm-muted { color: var(--wm-sub); }
+.wm-small { font-size: 0.875rem; }
+.wm-field { display: grid; gap: 0.25rem; font-weight: 600; font-size: 0.9rem; }
+.wm-field input, .wm-field select { border: 1.5px solid var(--wm-ink); border-radius: 4px; background: var(--wm-surface); padding: 0.6rem 0.7rem; font: inherit; color: var(--wm-ink); min-height: 2.75rem; }
+.wm-form { display: grid; gap: 0.8rem; }
+.wm-two { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.wm-inline { display: flex; gap: 0.6rem; align-items: end; }
+.wm-grow { flex: 1; }
+.wm-primary { background: var(--wm-ink); color: var(--wm-surface); border-radius: 4px; padding: 0.6rem 1.1rem; min-height: 2.75rem; font-weight: 600; }
+.wm-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.wm-ghost { border: 1.5px solid var(--wm-ink); border-radius: 4px; padding: 0.35rem 0.8rem; min-height: 2.25rem; font-weight: 600; background: transparent; }
+.wm-ghost:hover { background: var(--wm-chain); }
+.wm-err { color: var(--wm-bad); font-weight: 600; }
+.wm-notice { color: var(--wm-ok); font-weight: 600; }
+.wm-result { padding-top: 0.2rem; }
+.wm-scrim { position: fixed; inset: 0; background: rgba(19, 38, 42, 0.55); display: grid; place-items: center; padding: 1rem; z-index: 50; }
+.wm-dialog { background: var(--wm-surface); border: 1.5px solid var(--wm-ink); border-radius: 6px; padding: 1.2rem; max-width: 26rem; width: 100%; display: grid; gap: 0.8rem; }
+.wm-dialog h2 { font-size: 1.2rem; font-weight: 700; }
+.wm-sub { color: var(--wm-sub); }
+.wm-facts { display: grid; gap: 0.3rem; margin: 0; }
+.wm-facts div { display: grid; grid-template-columns: 5rem 1fr; gap: 0.5rem; }
+.wm-facts dt { color: var(--wm-sub); font-weight: 600; }
+.wm-facts dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.wm-actions { display: flex; gap: 0.6rem; justify-content: flex-end; }
+@media (max-width: 30rem) { .wm-two { grid-template-columns: 1fr; } .wm-actions { flex-direction: column-reverse; } }

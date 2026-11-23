@@ -48,6 +48,20 @@ public final class Validator {
     MSG.put("different", "The :attribute field and :other must be different.");
     MSG.put("accepted", "The :attribute field must be accepted.");
     MSG.put("filled", "The :attribute field must have a value.");
+    MSG.put("present", "The :attribute field must be present.");
+    MSG.put("prohibited", "The :attribute field is prohibited.");
+    MSG.put("declined", "The :attribute field must be declined.");
+    MSG.put("ipv4", "The :attribute field must be a valid IPv4 address.");
+    MSG.put("ipv6", "The :attribute field must be a valid IPv6 address.");
+    MSG.put("distinct", "The :attribute field has a duplicate value.");
+    MSG.put("lowercase", "The :attribute field must be lowercase.");
+    MSG.put("uppercase", "The :attribute field must be uppercase.");
+    MSG.put("starts_with", "The :attribute field must start with one of the following: :values.");
+    MSG.put("ends_with", "The :attribute field must end with one of the following: :values.");
+    MSG.put("doesnt_start_with", "The :attribute field must not start with one of the following: :values.");
+    MSG.put("doesnt_end_with", "The :attribute field must not end with one of the following: :values.");
+    MSG.put("not_regex", "The :attribute field format is invalid.");
+    MSG.put("decimal", "The :attribute field must have the specified number of decimal places.");
     MSG.put("digits", "The :attribute field must be :digits digits.");
     MSG.put("ip", "The :attribute field must be a valid IP address.");
     MSG.put("file", "The :attribute field must be a file.");
@@ -58,6 +72,18 @@ public final class Validator {
   private static final Pattern UUID = Pattern.compile("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", Pattern.CASE_INSENSITIVE);
   private static final Pattern EMAIL = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
   private static final Pattern IP = Pattern.compile("^(\\d{1,3}\\.){3}\\d{1,3}$|^[0-9a-f:]+$", Pattern.CASE_INSENSITIVE);
+
+  /** 4 or 6 for a valid IP literal, 0 otherwise (no DNS lookups). */
+  private static int ipVersion(String text) {
+    if (text.matches("(\\d{1,3}\\.){3}\\d{1,3}")) {
+      for (String part : text.split("\\.")) if (Integer.parseInt(part) > 255) return 0;
+      return 4;
+    }
+    if (text.contains(":") && text.matches("[0-9a-fA-F:.]+")) {
+      try { return java.net.InetAddress.getByName(text) instanceof java.net.Inet6Address ? 6 : 0; } catch (Exception e) { return 0; }
+    }
+    return 0;
+  }
 
   private static final class Ctx {
     Map<String, Object> data;
@@ -214,7 +240,55 @@ public final class Validator {
       case "alpha": return sv.matches("[A-Za-z]+") ? null : fail(rule, key);
       case "alpha_num": return sv.matches("[A-Za-z0-9]+") ? null : fail(rule, key);
       case "alpha_dash": return sv.matches("[A-Za-z0-9_-]+") ? null : fail(rule, key);
-      case "ip": return IP.matcher(sv).matches() ? null : fail(rule, key);
+      case "ip": case "ipv4": case "ipv6": {
+        int version = ipVersion(sv);
+        return version != 0 && (rule.equals("ip") || (rule.equals("ipv4") && version == 4) || (rule.equals("ipv6") && version == 6)) ? null : fail(rule, key);
+      }
+      case "declined": {
+        boolean ok = Boolean.FALSE.equals(v) || (v instanceof Number && ((Number) v).doubleValue() == 0)
+            || (v instanceof String && Arrays.asList("no", "off", "0", "false").contains(v));
+        return ok ? null : fail(rule, key);
+      }
+      case "lowercase": return sv.equals(sv.toLowerCase(Locale.ROOT)) ? null : fail(rule, key);
+      case "uppercase": return sv.equals(sv.toUpperCase(Locale.ROOT)) ? null : fail(rule, key);
+      case "starts_with": case "ends_with": case "doesnt_start_with": case "doesnt_end_with": {
+        boolean starts = rule.equals("starts_with") || rule.equals("doesnt_start_with");
+        boolean hit = false;
+        for (String x : p) if (starts ? sv.startsWith(x) : sv.endsWith(x)) hit = true;
+        boolean ok = rule.startsWith("doesnt") ? !hit : hit;
+        return ok ? null : fail(rule, key).replace(":values", String.join(", ", p));
+      }
+      case "decimal": {
+        if (!isNumberLike(v)) return fail(rule, key);
+        int dot = sv.indexOf('.');
+        int places = dot < 0 ? 0 : sv.length() - dot - 1;
+        int low = p.length > 0 && !p[0].isEmpty() ? Support.toInt(p[0], 0) : 0;
+        return places >= low && (p.length < 2 || places <= Support.toInt(p[1], 0)) ? null : fail(rule, key);
+      }
+      case "not_regex": {
+        Matcher m = Pattern.compile("^/(.*)/([a-z]*)$", Pattern.DOTALL).matcher(String.join(",", p));
+        if (!m.matches()) return fail(rule, key);
+        int flags = (m.group(2).contains("i") ? Pattern.CASE_INSENSITIVE : 0) | (m.group(2).contains("m") ? Pattern.MULTILINE : 0) | (m.group(2).contains("s") ? Pattern.DOTALL : 0);
+        try { return Pattern.compile(m.group(1), flags).matcher(sv).find() ? fail(rule, key) : null; } catch (PatternSyntaxException e) { return fail(rule, key); }
+      }
+      case "distinct": {
+        String[] parts = key.split("\\.");
+        int index = -1;
+        for (int i = 0; i < parts.length; i++) if (parts[i].matches("\\d+")) index = i;
+        if (index == -1) return null;
+        Object siblings = getPath(ctx.data, String.join(".", Arrays.copyOfRange(parts, 0, index)));
+        if (!(siblings instanceof List)) return null;
+        String rest = String.join(".", Arrays.copyOfRange(parts, index + 1, parts.length));
+        boolean ignoreCase = p.length > 0 && p[0].equals("ignore_case");
+        String current = ignoreCase ? sv.toLowerCase(Locale.ROOT) : sv;
+        int same = 0;
+        for (Object item : (List<?>) siblings) {
+          Object candidate = rest.isEmpty() ? item : getPath(item, rest);
+          String text = Support.jsStr(candidate);
+          if ((ignoreCase ? text.toLowerCase(Locale.ROOT) : text).equals(current)) same++;
+        }
+        return same > 1 ? fail(rule, key) : null;
+      }
       case "digits": return sv.matches("\\d{" + Support.toInt(p[0], 0) + "}") ? null : fail(rule, key).replace(":digits", p[0]);
       case "min": return sizeOf(v, numeric) >= toNum(p[0]) ? null : sizeMsg("min", v, numeric, key, p);
       case "max": return sizeOf(v, numeric) <= toNum(p[0]) ? null : sizeMsg("max", v, numeric, key, p);
@@ -341,9 +415,46 @@ public final class Validator {
 
       if (names.contains("sometimes") && v == MISSING) continue;
       boolean missing = isEmpty(v);
-      int ri = names.indexOf("required_if");
-      boolean mustHave = names.contains("required")
-          || (ri >= 0 && params.get(ri).length > 1 && Support.jsStr(getPath(ctx.data, params.get(ri)[0])).equals(params.get(ri)[1]));
+      final Map<String, Object> ctxData = ctx.data;
+      java.util.function.IntPredicate dependencyIs = idx -> {
+        String[] q = params.get(idx);
+        if (q.length < 2) return false;
+        String actual = Support.jsStr(getPath(ctxData, q[0]));
+        for (int j = 1; j < q.length; j++) if (actual.equals(q[j])) return true;
+        return false;
+      };
+      java.util.function.IntFunction<boolean[]> presence = idx -> {
+        String[] q = params.get(idx);
+        boolean[] out = new boolean[q.length];
+        for (int j = 0; j < q.length; j++) out[j] = !isEmpty(getPath(ctxData, q[j]));
+        return out;
+      };
+      boolean mustHave = names.contains("required");
+      boolean prohibited = names.contains("prohibited");
+      int acceptedIf = -1;
+      for (int i = 0; i < names.size(); i++) {
+        String n = names.get(i);
+        switch (n) {
+          case "required_if": mustHave |= dependencyIs.test(i); break;
+          case "required_unless": mustHave |= !dependencyIs.test(i); break;
+          case "required_with": for (boolean b2 : presence.apply(i)) mustHave |= b2; break;
+          case "required_with_all": { boolean all = true; for (boolean b2 : presence.apply(i)) all &= b2; mustHave |= all; break; }
+          case "required_without": for (boolean b2 : presence.apply(i)) mustHave |= !b2; break;
+          case "required_without_all": { boolean none = true; for (boolean b2 : presence.apply(i)) none &= !b2; mustHave |= none; break; }
+          case "accepted_if": if (dependencyIs.test(i)) { acceptedIf = i; mustHave = true; } break;
+          case "prohibited_if": prohibited |= dependencyIs.test(i); break;
+          case "prohibited_unless": prohibited |= !dependencyIs.test(i); break;
+          default: break;
+        }
+      }
+      if (names.contains("present") && v == MISSING) {
+        errors.computeIfAbsent(key, k -> new ArrayList<>()).add(msgs.containsKey(key + ".present") ? msgs.get(key + ".present") : MSG.get("present").replace(":attribute", attr(key)));
+        continue;
+      }
+      if (prohibited && !missing) {
+        errors.computeIfAbsent(key, k -> new ArrayList<>()).add(msgs.containsKey(key + ".prohibited") ? msgs.get(key + ".prohibited") : MSG.get("prohibited").replace(":attribute", attr(key)));
+        continue;
+      }
       if (missing) {
         if (mustHave) errors.computeIfAbsent(key, k -> new ArrayList<>()).add(msgs.containsKey(key + ".required") ? msgs.get(key + ".required") : MSG.get("required").replace(":attribute", attr(key)));
         else if (names.contains("filled") && v != MISSING) errors.computeIfAbsent(key, k -> new ArrayList<>()).add(MSG.get("filled").replace(":attribute", attr(key)));
@@ -352,8 +463,16 @@ public final class Validator {
       boolean numeric = names.contains("numeric") || names.contains("integer");
       for (int i = 0; i < names.size(); i++) {
         String n = names.get(i);
-        if (n.equals("required") || n.equals("nullable") || n.equals("sometimes") || n.equals("bail") || n.equals("filled") || n.equals("required_if")) continue;
-        String m = check(n, params.get(i), v, key, ctx, numeric);
+        if (java.util.Set.of("required", "nullable", "sometimes", "bail", "filled", "present", "required_if", "required_unless",
+            "required_with", "required_with_all", "required_without", "required_without_all", "prohibited", "prohibited_if",
+            "prohibited_unless").contains(n)) continue;
+        String[] checkParams = params.get(i);
+        if (n.equals("accepted_if")) {
+          if (acceptedIf < 0) continue;
+          n = "accepted";
+          checkParams = new String[0];
+        }
+        String m = check(n, checkParams, v, key, ctx, numeric);
         if (m != null) {
           errors.computeIfAbsent(key, k -> new ArrayList<>()).add(msgs.containsKey(key + "." + n) ? msgs.get(key + "." + n) : m);
           if (names.contains("bail")) break;

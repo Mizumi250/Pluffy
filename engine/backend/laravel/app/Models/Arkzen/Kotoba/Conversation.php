@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Conversation
 // Tatemono: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-21T15:25:57.543685Z
+// Generated: 2026-11-23T13:04:29.574440Z
 // ============================================================
 
 namespace App\Models\Arkzen\Kotoba;

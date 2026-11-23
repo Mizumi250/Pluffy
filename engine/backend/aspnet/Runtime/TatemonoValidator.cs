@@ -1,7 +1,6 @@
 using System.Data.Common;
 using System.Globalization;
 using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 
 namespace Pluff.AspNet.Runtime;
 
@@ -19,126 +18,27 @@ public static class TatemonoValidator
         var errors = new Dictionary<string, string[]>(StringComparer.Ordinal);
         if (rules is not JsonObject ruleSet) return errors;
 
-        foreach (var (field, ruleNode) in ruleSet)
+        foreach (var (field, ruleText) in RuleEngine.ExpandRules(ruleSet, input))
         {
-            var valueExists = input.TryGetPropertyValue(field, out var value);
-            var ruleText = ruleNode is JsonArray ruleArray
-                ? string.Join("|", ruleArray.Select(StringValue))
-                : StringValue(ruleNode) ?? "";
-            var rulesForField = ruleText.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(ParseRule)
-                .ToArray();
+            // Everything that needs no I/O lives in RuleEngine (shared conformance vectors).
+            var valueExists = RuleEngine.TryGetPath(input, field, out var value);
+            foreach (var message in RuleEngine.ValidateField(field, input, valueExists, value, ruleText))
+                AddError(errors, field, message);
+            if (errors.ContainsKey(field) || RuleEngine.IsEmpty(valueExists, value)) continue;
 
-            if (rulesForField.Any(rule => rule.Name == "sometimes") && !valueExists) continue;
-
-            var isEmpty = !valueExists || value is null || value is JsonValue jsonValue &&
-                jsonValue.TryGetValue<string>(out var text) && string.IsNullOrWhiteSpace(text);
-            var nullable = rulesForField.Any(rule => rule.Name == "nullable");
-            if (isEmpty)
+            // unique / exists need the module database.
+            var text = StringValue(value);
+            foreach (var rule in ruleText.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(ParseRule))
             {
-                if (rulesForField.Any(rule => rule.Name == "required"))
-                    AddError(errors, field, $"The {field} field is required.");
-                if (nullable || !valueExists || value is null) continue;
-            }
-
-            foreach (var rule in rulesForField)
-            {
-                if (rule.Name is "sometimes" or "nullable" or "required") continue;
-                var message = await CheckRuleAsync(
-                    rule, field, value, input, connection, slug, defaultTable, currentId, cancellationToken);
+                if (rule.Name is not ("unique" or "exists")) continue;
+                var message = await CheckDatabaseRuleAsync(
+                    rule.Name, field, text, rule.Parameters.Split(',', StringSplitOptions.TrimEntries),
+                    connection, slug, defaultTable, currentId, cancellationToken);
                 if (message is not null) AddError(errors, field, message);
             }
         }
 
         return errors;
-    }
-
-    private static async Task<string?> CheckRuleAsync(
-        (string Name, string Parameters) rule,
-        string field,
-        JsonNode? value,
-        JsonObject input,
-        DbConnection connection,
-        string slug,
-        string defaultTable,
-        object? currentId,
-        CancellationToken cancellationToken)
-    {
-        var text = StringValue(value);
-        var parameters = rule.Parameters.Split(',', StringSplitOptions.TrimEntries);
-        switch (rule.Name)
-        {
-            case "string":
-                return value is JsonValue jsonValue && jsonValue.TryGetValue<string>(out _)
-                    ? null
-                    : $"The {field} field must be a string.";
-            case "integer":
-                return long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out _)
-                    ? null
-                    : $"The {field} field must be an integer.";
-            case "numeric":
-                return decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out _)
-                    ? null
-                    : $"The {field} field must be a number.";
-            case "boolean":
-                return text is "0" or "1" or "true" or "false"
-                    ? null
-                    : $"The {field} field must be true or false.";
-            case "email":
-                return text is not null && Regex.IsMatch(text, @"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.CultureInvariant)
-                    ? null
-                    : $"The {field} field must be a valid email address.";
-            case "url":
-                return Uri.TryCreate(text, UriKind.Absolute, out var uri) && (uri.Scheme is "http" or "https")
-                    ? null
-                    : $"The {field} field must be a valid URL.";
-            case "date":
-                return DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.None, out _)
-                    ? null
-                    : $"The {field} field is not a valid date.";
-            case "array":
-                return value is JsonArray ? null : $"The {field} field must be an array.";
-            case "accepted":
-                return text is "yes" or "on" or "1" or "true"
-                    ? null
-                    : $"The {field} field must be accepted.";
-            case "confirmed":
-                return string.Equals(text, StringValue(input[$"{field}_confirmation"]), StringComparison.Ordinal)
-                    ? null
-                    : $"The {field} field confirmation does not match.";
-            case "same":
-                return parameters.Length > 0 &&
-                    string.Equals(text, StringValue(input[parameters[0]]), StringComparison.Ordinal)
-                    ? null
-                    : $"The {field} field and {parameters.FirstOrDefault() ?? "other field"} must match.";
-            case "in":
-                return parameters.Contains(text, StringComparer.Ordinal)
-                    ? null
-                    : $"The selected {field} is invalid.";
-            case "min":
-            case "max":
-                return CheckBound(rule.Name, field, value, parameters.FirstOrDefault());
-            case "unique":
-            case "exists":
-                return await CheckDatabaseRuleAsync(
-                    rule.Name, field, text, parameters, connection, slug, defaultTable, currentId, cancellationToken);
-            default:
-                return $"The {field} field uses unsupported validation rule \"{rule.Name}\".";
-        }
-    }
-
-    private static string? CheckBound(string rule, string field, JsonNode? value, string? boundText)
-    {
-        if (!decimal.TryParse(boundText, NumberStyles.Number, CultureInfo.InvariantCulture, out var bound))
-            return $"The {field} field has an invalid {rule} rule.";
-        var text = StringValue(value);
-        var valid = decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var numeric)
-            ? rule == "min" ? numeric >= bound : numeric <= bound
-            : rule == "min" ? (text?.Length ?? 0) >= bound : (text?.Length ?? 0) <= bound;
-        if (valid) return null;
-        return rule == "min"
-            ? $"The {field} field must be at least {boundText}."
-            : $"The {field} field must not be greater than {boundText}.";
     }
 
     private static async Task<string?> CheckDatabaseRuleAsync(

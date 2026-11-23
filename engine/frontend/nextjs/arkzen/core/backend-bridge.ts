@@ -119,6 +119,7 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
   if (tatemono.mails.length)        console.log(`[Arkzen Bridge]   Mail: ${tatemono.mails.length} block(s)`)
   if (tatemono.consoles.length)     console.log(`[Arkzen Bridge]   Console: ${tatemono.consoles.length} block(s)`)
   if (tatemono.meta.authSeed?.users?.length) console.log(`[Arkzen Bridge]   Auth seed: ${tatemono.meta.authSeed.users.length} user(s)`)
+  if ((tatemono.meta as any).oauth?.providers?.length) console.log(`[Arkzen Bridge]   OAuth: ${(tatemono.meta as any).oauth.providers.join(', ')}`)
   if (Object.keys(tatemono.middlewareSnippets ?? {}).length > 0)
     console.log(`[Arkzen Bridge]   Middleware snippets: ${Object.keys(tatemono.middlewareSnippets).join(', ')}`)
   if (Object.keys(tatemono.policySnippets ?? {}).length > 0)
@@ -136,6 +137,9 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
 
     // ← v5.3: seed users into the tatemono's isolated users table
     authSeed: tatemono.meta.authSeed ?? null,
+
+    // ← v16.0: optional social sign-in config from @arkzen:oauth (no secrets; those live in .env)
+    oauth: (tatemono.meta as any).oauth ?? null,
 
     databases: tatemono.databases,
 

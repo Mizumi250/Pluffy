@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — PublicController
 // Tatemono: aspnet-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-21T15:25:44.493393Z
+// Generated: 2026-11-23T13:03:54.292307Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\AspnetTest;

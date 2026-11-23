@@ -1,35 +1,53 @@
-# Pluff Tatemono for VS Code
+# Pluff Tatemono
 
-Highlights Tatemono files across every Pluff web, mobile, desktop, and backend target, embeds the appropriate language grammar in DSL bodies, and provides snippets for Tatemono blocks with matching closing markers.
+VS Code support for [Pluffy](https://github.com/Mizumi250/Pluffy) Tatemono files
+(`tatemonos/<name>/core.tsx` and `*.tatemono`).
 
-## What is highlighted
+## What you get
 
-- Tatemono DSL tags, section names, backend variants, and Expo/RN import markers have distinct colors.
-- Web blocks use TSX highlighting for Next.js, React/Vite, TanStack Start, Astro, and React/Inertia. Astro renders the authored React/TSX as islands, so the source block is TSX rather than an `.astro` template.
-- Native blocks use TSX highlighting for Expo and bare React Native; Lynx blocks use TSX with ReactLynx elements.
-- Web/native/Lynx style blocks use CSS highlighting.
-- YAML metadata and configuration headers use YAML highlighting.
-- `:php`, `:ts`, `:py`, `:java`, `:cs`, `:go`, and `:rs` backend bodies use PHP, TypeScript, Python, Java, C#, Go, and Rust grammars respectively.
-- Mail templates use HTML highlighting; notification bodies use their backend's language grammar.
-- Godot and Unity game DSL blocks embed YAML highlighting throughout the block body, through the closing `*/`. Their opening and matching `:end` markers are highlighted as game DSL tags.
-- Completions cover the current Godot project/world/input/assets/scene/behavior/multiplayer/export blocks and Unity runner and scene-mode project/game/visuals/controls/scene/environment/assets/export blocks.
-- Frame blocks are highlighted and completed: `@arkzen:native:frame:expo|rn|lynx` use TSX, `@arkzen:desktop:frame:electron` uses JavaScript, and `@arkzen:desktop:frame:tauri` uses Rust.
-- Free file blocks (`@arkzen:file:<id>`) are highlighted with a YAML `path:` header and complete with the header and closing marker.
-- Parent-chained layouts use their YAML-header form, and Rust module snippets use the required separator-line form.
-- Tauri and Electron shells render the selected web stack, so their Tatemono UI uses the same TSX/CSS highlighting as that web target.
+| Feature | How it works |
+|---|---|
+| **Highlighting** | Block markers, inline layout lines, and embedded YAML / TSX / PHP / Python / Java / C# / Go / Rust / CSS bodies. |
+| **Snippets** | Every block: backend variants, shared YAML-only forms (`jobs`, `console`, `notifications`, `mail`), `oauth`, `realtime` channel and event, frames, Godot and Unity. Type `/* @arkzen:`. |
+| **Smart completion** | Closing `:end` tags, layout lines (`+auth`, `+guest`, `+auth:<layout>`, layouts declared in the file), OAuth provider names. |
+| **Live linting** | The same rules as `node mizumi.js check`, shown as you type, in Problems and the status bar. |
+| **Quick fixes** | Add a missing `:end`, set `auth: true` for `oauth`, rename a block to the "Did you mean" suggestion (opener and closer together). |
+| **Outline and folding** | Every block appears in the Outline view and folds. |
+| **Hover** | Block description, variants and layout-line meaning. |
+| **Go to definition** | Page layout line to layout, `parent:` to parent layout, routes `handler:` to its body, `listeners:` to the listener body, endpoint body to its api key and back. |
+| **Add Block…** | Command-palette or right-click picker over every block builder in `scaffold.js`, with variant, name and cross-checks. Inserts into the editor buffer (undoable). |
 
-The DSL tags intentionally identify a target family (`web`, `native`, or `desktop`), not an individual web framework. The same web block can be consumed by any of the five web generators, so web completions stay framework-neutral; the generators provide their own router and runtime adapters.
+## Commands
 
-The matching language extension must be installed for embedded syntax coloring (for example, Rust Analyzer for Rust, and the Microsoft C# extension for C#). VS Code's built-in grammars are used where available.
+`Pluffy: Add Block…`, `Check This Tatemono`, `Check All Tatemonos in Workspace`,
+`New Tatemono (mizumi new)` (opens a terminal in the repo), `Show Which scaffold.js Is Used`.
 
-## Try it in this repository
+## Settings
 
-1. Open the Pluffy repository in VS Code.
-2. Open **Run and Debug** and run **Launch Pluff Tatemono Extension**.
-3. In the Extension Development Host window, open a `tatemonos/<name>/core.tsx` file.
+| Setting | Default | |
+|---|---|---|
+| `pluffy.lint.enable` | `true` | Live diagnostics. |
+| `pluffy.backend` | `auto` | Active backend variant (`php`, `ts`, `py`, `java`, `cs`, `go`, `rs`). Enables the "missing variant body" warnings and preselects the variant in Add Block. |
+| `pluffy.useWorkspaceScaffold` | `true` | If the open folder has its own `scaffold.js`, use its linter/scanner so the editor follows your newest rules. |
 
-Use completion after `/* @arkzen:` to select a DSL block snippet. Block snippets insert the correct block shape, a body placeholder, and the matching closing tag. Completing an already typed opener preserves it and adds the appropriate body/separator/closer. Backend snippets are labeled with their variant and language.
+## One implementation, no drift
 
-## Install
+The extension bundles `lib/scaffold.mjs`, a copy of the repo's `scaffold.js`.
+After you change `scaffold.js`, refresh the bundle and rebuild:
 
-Package the `vscode-extension` folder as a VS Code extension and install the generated VSIX, or use the development launch configuration above.
+```bash
+cd vscode-extension
+npm run package        # syncs ../scaffold.js, then builds the .vsix
+```
+
+`scripts/sync-scaffold.js` appends the few exports the extension needs
+(`BLOCKS`, `normalizeName`, `crossCheck`, ...) to the bundled copy, so
+`scaffold.js` itself needs no change. When you open the Pluffy repo, the
+workspace `scaffold.js` is used for linting automatically.
+
+## Build and install
+
+```bash
+npm run package
+code --install-extension pluff-tatemono-0.3.0.vsix
+```

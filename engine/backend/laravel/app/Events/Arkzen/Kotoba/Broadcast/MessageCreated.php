@@ -5,7 +5,7 @@
 // Tatemono: kotoba
 // Channel: kotoba.{id} (private)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-21T15:25:59.094514Z
+// Generated: 2026-11-23T13:04:31.433604Z
 // ============================================================
 
 namespace App\Events\Arkzen\Kotoba\Broadcast;

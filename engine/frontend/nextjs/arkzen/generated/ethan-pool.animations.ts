@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — ethan-pool
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:15.561Z
+// Generated: 2026-11-23T13:04:13.952Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -12,6 +12,7 @@ gsap.registerPlugin(ScrollTrigger)
 
 export const ethanPoolAnimations = (pageRef: React.RefObject<HTMLDivElement | null>) => {
   
+
   const ctx = gsap.context(() => {
     // ── data-fade entrance system (mirrors source data-fade / data-fade-delay / data-fade-duration) ──
     const fadeEls = gsap.utils.toArray<HTMLElement>('[data-fade]')

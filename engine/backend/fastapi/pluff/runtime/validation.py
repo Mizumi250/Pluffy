@@ -5,6 +5,7 @@ Same rules, same messages, same 422 bodies as the Laravel and Express backends.
 from __future__ import annotations
 
 import datetime as _dt
+import ipaddress
 import json
 import re
 from urllib.parse import urlparse
@@ -92,6 +93,20 @@ MSG = {
     "different": "The :attribute field and :other must be different.",
     "accepted": "The :attribute field must be accepted.",
     "filled": "The :attribute field must have a value.",
+    "present": "The :attribute field must be present.",
+    "prohibited": "The :attribute field is prohibited.",
+    "declined": "The :attribute field must be declined.",
+    "ipv4": "The :attribute field must be a valid IPv4 address.",
+    "ipv6": "The :attribute field must be a valid IPv6 address.",
+    "distinct": "The :attribute field has a duplicate value.",
+    "lowercase": "The :attribute field must be lowercase.",
+    "uppercase": "The :attribute field must be uppercase.",
+    "starts_with": "The :attribute field must start with one of the following: :values.",
+    "ends_with": "The :attribute field must end with one of the following: :values.",
+    "doesnt_start_with": "The :attribute field must not start with one of the following: :values.",
+    "doesnt_end_with": "The :attribute field must not end with one of the following: :values.",
+    "not_regex": "The :attribute field format is invalid.",
+    "decimal": "The :attribute field must have the specified number of decimal places.",
     "digits": "The :attribute field must be :digits digits.",
     "ip": "The :attribute field must be a valid IP address.",
     "file": "The :attribute field must be a file.",
@@ -228,8 +243,51 @@ async def _check(rule: str, p: list[str], v, key: str, ctx: dict, numeric: bool)
         return None if re.fullmatch(r"[A-Za-z0-9]+", sv) else fail()
     if rule == "alpha_dash":
         return None if re.fullmatch(r"[A-Za-z0-9_-]+", sv) else fail()
-    if rule == "ip":
-        return None if _IP.match(sv) else fail()
+    if rule in ("ip", "ipv4", "ipv6"):
+        try:
+            version = ipaddress.ip_address(sv).version
+        except ValueError:
+            return fail()
+        return None if rule == "ip" or (rule == "ipv4" and version == 4) or (rule == "ipv6" and version == 6) else fail()
+    if rule == "declined":
+        return None if (v in ("no", "off", 0, "0", False, "false") and not isinstance(v, (dict, list))) else fail()
+    if rule == "lowercase":
+        return None if sv == sv.lower() else fail()
+    if rule == "uppercase":
+        return None if sv == sv.upper() else fail()
+    if rule in ("starts_with", "ends_with", "doesnt_start_with", "doesnt_end_with"):
+        starts = rule.endswith("start_with") or rule == "starts_with"
+        hit = any(sv.startswith(x) if starts else sv.endswith(x) for x in p)
+        ok = (not hit) if rule.startswith("doesnt") else hit
+        return None if ok else fail().replace(":values", ", ".join(p))
+    if rule == "decimal":
+        if _to_number(v) != _to_number(v):
+            return fail()
+        places = len(sv.split(".")[1]) if "." in sv else 0
+        low = int(p[0]) if p and p[0] else 0
+        return None if places >= low and (len(p) < 2 or places <= int(p[1])) else fail()
+    if rule == "not_regex":
+        m = re.match(r"^/(.*)/([a-z]*)$", ",".join(p), re.S)
+        if not m:
+            return fail()
+        flags = (re.I if "i" in m.group(2) else 0) | (re.M if "m" in m.group(2) else 0) | (re.S if "s" in m.group(2) else 0)
+        try:
+            return fail() if re.search(m.group(1), sv, flags) else None
+        except re.error:
+            return fail()
+    if rule == "distinct":
+        parts = key.split(".")
+        index = max((i for i, part in enumerate(parts) if part.isdigit()), default=-1)
+        if index == -1:
+            return None
+        siblings = _get_path(ctx["data"], ".".join(parts[:index]))
+        if not isinstance(siblings, list):
+            return None
+        rest = ".".join(parts[index + 1:])
+        canon = (lambda x: x.lower() if isinstance(x, str) else x) if (p and p[0] == "ignore_case") else (lambda x: x)
+        current = canon(v)
+        same = [item for item in siblings if canon(_get_path(item, rest) if rest else item) == current]
+        return fail() if len(same) > 1 else None
     if rule == "digits":
         return None if re.fullmatch(r"\d{%s}" % p[0], sv) else fail().replace(":digits", p[0])
     if rule == "min":
@@ -343,10 +401,40 @@ async def validate(data: dict, rules: dict, db: Connection | None = None, slug: 
         if "sometimes" in names and v is _MISSING:
             continue
         missing = _is_empty(v)
-        required_if = next((pr for pr in parsed if pr[0] == "required_if"), None)
-        must_have = "required" in names or (
-            required_if is not None and len(required_if[1]) > 1
-            and _js_str(_get_path(ctx["data"], required_if[1][0])) == required_if[1][1])
+        data = ctx["data"]
+
+        def dependency_is(rule):
+            return len(rule[1]) > 1 and any(_js_str(_get_path(data, rule[1][0])) == x for x in rule[1][1:])
+
+        def present(rule):
+            return [not _is_empty(_get_path(data, f)) for f in rule[1]]
+
+        def find(name):
+            return next((pr for pr in parsed if pr[0] == name), None)
+
+        accepted_if = next((pr for pr in parsed if pr[0] == "accepted_if" and dependency_is(pr)), None)
+        required_if, required_unless = find("required_if"), find("required_unless")
+        with_, with_all = find("required_with"), find("required_with_all")
+        without, without_all = find("required_without"), find("required_without_all")
+        must_have = (
+            "required" in names
+            or (required_if is not None and dependency_is(required_if))
+            or (required_unless is not None and not dependency_is(required_unless))
+            or (with_ is not None and any(present(with_)))
+            or (with_all is not None and all(present(with_all)))
+            or (without is not None and not all(present(without)))
+            or (without_all is not None and not any(present(without_all)))
+            or accepted_if is not None
+        )
+        prohibited = "prohibited" in names or any(
+            (pr[0] == "prohibited_if" and dependency_is(pr)) or (pr[0] == "prohibited_unless" and not dependency_is(pr))
+            for pr in parsed)
+        if "present" in names and v is _MISSING:
+            errors.setdefault(key, []).append(messages.get(f"{key}.present") or MSG["present"].replace(":attribute", _attr(key)))
+            continue
+        if prohibited and not missing:
+            errors.setdefault(key, []).append(messages.get(f"{key}.prohibited") or MSG["prohibited"].replace(":attribute", _attr(key)))
+            continue
         if missing:
             if must_have:
                 errors.setdefault(key, []).append(messages.get(f"{key}.required") or MSG["required"].replace(":attribute", _attr(key)))
@@ -355,8 +443,14 @@ async def validate(data: dict, rules: dict, db: Connection | None = None, slug: 
             continue
         numeric = "numeric" in names or "integer" in names
         for n, p in parsed:
-            if n in ("required", "nullable", "sometimes", "bail", "filled", "required_if"):
+            if n in ("required", "nullable", "sometimes", "bail", "filled", "present", "required_if", "required_unless",
+                     "required_with", "required_with_all", "required_without", "required_without_all",
+                     "prohibited", "prohibited_if", "prohibited_unless"):
                 continue
+            if n == "accepted_if":
+                if accepted_if is None:
+                    continue
+                n, p = "accepted", []
             m = await _check(n, p, v, key, ctx, numeric)
             if m:
                 errors.setdefault(key, []).append(messages.get(f"{key}.{n}") or m)

@@ -503,7 +503,7 @@ func checkRule(rule parsedRule, value any, key string, data map[string]any, nume
 		}
 		return fail()
 	case "url":
-		if parsed, err := url.Parse(text); err == nil && parsed.Scheme != "" && parsed.Host != "" {
+		if parsed, err := url.Parse(text); err == nil && parsed.Scheme != "" && (parsed.Host != "" || parsed.Opaque != "") {
 			return ""
 		}
 		return fail()

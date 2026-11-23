@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — JobResult
 // Tatemono: fastapi-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-21T15:25:52.758975Z
+// Generated: 2026-11-23T13:04:20.872326Z
 // ============================================================
 
 namespace App\Models\Arkzen\FastapiTest;

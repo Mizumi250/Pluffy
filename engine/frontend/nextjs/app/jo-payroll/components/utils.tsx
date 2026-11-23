@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — jo-payroll
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:42.347Z
+// Generated: 2026-11-23T13:04:25.224Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -11,6 +11,7 @@ import { AlertCircle, ArrowDownRight, ArrowUpRight, Banknote, Building2, Calenda
 import { useRouter } from 'next/navigation'
 import { create } from 'zustand'
 import type { JobOrder, PayrollState, PayrollSummary } from './types'
+
 
 export const formatPeso = (v?: number) =>
   v == null ? '₱0.00' : `₱${v.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`

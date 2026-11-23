@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FeatureCard
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:55.206Z
+// Generated: 2026-11-23T13:04:34.775Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

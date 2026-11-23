@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ScrollTransformDemo
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:25:25.989Z
+// Generated: 2026-11-23T13:03:49.126Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

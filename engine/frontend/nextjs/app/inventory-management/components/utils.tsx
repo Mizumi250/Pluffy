@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — inventory-management
 // Source: @arkzen:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:40.891Z
+// Generated: 2026-11-23T13:04:24.645Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -15,5 +15,6 @@ import { useMutation } from '@/arkzen/core/hooks/useMutation'
 import { useQuery } from '@/arkzen/core/hooks/useQuery'
 import { AlertTriangle, DollarSign, Edit2, Package, Plus, Trash2, TrendingUp } from 'lucide-react'
 import type { FormState, InventoryItem } from './types'
+
 
 export const emptyForm: FormState = { name: '', sku: '', quantity: '', price: '', category: '', description: '' }

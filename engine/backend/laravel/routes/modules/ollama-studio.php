@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — ollama-studio
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-21T15:26:03.466527Z
+// Generated: 2026-11-23T13:04:36.828377Z
 // Resources: Assistant
 // Custom controllers: 
 // ============================================================

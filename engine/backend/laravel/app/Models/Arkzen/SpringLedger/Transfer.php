@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Transfer
 // Tatemono: spring-ledger
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-21T15:26:12.993370Z
+// Generated: 2026-11-23T13:04:42.519944Z
 // ============================================================
 
 namespace App\Models\Arkzen\SpringLedger;

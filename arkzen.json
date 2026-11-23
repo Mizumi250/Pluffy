@@ -659,7 +659,7 @@
       }
     }
   ],
-  "activeStack": "react-vite",
+  "activeStack": "nextjs",
   "activeAppStack": "lynx",
   "activeDesktopStack": "tauri",
   "stacks": {

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ErrorScreen
 // Source: @arkzen:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:11.991Z
+// Generated: 2026-11-23T13:04:12.801Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

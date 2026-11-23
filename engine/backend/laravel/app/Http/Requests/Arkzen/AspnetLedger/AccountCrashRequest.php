@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — AccountCrashRequest
 // Tatemono: aspnet-ledger
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-21T15:25:43.659591Z
+// Generated: 2026-11-23T13:03:52.136598Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\AspnetLedger;

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — new-updates-styles
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:55.198Z
+// Generated: 2026-11-23T13:04:34.764Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,6 +10,7 @@ import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import Link from 'next/link'
 import type { Feature, FeatureCardProps, HeroSectionProps } from './types'
+
 
 export const getIconComponent = (iconName: string) => {
   const icons: Record<string, React.ReactNode> = {

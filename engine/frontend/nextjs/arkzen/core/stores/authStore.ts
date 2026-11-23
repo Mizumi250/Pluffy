@@ -7,6 +7,10 @@
 // Cookie helpers use document.cookie (web stacks only).
 // For React Native, override setCookie/clearCookie in the adapter.
 //
+// v1.2: Social sign-in helpers (getOAuthProviders, oauthLoginUrl,
+//       consumeOAuthError) and one-shot pickup of the token that the
+//       backend hands over in the URL hash after an OAuth callback.
+//
 // This file lives in engine/shared and is sync-copied into
 // each stack's arkzen/core/stores/ by shared-sync.ts.
 // ============================================================
@@ -93,6 +97,47 @@ interface AuthState {
   setToken:    (token: string, user: ArkzenUser) => void
   clear:       () => void
 }
+
+// ─────────────────────────────────────────────
+// SOCIAL SIGN-IN (OAuth) — opt-in via @arkzen:oauth
+// ─────────────────────────────────────────────
+//
+// Flow: the page links the browser to oauthLoginUrl('google'). The backend
+// bounces through the provider, creates or links the user, and redirects back
+// to the tatemono with  #arkzen_oauth_token=<token>&arkzen_oauth_slug=<slug>
+// (or  #arkzen_oauth_error=<message>). The hash never reaches a server log.
+// consumeOAuthHash() below runs when this module loads, writes the token into
+// the same persisted slot zustand uses, and strips the hash from the address
+// bar, so AuthLayout finds a normal session and calls fetchMe() as usual.
+
+const OAUTH_HASH_TOKEN = 'arkzen_oauth_token'
+const OAUTH_HASH_SLUG  = 'arkzen_oauth_slug'
+const OAUTH_HASH_ERROR = 'arkzen_oauth_error'
+
+function consumeOAuthHash(): void {
+  if (typeof window === 'undefined' || !window.location.hash) return
+  try {
+    const params = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    const token  = params.get(OAUTH_HASH_TOKEN)
+    const slug   = params.get(OAUTH_HASH_SLUG)
+    const error  = params.get(OAUTH_HASH_ERROR)
+    if (!token && !error) return
+
+    if (token && slug && /^[a-z0-9][a-z0-9-]*$/.test(slug)) {
+      window.localStorage.setItem(`arkzen-auth-${slug}`, JSON.stringify({ state: { token }, version: 0 }))
+      setCookie(slug, token)
+    }
+    if (error) window.sessionStorage.setItem(`arkzen-oauth-error`, error)
+
+    params.delete(OAUTH_HASH_TOKEN); params.delete(OAUTH_HASH_SLUG); params.delete(OAUTH_HASH_ERROR)
+    const rest = params.toString()
+    window.history.replaceState(null, '', window.location.pathname + window.location.search + (rest ? `#${rest}` : ''))
+  } catch {
+    // storage blocked or malformed hash: fall back to a normal logged-out state
+  }
+}
+
+consumeOAuthHash()
 
 // ─────────────────────────────────────────────
 // STORE
@@ -284,6 +329,39 @@ export async function arkzenFetch(url: string, options: RequestInit = {}): Promi
 export async function arkzenGet<T = unknown>(url: string): Promise<T> {
   const res = await arkzenFetch(url)
   return safeJson<T>(res)
+}
+
+// ─────────────────────────────────────────────
+// SOCIAL SIGN-IN HELPERS
+// ─────────────────────────────────────────────
+
+/** Providers the backend has configured (client id + secret present in its .env). */
+export async function getOAuthProviders(): Promise<string[]> {
+  try {
+    const res  = await fetch(`${getAuthBase()}/oauth/providers`, { headers: { 'Accept': 'application/json' } })
+    if (!res.ok) return []
+    const data = await safeJson<{ providers?: { id: string; enabled?: boolean }[] }>(res)
+    return (data.providers ?? []).filter(p => p.enabled !== false).map(p => p.id)
+  } catch {
+    return []
+  }
+}
+
+/** URL to send the browser to (window.location.href = oauthLoginUrl('github')). */
+export function oauthLoginUrl(provider: string): string {
+  return `${getAuthBase()}/oauth/${encodeURIComponent(provider)}/redirect`
+}
+
+/** Returns the message from a failed sign-in once, then forgets it. */
+export function consumeOAuthError(): string | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const msg = window.sessionStorage.getItem('arkzen-oauth-error')
+    if (msg) window.sessionStorage.removeItem('arkzen-oauth-error')
+    return msg
+  } catch {
+    return null
+  }
 }
 
 // ─────────────────────────────────────────────

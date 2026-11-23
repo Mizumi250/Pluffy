@@ -493,7 +493,7 @@
       ]
     },
     "yaml-block": {
-      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:meta(?::(?:web|native))?|web:config|native:config|desktop:config|database(?::[A-Za-z0-9_-]+)?|api(?::[A-Za-z0-9_-]+)?|routes))[ \\t]*$",
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:meta(?::(?:web|native))?|oauth|web:config|native:config|desktop:config|database(?::[A-Za-z0-9_-]+)?|api(?::[A-Za-z0-9_-]+)?|routes))[ \\t]*$",
       "beginCaptures": {
         "0": { "name": "comment.block.tatemono" },
         "1": { "name": "entity.name.tag.tatemono.shared" }

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — SendLog
 // Tatemono: express-test-2
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-21T15:25:51.821473Z
+// Generated: 2026-11-23T13:04:19.742778Z
 // ============================================================
 
 namespace App\Models\Arkzen\ExpressTest2;

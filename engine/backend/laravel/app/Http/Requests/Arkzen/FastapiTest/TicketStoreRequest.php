@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — TicketStoreRequest
 // Tatemono: fastapi-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-21T15:25:52.762472Z
+// Generated: 2026-11-23T13:04:20.882064Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\FastapiTest;

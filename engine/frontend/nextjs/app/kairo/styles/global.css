@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap');
+
+.kr-root {
+  --ink: #1d2618;
+  --ink2: #4b5a45;
+  --paper: #f6f9f1;
+  --shell: #d5e2c4;
+  --board: #eaf0e3;
+  --line: #d3dec7;
+  --lime: #b9e03c;
+  --lime-d: #4f6b09;
+  min-height: 100dvh;
+  padding: 20px;
+  background: var(--shell);
+  color: var(--ink);
+  font-family: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 16px;
+}
+.kr-root *, .kr-root *::before, .kr-root *::after { box-sizing: border-box; }
+.kr-root :focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+.kr-win {
+  height: calc(100dvh - 40px);
+  min-height: 560px;
+  display: grid;
+  grid-template-columns: 272px minmax(0, 1fr) 312px;
+  background: var(--paper);
+  border-radius: 28px;
+  overflow: hidden;
+}
+.kr-side, .kr-insp { overflow-y: auto; padding: 24px 0; }
+.kr-side { border-right: 1px solid var(--line); }
+.kr-insp { border-left: 1px solid var(--line); }
+.kr-brand, .kr-sec { padding: 0 20px; }
+.kr-brand h1 { margin: 0 0 8px; font: 700 34px/1.05 'Bricolage Grotesque', system-ui, sans-serif; }
+.kr-brand p, .kr-note, .kr-help { margin: 0; max-width: 36ch; font-size: 15px; line-height: 1.5; color: var(--ink2); }
+.kr-note { padding: 0 20px; }
+.kr-h { margin: 28px 20px 10px; font: 700 19px/1.2 'Bricolage Grotesque', system-ui, sans-serif; }
+.kr-sec { margin-bottom: 28px; }
+.kr-sec .kr-h { margin: 0 0 12px; }
+.kr-row {
+  display: flex; gap: 12px; align-items: center; width: 100%;
+  padding: 12px 20px; border: 0; border-top: 1px solid var(--line);
+  background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+}
+.kr-row:hover { background: #ebf3dc; }
+.kr-row b { display: block; font-weight: 600; }
+.kr-row small { display: block; font-size: 14px; line-height: 1.35; color: var(--ink2); }
+.kr-sw { flex: none; width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; color: var(--ink); }
+.kr-board { position: relative; min-width: 0; overflow: hidden; background: var(--board); }
+.kr-board canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+.kr-board canvas:focus-visible { outline: 2px solid var(--lime-d); outline-offset: -4px; }
+.kr-hint {
+  position: absolute; left: 20px; top: 20px; max-width: 300px; margin: 0; padding: 12px 14px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+  font-size: 15px; line-height: 1.45;
+}
+.kr-marq { position: absolute; border: 1.5px solid var(--lime-d); background: rgba(185, 224, 60, 0.2); pointer-events: none; }
+.kr-bar {
+  position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%);
+  display: flex; gap: 4px; padding: 6px; background: var(--paper);
+  border: 1px solid var(--line); border-radius: 14px;
+}
+.kr-btn {
+  display: inline-flex; gap: 8px; align-items: center; justify-content: center; min-height: 44px;
+  padding: 10px 14px; border: 0; border-radius: 10px; background: var(--lime); color: var(--ink);
+  font: 600 15px 'Instrument Sans', system-ui, sans-serif; cursor: pointer;
+}
+.kr-btn:hover { background: #c8ea52; }
+.kr-btn[disabled] { opacity: 0.45; cursor: default; }
+.kr-btn.ghost { background: none; border: 1px solid #b8c8a6; }
+.kr-seg { min-width: 44px; min-height: 44px; border: 0; border-radius: 10px; background: none; color: var(--ink); font: 600 15px 'Instrument Sans', system-ui, sans-serif; cursor: pointer; }
+.kr-seg.on { background: var(--ink); color: var(--paper); }
+.kr-tt { width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
+.kr-tt th { padding: 6px 8px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--ink); }
+.kr-tt td { padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.kr-tt td.kr-1 { background: var(--lime); font-weight: 600; }
+.kr-in { width: 100%; margin-bottom: 10px; padding: 10px 12px; border: 1px solid #b8c8a6; border-radius: 10px; background: #fbfdf8; color: var(--ink); font: inherit; }
+.kr-msg { margin: 10px 0 0; font-size: 15px; line-height: 1.45; color: var(--lime-d); }
+@media (max-width: 980px) {
+  .kr-root { padding: 10px; }
+  .kr-win { grid-template-columns: 1fr; height: auto; }
+  .kr-board { order: -1; height: 70dvh; }
+  .kr-side, .kr-insp { border: 0; border-top: 1px solid var(--line); }
+}
