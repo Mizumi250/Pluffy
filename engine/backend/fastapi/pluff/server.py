@@ -4,6 +4,7 @@ Run:  python -m uvicorn pluff.server:app --host 0.0.0.0 --port 8000
 """
 from __future__ import annotations
 
+import hmac
 import json
 import re
 from contextlib import asynccontextmanager
@@ -33,7 +34,10 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 ensure_dir(STORAGE_ROOT)
 app.mount("/storage", StaticFiles(directory=str(STORAGE_ROOT)), name="storage")
 
-SECRET = env("ARKZEN_ENGINE_SECRET", "arkzen-engine-secret")
+# No built-in password. If ARKZEN_ENGINE_SECRET is not set, /arkzen/build and /arkzen/remove stay closed.
+SECRET = env("ARKZEN_ENGINE_SECRET", "") or ""
+if not SECRET:
+    Log.warn("ARKZEN_ENGINE_SECRET is not set. /arkzen/build and /arkzen/remove are closed until you set it in .env.")
 _HUB_BACKEND_LABELS = {
     "laravel": "Laravel",
     "laravel-inertia": "Laravel",
@@ -156,7 +160,8 @@ def _enrich_hub_registry(registry: dict) -> dict:
 
 
 def _guard(request: Request):
-    if request.headers.get("x-arkzen-secret") != SECRET:
+    provided = request.headers.get("x-arkzen-secret") or ""
+    if not SECRET or not hmac.compare_digest(provided.encode(), SECRET.encode()):
         return JSONResponse({"message": "Invalid engine secret."}, status_code=403)
     return None
 
