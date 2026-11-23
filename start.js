@@ -262,7 +262,6 @@ function checkSetup() {
     }
     if (!fs.existsSync(springClassFile(SPRING_SERVER_CLASS))) {
       console.log(`\n  ✗ Spring Boot entry point ${SPRING_SERVER_CLASS} was not found after compiling.`)
-      console.log('    The Spring Boot backend is still work in progress (see engine/backend/spring-boot/README.md).\n')
       process.exit(1)
     }
   } else if (IS_FASTAPI) {
