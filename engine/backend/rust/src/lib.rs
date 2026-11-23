@@ -71,10 +71,10 @@ impl Config {
             .unwrap_or_else(|_| "8000".to_owned())
             .parse::<u16>()
             .map_err(|error| format!("PORT must be a valid TCP port: {error}"))?;
-        let secret =
-            env::var("ARKZEN_ENGINE_SECRET").unwrap_or_else(|_| "arkzen-engine-secret".to_owned());
+        // No built-in password. Without ARKZEN_ENGINE_SECRET the server refuses to start.
+        let secret = env::var("ARKZEN_ENGINE_SECRET").unwrap_or_default();
         if secret.trim().is_empty() {
-            return Err("ARKZEN_ENGINE_SECRET must not be empty".to_owned());
+            return Err("ARKZEN_ENGINE_SECRET is not set. Copy engine/backend/rust/.env.example to .env, or set a long random value, then start again".to_owned());
         }
         let repository_root = match env::var_os("PLUFF_ROOT") {
             Some(root) => {
