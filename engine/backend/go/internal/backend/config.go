@@ -39,9 +39,10 @@ func LoadConfig() (Config, error) {
 		port = parsed
 	}
 
+	// No built-in password. Without ARKZEN_ENGINE_SECRET the server refuses to start.
 	secret := os.Getenv("ARKZEN_ENGINE_SECRET")
 	if secret == "" {
-		secret = defaultEngineSecret
+		return Config{}, fmt.Errorf("ARKZEN_ENGINE_SECRET is not set. Copy engine/backend/go/.env.example to .env, or set a long random value, then start again")
 	}
 	storageDir := os.Getenv("PLUFF_STORAGE_DIR")
 	if storageDir == "" {
