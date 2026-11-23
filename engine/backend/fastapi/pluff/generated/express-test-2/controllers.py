@@ -105,7 +105,7 @@ class CommandController:
 
     @staticmethod
     async def store(request, response):
-        validated = await request.validate({'command': 'required|string', 'triggered_by': 'sometimes|string'})
+        validated = await request.validate({'command': 'required|string|in:cleanup', 'triggered_by': 'sometimes|string'})
         signature = {}.get(validated['command'])
         entry = commands.get(signature) if signature else None
         if entry is None or entry[0] != "express-test-2":
@@ -125,7 +125,7 @@ class CommandController:
 class DispatchController:
     @staticmethod
     async def store(request, response):
-        validated = await request.validate({'job': 'required|string'})
+        validated = await request.validate({'job': 'required|string|in:process-record,always-fails'})
         job_class_name = {}.get(str(validated['job']).replace('_', '-'))
         job_class = globals().get(job_class_name) if job_class_name else None
         if job_class is None:
@@ -138,7 +138,7 @@ class DispatchController:
 class EventController:
     @staticmethod
     async def store(request, response):
-        validated = await request.validate({'event': 'required|string', 'payload': 'sometimes|array'})
+        validated = await request.validate({'event': 'required|string|in:record-created', 'payload': 'sometimes|array'})
         event_class = {"record-created": GeneratedEvents.RecordCreated}.get(str(validated['event']).replace('_', '-'))
         if event_class is None:
             return response.json({'message': 'Unknown event: ' + str(validated['event'])}, 400)

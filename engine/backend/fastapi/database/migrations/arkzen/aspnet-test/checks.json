@@ -1,0 +1,64 @@
+{
+  "table": "checks",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "user_id": {
+      "type": "foreignId",
+      "nullable": true
+    },
+    "name": {
+      "type": "string",
+      "length": 120,
+      "nullable": false
+    },
+    "status": {
+      "type": "string",
+      "length": 24,
+      "default": "pending"
+    },
+    "priority": {
+      "type": "integer",
+      "default": 1
+    },
+    "done": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "indexes": [],
+  "seeder": {
+    "data": [
+      {
+        "name": "ASP.NET engine ready",
+        "status": "passed",
+        "priority": 1
+      },
+      {
+        "name": "C# endpoint compiled on first call",
+        "status": "passed",
+        "priority": 2
+      },
+      {
+        "name": "Validation rules enforced",
+        "status": "pending",
+        "priority": 2
+      },
+      {
+        "name": "Policy blocks non-owners",
+        "status": "pending",
+        "priority": 3
+      },
+      {
+        "name": "Transaction rolls back on failure",
+        "status": "failed",
+        "priority": 3
+      }
+    ]
+  }
+}

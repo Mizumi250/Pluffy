@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — aspnet-test/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:03:53.799Z
+// Generated: 2026-11-23T13:40:15.230Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

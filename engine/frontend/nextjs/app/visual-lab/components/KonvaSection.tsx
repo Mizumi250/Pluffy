@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — KonvaSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:45.944Z
+// Generated: 2026-11-23T13:40:49.374Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

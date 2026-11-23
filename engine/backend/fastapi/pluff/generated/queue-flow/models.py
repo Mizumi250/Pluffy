@@ -9,6 +9,8 @@ class Queue(Model):
     timestamps = True
     soft_deletes = False
 
+    def queues(self):
+        return self.has_many(Ticket, "queue_id")
 
 
 class Ticket(Model):
@@ -20,6 +22,6 @@ class Ticket(Model):
     soft_deletes = False
 
     def queue(self):
-        return self.belongs_to(QueueFlowQueue, "queue_id")
+        return self.belongs_to(Queue, "queue_id")
 
 

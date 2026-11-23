@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Loader
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:42.000Z
+// Generated: 2026-11-23T13:40:45.624Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -1,0 +1,58 @@
+{
+  "table": "services",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "name": {
+      "type": "string",
+      "length": 80
+    },
+    "price_idr": {
+      "type": "integer"
+    },
+    "minutes": {
+      "type": "integer"
+    },
+    "note": {
+      "type": "string",
+      "length": 160,
+      "nullable": true
+    }
+  },
+  "indexes": [],
+  "seeder": {
+    "count": 5,
+    "data": [
+      {
+        "name": "Basic tune-up",
+        "price_idr": 75000,
+        "minutes": 45,
+        "note": "Gears, brakes and tire pressure checked"
+      },
+      {
+        "name": "Chain replacement",
+        "price_idr": 120000,
+        "minutes": 30,
+        "note": "Chain only, parts included"
+      },
+      {
+        "name": "Brake adjustment",
+        "price_idr": 50000,
+        "minutes": 20,
+        "note": "Both wheels"
+      },
+      {
+        "name": "Puncture repair",
+        "price_idr": 25000,
+        "minutes": 15,
+        "note": "Tube patch, one wheel"
+      },
+      {
+        "name": "Full overhaul",
+        "price_idr": 250000,
+        "minutes": 180,
+        "note": "Strip down, clean, rebuild"
+      }
+    ]
+  }
+}

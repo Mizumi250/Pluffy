@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — kairo
 // Source: @arkzen:script (global)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:11:30.018Z
+// Generated: 2026-11-23T13:40:33.563Z
 // ============================================================
 
 import * as THREE from 'three'

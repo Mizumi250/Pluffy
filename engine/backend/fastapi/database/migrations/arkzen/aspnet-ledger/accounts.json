@@ -1,0 +1,40 @@
+{
+  "table": "accounts",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "owner": {
+      "type": "string",
+      "length": 120,
+      "nullable": false
+    },
+    "balance": {
+      "type": "decimal",
+      "precision": 12,
+      "scale": 2,
+      "default": 0
+    }
+  },
+  "indexes": [],
+  "seeder": {
+    "data": [
+      {
+        "owner": "Ada",
+        "balance": 1000
+      },
+      {
+        "owner": "Grace",
+        "balance": 500
+      },
+      {
+        "owner": "Linus",
+        "balance": 250
+      }
+    ]
+  }
+}

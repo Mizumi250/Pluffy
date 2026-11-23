@@ -1,0 +1,37 @@
+{
+  "table": "transfers",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "from_account_id": {
+      "type": "integer",
+      "nullable": false
+    },
+    "to_account_id": {
+      "type": "integer",
+      "nullable": false
+    },
+    "amount": {
+      "type": "decimal",
+      "precision": 12,
+      "scale": 2,
+      "nullable": false
+    },
+    "status": {
+      "type": "string",
+      "length": 20,
+      "default": "completed"
+    },
+    "memo": {
+      "type": "string",
+      "length": 140,
+      "nullable": true
+    }
+  },
+  "indexes": []
+}

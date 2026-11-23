@@ -1,0 +1,31 @@
+{
+  "table": "ui_releases",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "configuration": {
+      "type": "text",
+      "nullable": false
+    },
+    "activate_at": {
+      "type": "string",
+      "length": 40,
+      "nullable": false
+    }
+  },
+  "indexes": [],
+  "seeder": {
+    "count": 1,
+    "data": [
+      {
+        "configuration": "{\"buttons\":[{\"id\":\"daily-check-in\",\"label\":\"Daily check-in\",\"action\":\"alert\",\"message\":\"Thanks for checking in!\"},{\"id\":\"view-updates\",\"label\":\"View updates\",\"action\":\"alert\",\"message\":\"You are all caught up.\"}]}",
+        "activate_at": "2000-01-01T00:00:00.000Z"
+      }
+    ]
+  }
+}

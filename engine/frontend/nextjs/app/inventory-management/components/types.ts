@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — inventory-management
 // Source: @arkzen:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:24.648Z
+// Generated: 2026-11-23T13:40:30.820Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

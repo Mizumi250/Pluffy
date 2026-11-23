@@ -8,8 +8,8 @@ class Ping(Command):
     description = "Writes a job_results row"
     schedule = '* * * * *'
     async def handle(self):
-        await JobResult.create({'job_name': 'ping', 'status': 'ran'})
-        self.info('[fastapi-test] ping done')
+        await JobResult.create({'job_name': 'ping', 'status': 'ran'})
+        self.info('[fastapi-test] ping done')
         return Command.SUCCESS
 
 

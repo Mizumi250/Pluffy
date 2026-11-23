@@ -53,8 +53,8 @@ class TicketController:
 
     @staticmethod
     async def stats(request, response):
-        total = await Ticket.count()
-        open_count = await Ticket.where('status', 'open').count()
+        total = await Ticket.count()
+        open_count = await Ticket.where('status', 'open').count()
         return response.json({'total': total, 'open': open_count, 'closed': total - open_count, 'by': request.user().email})
 
 

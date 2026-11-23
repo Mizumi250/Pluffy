@@ -1,0 +1,25 @@
+{
+  "table": "order_items",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "order_id": {
+      "type": "integer"
+    },
+    "product_slug": {
+      "type": "string",
+      "length": 40
+    },
+    "name": {
+      "type": "string",
+      "length": 60
+    },
+    "unit_cents": {
+      "type": "integer"
+    },
+    "quantity": {
+      "type": "integer"
+    }
+  },
+  "indexes": []
+}

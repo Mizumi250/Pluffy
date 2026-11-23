@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Bag
 // Source: @arkzen:components (pay-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:37.103Z
+// Generated: 2026-11-23T13:40:41.349Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

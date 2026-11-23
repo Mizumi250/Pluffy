@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — hw-coffee
 // Source: @arkzen:components (hw-coffee)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:24.341Z
+// Generated: 2026-11-23T13:40:30.355Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

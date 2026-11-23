@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ConfirmDialog
 // Source: @arkzen:components (webmcp-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:46.530Z
+// Generated: 2026-11-23T13:40:49.857Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -1,0 +1,31 @@
+{
+  "table": "audit_logs",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "action": {
+      "type": "string",
+      "length": 60,
+      "nullable": false
+    },
+    "check_id": {
+      "type": "integer",
+      "nullable": true
+    },
+    "actor": {
+      "type": "string",
+      "length": 120,
+      "nullable": true
+    },
+    "detail": {
+      "type": "text",
+      "nullable": true
+    }
+  },
+  "indexes": []
+}

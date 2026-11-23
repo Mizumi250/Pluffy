@@ -18,7 +18,7 @@ class RecordResultJob(Job):
     tries = 2
     timeout = 20
     async def handle(self):
-        mode = (self.data or {}).get('mode', 'default')
+        mode = (self.data or {}).get('mode', 'default')
         await JobResult.create({'job_name': 'record-result', 'status': 'completed:' + mode})
 
 

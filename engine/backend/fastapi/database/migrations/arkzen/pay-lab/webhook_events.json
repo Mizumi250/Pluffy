@@ -1,0 +1,22 @@
+{
+  "table": "webhook_events",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "event_id": {
+      "type": "string",
+      "length": 80,
+      "unique": true
+    },
+    "type": {
+      "type": "string",
+      "length": 60
+    },
+    "order_public_id": {
+      "type": "string",
+      "length": 64,
+      "nullable": true
+    }
+  },
+  "indexes": []
+}

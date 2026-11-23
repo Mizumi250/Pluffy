@@ -1,0 +1,21 @@
+{
+  "table": "tasks",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "title": {
+      "type": "string",
+      "length": 120,
+      "nullable": false
+    },
+    "priority": {
+      "type": "integer",
+      "default": 3
+    },
+    "status": {
+      "type": "string",
+      "default": "queued"
+    }
+  },
+  "indexes": []
+}

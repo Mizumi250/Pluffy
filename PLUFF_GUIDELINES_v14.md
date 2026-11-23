@@ -4138,11 +4138,14 @@
   | Desktop window config | `frame-lab`, `oauth-test`, `kotoba` |
   | Modules | `queue-flow`, `kotoba` |
   | Free files (@arkzen:file) | `free-demo` |
-  | Godot game | `godot-game` |
-  | Unity game | `dino-runner`, `unity-scene-starter` |
+  | Godot game | `godot-block-arena`, `godot-sky-islands`, `godot-crystal-cave` |
+  | Unity game | `dino-runner`, `unity-fox-hurdles`, `unity-garden-topdown` |
 
-  Full index of 53 tatemonos (title · description · block families · stacks · size · raw URL):
+  Full index of 63 tatemonos (title · description · block families · stacks · size · raw URL):
 
+  - **a2ui-lab** — (no description in meta)
+    families: api, database, endpoint · stacks: web · S (~9k tokens, 29 KB)
+    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/a2ui-lab/core.tsx
   - **animation-lab** — (no description in meta)
     families: UI only (no backend blocks) · stacks: web, native, lynx · L (~51k tokens, 158 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/animation-lab/core.tsx
@@ -4215,9 +4218,18 @@
   - **go-concurrency-lab** — (no description in meta)
     families: api, database · stacks: web · S (~3k tokens, 10 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/go-concurrency-lab/core.tsx
+  - **godot-block-arena** — (no description in meta)
+    families: godot · stacks: - · S (~1k tokens, 4 KB) · has assets/
+    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/godot-block-arena/core.tsx
+  - **godot-crystal-cave** — (no description in meta)
+    families: godot · stacks: - · S (~2k tokens, 5 KB) · has assets/
+    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/godot-crystal-cave/core.tsx
   - **godot-game** — (no description in meta)
     families: godot · stacks: - · S (~2k tokens, 7 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/godot-game/core.tsx
+  - **godot-sky-islands** — (no description in meta)
+    families: godot · stacks: - · S (~1k tokens, 4 KB) · has assets/
+    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/godot-sky-islands/core.tsx
   - **hello-native** — (no description in meta)
     families: UI only (no backend blocks) · stacks: native, lynx · S (~4k tokens, 12 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/hello-native/core.tsx
@@ -4233,6 +4245,9 @@
   - **job-test** — (no description in meta)
     families: api, database, endpoint, jobs · stacks: web, native, lynx · M (~10k tokens, 31 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/job-test/core.tsx
+  - **kairo** — (no description in meta)
+    families: api, database · stacks: web · M (~12k tokens, 38 KB) · has assets/
+    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/kairo/core.tsx
   - **kotoba** — (no description in meta)
     families: api, database, desktop, handler, module, realtime, routes · stacks: web, native · XL (never fetch in full) (~225k tokens, 703 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/kotoba/core.tsx
@@ -4263,6 +4278,9 @@
   - **ollama-studio** — (no description in meta)
     families: api, endpoint · stacks: web · S (~2k tokens, 8 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/ollama-studio/core.tsx
+  - **pay-lab** — (no description in meta)
+    families: api, database, endpoint · stacks: web · M (~10k tokens, 31 KB) · has assets/
+    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/pay-lab/core.tsx
   - **portfolio-test** — (no description in meta)
     families: UI only (no backend blocks) · stacks: web, native, lynx · S (~7k tokens, 20 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/portfolio-test/core.tsx
@@ -4273,7 +4291,7 @@
     families: api, database, endpoint · stacks: web, native, lynx · M (~20k tokens, 62 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/roles-test/core.tsx
   - **rubik-solver** — (no description in meta)
-    families: UI only (no backend blocks) · stacks: web · L (~53k tokens, 167 KB)
+    families: UI only (no backend blocks) · stacks: web · L (~56k tokens, 175 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/rubik-solver/core.tsx
   - **rust-backend-test** — (no description in meta)
     families: api, database · stacks: web · S (~2k tokens, 7 KB)
@@ -4284,15 +4302,24 @@
   - **shan-shan** — (no description in meta)
     families: UI only (no backend blocks) · stacks: web, native, lynx · L (~38k tokens, 120 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/shan-shan/core.tsx
-  - **shikaku** — (no description in meta)
-    families: api, database, realtime · stacks: web · M (~26k tokens, 80 KB)
-    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/shikaku/core.tsx
   - **spring-ledger** — (no description in meta)
     families: api, database, endpoint · stacks: web · S (~3k tokens, 8 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/spring-ledger/core.tsx
   - **spring-test** — (no description in meta)
     families: api, database · stacks: web · S (~2k tokens, 7 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/spring-test/core.tsx
+  - **unity-fox-hurdles** — (no description in meta)
+    families: unity · stacks: - · S (~0k tokens, 1 KB) · has assets/
+    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/unity-fox-hurdles/core.tsx
+  - **unity-garden-topdown** — (no description in meta)
+    families: unity · stacks: - · S (~0k tokens, 1 KB) · has assets/
+    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/unity-garden-topdown/core.tsx
+  - **unity-orbit-sandbox** — (no description in meta)
+    families: unity · stacks: - · S (~1k tokens, 2 KB)
+    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/unity-orbit-sandbox/core.tsx
+  - **unity-rocket-dodge** — (no description in meta)
+    families: unity · stacks: - · S (~0k tokens, 1 KB) · has assets/
+    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/unity-rocket-dodge/core.tsx
   - **unity-scene-starter** — (no description in meta)
     families: unity · stacks: - · S (~1k tokens, 2 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/unity-scene-starter/core.tsx
@@ -4302,6 +4329,9 @@
   - **visual-lab** — (no description in meta)
     families: components, script · stacks: web · L (~33k tokens, 105 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/visual-lab/core.tsx
+  - **webmcp-lab** — (no description in meta)
+    families: api, database · stacks: web · S (~8k tokens, 25 KB)
+    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/webmcp-lab/core.tsx
 
   A tatemono with an `assets/` folder also has binary files (images, audio); fetch only `core.tsx`.
 <!-- TATEMONO-INDEX:END -->

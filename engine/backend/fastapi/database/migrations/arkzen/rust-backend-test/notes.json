@@ -1,0 +1,17 @@
+{
+  "table": "notes",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "title": {
+      "type": "string",
+      "length": 120,
+      "nullable": false
+    },
+    "body": {
+      "type": "text",
+      "nullable": true
+    }
+  },
+  "indexes": []
+}

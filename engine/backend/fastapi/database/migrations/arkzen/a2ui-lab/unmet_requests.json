@@ -1,0 +1,16 @@
+{
+  "table": "unmet_requests",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "message": {
+      "type": "string",
+      "length": 500
+    },
+    "source": {
+      "type": "string",
+      "length": 10
+    }
+  },
+  "indexes": []
+}

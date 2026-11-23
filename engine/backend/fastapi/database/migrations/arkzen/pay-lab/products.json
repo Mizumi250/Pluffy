@@ -1,0 +1,74 @@
+{
+  "table": "products",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "slug": {
+      "type": "string",
+      "length": 40,
+      "unique": true
+    },
+    "name": {
+      "type": "string",
+      "length": 60
+    },
+    "region": {
+      "type": "string",
+      "length": 60
+    },
+    "notes": {
+      "type": "string",
+      "length": 160
+    },
+    "roast": {
+      "type": "integer"
+    },
+    "price_cents": {
+      "type": "integer"
+    },
+    "accent": {
+      "type": "string",
+      "length": 7
+    },
+    "ink": {
+      "type": "string",
+      "length": 7
+    }
+  },
+  "indexes": [],
+  "seeder": {
+    "count": 3,
+    "data": [
+      {
+        "slug": "flores-bajawa",
+        "name": "Flores Bajawa",
+        "region": "Flores, East Nusa Tenggara",
+        "notes": "Orange peel, brown sugar and a clean finish",
+        "roast": 2,
+        "price_cents": 1800,
+        "accent": "#f4c430",
+        "ink": "#15171c"
+      },
+      {
+        "slug": "gayo-aceh",
+        "name": "Gayo Aceh",
+        "region": "Gayo highlands, Aceh",
+        "notes": "Cocoa nib, cedar and very low acidity",
+        "roast": 3,
+        "price_cents": 1600,
+        "accent": "#f08a7e",
+        "ink": "#15171c"
+      },
+      {
+        "slug": "toraja-sapan",
+        "name": "Toraja Sapan",
+        "region": "Sapan, South Sulawesi",
+        "notes": "Dark plum, tobacco leaf and a long finish",
+        "roast": 5,
+        "price_cents": 2100,
+        "accent": "#0f5c63",
+        "ink": "#f4f5f2"
+      }
+    ]
+  }
+}

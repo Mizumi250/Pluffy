@@ -674,6 +674,6 @@
     "tauri": "engine/frontend/tauri",
     "electron": "engine/frontend/electron"
   },
-  "activeBackend": "laravel",
+  "activeBackend": "fastapi",
   "activeDatabase": "sqlite"
 }

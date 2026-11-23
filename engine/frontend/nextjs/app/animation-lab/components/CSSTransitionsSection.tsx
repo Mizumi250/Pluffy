@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CSSTransitionsSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:03:49.265Z
+// Generated: 2026-11-23T13:40:13.563Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

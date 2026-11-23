@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ErrorNote
 // Source: @arkzen:components (oauth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:35.645Z
+// Generated: 2026-11-23T13:40:39.887Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -1,0 +1,45 @@
+{
+  "table": "orders",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "public_id": {
+      "type": "string",
+      "length": 64,
+      "unique": true
+    },
+    "status": {
+      "type": "string",
+      "length": 12,
+      "default": "pending"
+    },
+    "total_cents": {
+      "type": "integer"
+    },
+    "currency": {
+      "type": "string",
+      "length": 3
+    },
+    "idempotency_key": {
+      "type": "string",
+      "length": 64,
+      "nullable": true,
+      "unique": true
+    },
+    "fingerprint": {
+      "type": "string",
+      "length": 400
+    },
+    "provider_session_id": {
+      "type": "string",
+      "length": 80,
+      "nullable": true
+    },
+    "checkout_url": {
+      "type": "string",
+      "length": 400,
+      "nullable": true
+    }
+  },
+  "indexes": []
+}

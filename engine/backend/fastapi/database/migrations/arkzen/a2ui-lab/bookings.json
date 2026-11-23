@@ -1,0 +1,24 @@
+{
+  "table": "bookings",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "name": {
+      "type": "string",
+      "length": 80
+    },
+    "service": {
+      "type": "string",
+      "length": 80
+    },
+    "day": {
+      "type": "string",
+      "length": 10
+    },
+    "slot": {
+      "type": "string",
+      "length": 5
+    }
+  },
+  "indexes": []
+}

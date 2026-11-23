@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — a2ui-lab
 // Source: @arkzen:components (a2ui-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:03:43.587Z
+// Generated: 2026-11-23T13:40:11.806Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

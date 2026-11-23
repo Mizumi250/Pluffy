@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — BoardView
 // Source: @arkzen:components (kairo)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:11:30.098Z
+// Generated: 2026-11-23T13:40:33.591Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'

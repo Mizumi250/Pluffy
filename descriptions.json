@@ -1,4 +1,26 @@
 {
+  "a2ui-lab": {
+    "description": "Test of the \"agent drops the interface\" pattern. A bicycle workshop assistant that can only show three registered screens (booking form, price list, repair status) and falls back to plain words plus starter choices when nothing fits.",
+    "meta_description": "Test of the \"agent drops the interface\" pattern. A bicycle workshop assistant that can only show three registered screens (booking form, price list, repair status) and falls back to plain words plus starter choices when nothing fits.",
+    "blocks": [
+      "meta",
+      "meta:web",
+      "database:services",
+      "database:repair_tickets",
+      "database:bookings",
+      "database:unmet_requests",
+      "api:services",
+      "api:repair_tickets",
+      "api:bookings",
+      "api:unmet_requests",
+      "endpoint:py:plan",
+      "web:components:shared",
+      "web:style",
+      "web:page:index"
+    ],
+    "lines": 761,
+    "estimated_tokens": 9653
+  },
   "animation-lab": {
     "description": "Create an animation playground that lets me preview and compare common web and mobile animation patterns, including entrances, exits, scroll effects, staggered motion, gestures, timelines, and 3D transforms.",
     "meta_description": "Full animation testing lab — GSAP (entrance, exit, scroll trigger, timeline, stagger, morph, 3D, magnetic), Framer Motion (variants, gestures, layout, AnimatePresence, keyframes, drag), and CSS animations (keyframes, transitions, transforms, custom properties). The definitive Arkzen animation reference.",
@@ -737,6 +759,42 @@
     "lines": 246,
     "estimated_tokens": 3399
   },
+  "godot-block-arena": {
+    "description": "Godot 4 arena prototype built from plain meshes. A checkered floor, four walls and a capsule player, with optional ENet multiplayer.",
+    "meta_description": "Godot 4 arena prototype built from plain meshes. A checkered floor, four walls and a capsule player, with optional ENet multiplayer.",
+    "blocks": [
+      "meta",
+      "godot:project",
+      "godot:input",
+      "godot:assets",
+      "godot:scene:arena",
+      "godot:scene:fighter",
+      "godot:behavior:player",
+      "godot:behavior:camera",
+      "godot:multiplayer",
+      "godot:export"
+    ],
+    "lines": 202,
+    "estimated_tokens": 1453
+  },
+  "godot-crystal-cave": {
+    "description": "Godot 4 cave exploration game. Wander a dim crystal cave, talk to the miners who still work there and follow the glow of the crystals.",
+    "meta_description": "Godot 4 cave exploration game. Wander a dim crystal cave, talk to the miners who still work there and follow the glow of the crystals.",
+    "blocks": [
+      "meta",
+      "godot:project",
+      "godot:world",
+      "godot:input",
+      "godot:assets",
+      "godot:scene:cave",
+      "godot:scene:explorer",
+      "godot:behavior:player",
+      "godot:behavior:camera",
+      "godot:export"
+    ],
+    "lines": 226,
+    "estimated_tokens": 1626
+  },
   "godot-game": {
     "description": "Godot 4 game Tatemono DSL. Defines project settings, scenes, nodes, input, assets, and gameplay behavior for the Godot project generator.",
     "meta_description": "Godot 4 game Tatemono DSL. Defines project settings, scenes, nodes, input, assets, and gameplay behavior for the Godot project generator.",
@@ -755,6 +813,24 @@
     ],
     "lines": 291,
     "estimated_tokens": 2245
+  },
+  "godot-sky-islands": {
+    "description": "Godot 4 flying exploration game. Glide between floating islands above the clouds with a top-down orthographic camera and no gravity.",
+    "meta_description": "Godot 4 flying exploration game. Glide between floating islands above the clouds with a top-down orthographic camera and no gravity.",
+    "blocks": [
+      "meta",
+      "godot:project",
+      "godot:input",
+      "godot:assets",
+      "godot:world",
+      "godot:scene:sky",
+      "godot:scene:pilot",
+      "godot:behavior:player",
+      "godot:behavior:camera",
+      "godot:export"
+    ],
+    "lines": 213,
+    "estimated_tokens": 1488
   },
   "hello-native": {
     "description": "Create a simple native mobile starter app with a home screen and an about screen, reusable UI components, and straightforward navigation.",
@@ -919,6 +995,22 @@
     ],
     "lines": 974,
     "estimated_tokens": 10505
+  },
+  "kairo": {
+    "description": "Kairo, a 3D circuit board. Wire NAND gates, save the result as a chip, and reuse that chip as a part in bigger circuits.",
+    "meta_description": "Kairo, a 3D circuit board. Wire NAND gates, save the result as a chip, and reuse that chip as a part in bigger circuits.",
+    "blocks": [
+      "meta",
+      "meta:web",
+      "database:chips",
+      "api:chips",
+      "web:script",
+      "web:style",
+      "web:components:board",
+      "web:page:index"
+    ],
+    "lines": 993,
+    "estimated_tokens": 12571
   },
   "kotoba": {
     "description": "Kotoba — a social language-learning network. Learn by using the language: daily missions, a community feed with native-speaker corrections, spaced-repetition vocab built from what you actually read and write, short lessons, partner matching, 1:1 and group chat with in-message corrections, and honest progress tracking.",
@@ -1512,6 +1604,29 @@
     "lines": 184,
     "estimated_tokens": 2606
   },
+  "pay-lab": {
+    "description": "Test of a payment gateway done as custom code, not as a DSL block. A coffee roaster shop where the server works out the price, the customer pays on the provider's hosted page, and a signed webhook marks the order paid.",
+    "meta_description": "Test of a payment gateway done as custom code, not as a DSL block. A coffee roaster shop where the server works out the price, the customer pays on the provider's hosted page, and a signed webhook marks the order paid.",
+    "blocks": [
+      "meta",
+      "meta:web",
+      "database:products",
+      "database:orders",
+      "database:order_items",
+      "database:webhook_events",
+      "api:products",
+      "api:orders",
+      "endpoint:py:checkout",
+      "endpoint:py:status",
+      "endpoint:py:webhook",
+      "web:components:shared",
+      "web:style",
+      "web:page:index",
+      "web:page:thanks"
+    ],
+    "lines": 757,
+    "estimated_tokens": 10589
+  },
   "portfolio-test": {
     "description": "Create a polished personal portfolio to introduce a creative professional, showcase selected projects and skills, and provide contact links.",
     "meta_description": "Frontend-only portfolio showcase",
@@ -1664,8 +1779,8 @@
       "web:components:shared",
       "web:page:index"
     ],
-    "lines": 3772,
-    "estimated_tokens": 54619
+    "lines": 3938,
+    "estimated_tokens": 57358
   },
   "rust-backend-test": {
     "description": "Exercises the Rust (Axum) backend's shared SQLite schema, paginated CRUD routes, validation, and persistence.",
@@ -1766,30 +1881,6 @@
     "lines": 4085,
     "estimated_tokens": 37340
   },
-  "shikaku": {
-    "description": "Build a pixel-art editor with a drawable canvas, layers, animation frames, color palettes, touch-friendly controls, and per-project saved work.",
-    "meta_description": "Shikaku — a full pixel art editor. Combines Aseprite's layer/frame system, PixSquare's clean mobile UI, Resprite's gesture-native canvas, and ibispaint's smooth panel UX. Per-project isolated SQLite. Auth-gated. Projects saved as JSON blobs with thumbnail previews.",
-    "blocks": [
-      "meta",
-      "meta:web",
-      "web:config",
-      "database:projects",
-      "database:saves",
-      "api:projects",
-      "api:saves",
-      "realtime:shikaku.project.{id}",
-      "web:style",
-      "web:components:shared",
-      "web:components:editor",
-      "web:page:login",
-      "web:page:register",
-      "web:page:index",
-      "web:page:editor",
-      "web:animation"
-    ],
-    "lines": 2613,
-    "estimated_tokens": 25116
-  },
   "spring-ledger": {
     "description": "Spring Boot showcase: atomic ledger transfers using Java BigDecimal and per-Tatemono database transactions.",
     "meta_description": "Spring Boot showcase: atomic ledger transfers using Java BigDecimal and per-Tatemono database transactions.",
@@ -1816,6 +1907,61 @@
     ],
     "lines": 184,
     "estimated_tokens": 2313
+  },
+  "unity-fox-hurdles": {
+    "description": "Unity SVG runner game. A fox sprints through a forest and jumps over fallen logs.",
+    "meta_description": "Unity SVG runner game. A fox sprints through a forest and jumps over fallen logs.",
+    "blocks": [
+      "meta",
+      "unity:project",
+      "unity:game",
+      "unity:visuals",
+      "unity:assets"
+    ],
+    "lines": 46,
+    "estimated_tokens": 339
+  },
+  "unity-garden-topdown": {
+    "description": "Unity 2D top-down garden scene. Walk a gardener around flowers and stones using sprite assets and 2D physics.",
+    "meta_description": "Unity 2D top-down garden scene. Walk a gardener around flowers and stones using sprite assets and 2D physics.",
+    "blocks": [
+      "meta",
+      "unity:project",
+      "unity:environment",
+      "unity:assets",
+      "unity:scene:garden",
+      "unity:export"
+    ],
+    "lines": 71,
+    "estimated_tokens": 564
+  },
+  "unity-orbit-sandbox": {
+    "description": "A Unity 3D physics sandbox with an orbiting planet, a bouncing crate and a walking explorer across two scenes.",
+    "meta_description": "A Unity 3D physics sandbox with an orbiting planet, a bouncing crate and a walking explorer across two scenes.",
+    "blocks": [
+      "meta",
+      "unity:project",
+      "unity:environment",
+      "unity:scene:orbit",
+      "unity:scene:menu",
+      "unity:export"
+    ],
+    "lines": 106,
+    "estimated_tokens": 796
+  },
+  "unity-rocket-dodge": {
+    "description": "Unity SVG runner game set in space. Hop a rocket over drifting asteroids and last as long as you can.",
+    "meta_description": "Unity SVG runner game set in space. Hop a rocket over drifting asteroids and last as long as you can.",
+    "blocks": [
+      "meta",
+      "unity:project",
+      "unity:game",
+      "unity:visuals",
+      "unity:controls",
+      "unity:assets"
+    ],
+    "lines": 53,
+    "estimated_tokens": 398
   },
   "unity-scene-starter": {
     "description": "A Unity scene-based starter showing 3D game objects, lighting, physics, and camera-follow controls.",
@@ -1866,113 +2012,23 @@
     "lines": 2669,
     "estimated_tokens": 33439
   },
-  "godot-crystal-cave": {
-    "description": "Godot 4 cave exploration game. Wander a dim crystal cave, talk to the miners who still work there and follow the glow of the crystals.",
-    "meta_description": "Godot 4 cave exploration game. Wander a dim crystal cave, talk to the miners who still work there and follow the glow of the crystals.",
+  "webmcp-lab": {
+    "description": "Test of WebMCP, where a website tells the browser's own AI agent what it can do. A bicycle workshop desk with a normal booking page that also registers three tools for browser agents. Reading tools answer directly. The booking tool always waits for the customer to confirm on the page.",
+    "meta_description": "Test of WebMCP, where a website tells the browser's own AI agent what it can do. A bicycle workshop desk with a normal booking page that also registers three tools for browser agents. Reading tools answer directly. The booking tool always waits for the customer to confirm on the page.",
     "blocks": [
       "meta",
-      "godot:project",
-      "godot:world",
-      "godot:input",
-      "godot:assets",
-      "godot:scene:cave",
-      "godot:scene:explorer",
-      "godot:behavior:player",
-      "godot:behavior:camera",
-      "godot:export"
+      "meta:web",
+      "database:services",
+      "database:repair_tickets",
+      "database:bookings",
+      "api:services",
+      "api:repair_tickets",
+      "api:bookings",
+      "web:components:shared",
+      "web:style",
+      "web:page:index"
     ],
-    "lines": 226,
-    "estimated_tokens": 1599
-  },
-  "godot-sky-islands": {
-    "description": "Godot 4 flying exploration game. Glide between floating islands above the clouds with a top-down orthographic camera and no gravity.",
-    "meta_description": "Godot 4 flying exploration game. Glide between floating islands above the clouds with a top-down orthographic camera and no gravity.",
-    "blocks": [
-      "meta",
-      "godot:project",
-      "godot:input",
-      "godot:assets",
-      "godot:world",
-      "godot:scene:sky",
-      "godot:scene:pilot",
-      "godot:behavior:player",
-      "godot:behavior:camera",
-      "godot:export"
-    ],
-    "lines": 213,
-    "estimated_tokens": 1455
-  },
-  "godot-block-arena": {
-    "description": "Godot 4 arena prototype built from plain meshes. A checkered floor, four walls and a capsule player, with optional ENet multiplayer.",
-    "meta_description": "Godot 4 arena prototype built from plain meshes. A checkered floor, four walls and a capsule player, with optional ENet multiplayer.",
-    "blocks": [
-      "meta",
-      "godot:project",
-      "godot:input",
-      "godot:assets",
-      "godot:scene:arena",
-      "godot:scene:fighter",
-      "godot:behavior:player",
-      "godot:behavior:camera",
-      "godot:multiplayer",
-      "godot:export"
-    ],
-    "lines": 202,
-    "estimated_tokens": 1419
-  },
-  "unity-rocket-dodge": {
-    "description": "Unity SVG runner game set in space. Hop a rocket over drifting asteroids and last as long as you can.",
-    "meta_description": "Unity SVG runner game set in space. Hop a rocket over drifting asteroids and last as long as you can.",
-    "blocks": [
-      "meta",
-      "unity:project",
-      "unity:game",
-      "unity:visuals",
-      "unity:controls",
-      "unity:assets"
-    ],
-    "lines": 53,
-    "estimated_tokens": 327
-  },
-  "unity-fox-hurdles": {
-    "description": "Unity SVG runner game. A fox sprints through a forest and jumps over fallen logs.",
-    "meta_description": "Unity SVG runner game. A fox sprints through a forest and jumps over fallen logs.",
-    "blocks": [
-      "meta",
-      "unity:project",
-      "unity:game",
-      "unity:visuals",
-      "unity:assets"
-    ],
-    "lines": 46,
-    "estimated_tokens": 272
-  },
-  "unity-orbit-sandbox": {
-    "description": "A Unity 3D physics sandbox with an orbiting planet, a bouncing crate and a walking explorer across two scenes.",
-    "meta_description": "A Unity 3D physics sandbox with an orbiting planet, a bouncing crate and a walking explorer across two scenes.",
-    "blocks": [
-      "meta",
-      "unity:project",
-      "unity:environment",
-      "unity:scene:orbit",
-      "unity:scene:menu",
-      "unity:export"
-    ],
-    "lines": 106,
-    "estimated_tokens": 740
-  },
-  "unity-garden-topdown": {
-    "description": "Unity 2D top-down garden scene. Walk a gardener around flowers and stones using sprite assets and 2D physics.",
-    "meta_description": "Unity 2D top-down garden scene. Walk a gardener around flowers and stones using sprite assets and 2D physics.",
-    "blocks": [
-      "meta",
-      "unity:project",
-      "unity:environment",
-      "unity:assets",
-      "unity:scene:garden",
-      "unity:export"
-    ],
-    "lines": 71,
-    "estimated_tokens": 497
+    "lines": 606,
+    "estimated_tokens": 8517
   }
 }
