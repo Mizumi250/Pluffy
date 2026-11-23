@@ -145,7 +145,6 @@
   - **New Section 1F: body reference for `:java`, `:cs`, `:go` and `:rs`.** Names in scope, return conventions and helper APIs for the four new variants, one endpoint written in all seven variants, the Rust-only `@arkzen:module:rs` block, and mail placeholder syntax per backend.
   - **New Section 1G: execution model, capability matrix and targeting rules.** Which backends actually run a custom body, what each backend implements, how raw SQL names tables, and what to generate when the backend is known or unknown.
   - **Corrections.** Rust supports PostgreSQL (all seven backends support SQLite and PostgreSQL). The FastAPI example list now matches the tatemonos that carry `:py` bodies. Section 27 lists all 50 tatemonos with the backend variants each one carries.
-  - **Backend README files may be outdated.** Verify backend behavior against the engine/framework implementation and working Tatemono fixtures; do not treat a backend README as evidence of current support.
 
   **WHAT'S NEW IN v13.0 (vs v12.0):**
 
