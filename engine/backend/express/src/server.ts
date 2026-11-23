@@ -4,6 +4,7 @@ import cors from 'cors'
 import multer from 'multer'
 import * as fs from 'fs'
 import * as path from 'path'
+import { timingSafeEqual } from 'crypto'
 import { REPO_ROOT, BACKEND_DIR, env, Log } from './runtime/support'
 import { startRealtime } from './runtime/broadcast'
 import { STORAGE_ROOT } from './runtime/storage'
@@ -17,9 +18,19 @@ app.use(express.urlencoded({ extended: true }))
 app.use(multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } }).any())
 app.use('/storage', express.static(STORAGE_ROOT))
 
-const SECRET = env('ARKZEN_ENGINE_SECRET', 'arkzen-engine-secret')
+// No built-in password. If ARKZEN_ENGINE_SECRET is not set, /arkzen/build and /arkzen/remove stay closed.
+const SECRET = env('ARKZEN_ENGINE_SECRET', '') ?? ''
+if (!SECRET) Log.warn('ARKZEN_ENGINE_SECRET is not set. /arkzen/build and /arkzen/remove are closed until you set it in .env.')
+
+function secretMatches(provided: string | undefined): boolean {
+  if (!SECRET || !provided) return false
+  const a = Buffer.from(provided)
+  const b = Buffer.from(SECRET)
+  return a.length === b.length && timingSafeEqual(a, b)
+}
+
 const engineAuth: express.RequestHandler = (req, res, next) =>
-  req.header('x-arkzen-secret') === SECRET ? next() : void res.status(403).json({ message: 'Invalid engine secret.' })
+  secretMatches(req.header('x-arkzen-secret')) ? next() : void res.status(403).json({ message: 'Invalid engine secret.' })
 
 const engine = express.Router()
 engine.get('/health', (_q, r) => void r.json({ status: 'ok', engine: 'Pluff Express Backend Engine', backend: 'express', variant: 'ts', version: '1.0.0' }))
