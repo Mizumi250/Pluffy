@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — NoteStoreRequest
 // Tatemono: rust-backend-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T02:04:14.366898Z
+// Generated: 2026-11-24T07:19:59.770864Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\RustBackendTest;

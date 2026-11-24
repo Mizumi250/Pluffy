@@ -4,7 +4,7 @@
 // ARKZEN GENERATED FACTORY — TestRecordFactory
 // Tatemono: express-test-2
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T02:03:47.147639Z
+// Generated: 2026-11-24T07:19:32.503814Z
 // ============================================================
 
 namespace Database\Factories\Arkzen\ExpressTest2;

@@ -3,15 +3,15 @@
 // ARKZEN GENERATED HOOKS — kairo
 // Source: @arkzen:components (kairo)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T03:16:25.458Z
+// Generated: 2026-11-24T07:36:54.103Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { START, Stage, gcol, truthTable } from '@/arkzen/generated/kairo.scripts'
+import { START, Stage, buildSample, gcol, truthTable } from '@/arkzen/generated/kairo.scripts'
 import type { Lib, Part, Wire } from '@/arkzen/generated/kairo.scripts'
-import { Check, ChevronLeft, ChevronRight, Cpu, Download, Info, Layers, Lightbulb, MousePointer2, Package, Pause, Play, Redo2, RotateCcw, RotateCw, Timer, ToggleRight, Trash2, Undo2, Upload } from 'lucide-react'
+import { BookOpen, Check, ChevronLeft, ChevronRight, Cpu, Download, Info, Layers, Lightbulb, Maximize, MousePointer2, Package, Pause, Play, Redo2, RotateCcw, RotateCw, Timer, ToggleRight, Trash2, Undo2, Upload } from 'lucide-react'
 import { create } from 'zustand'
 
 export const useLive = create<any>(() => ({ t: 0, vals: {}, tags: [] }))
@@ -23,7 +23,7 @@ export const useKairo = create<any>((set, get) => ({
   wsel: 0,
   run: true,
   speed: 2,
-  lib: {},
+  lib: { 'full-adder': buildSample('fulladder') },
   libVer: 0,
   nid: 10,
   view: [5, 1],
@@ -34,6 +34,7 @@ export const useKairo = create<any>((set, get) => ({
   drag: null,
   dragPos: null,
   stage: null,
+  ui: { l: 336, r: 296 },
   select: (sel: number[]) => set({ sel, wsel: 0 }),
   pickWire: (id: number) => set({ wsel: id, sel: [] }),
   setView: (view: number[]) => set({ view }),
@@ -56,6 +57,7 @@ export const useKairo = create<any>((set, get) => ({
     set({ future: s.future.slice(0, -1), past: [...s.past, { parts: s.parts, wires: s.wires }], parts: f.parts.map((q: Part) => ({ ...q, on: on.get(q.id) })), wires: f.wires, sel: [], wsel: 0 })
   },
   toggle: (id: number) => set({ parts: get().parts.map((p: Part) => (p.id === id ? { ...p, on: !p.on } : p)) }),
+  hold: (id: number, on: boolean) => set({ parts: get().parts.map((p: Part) => (p.id === id ? { ...p, on } : p)) }),
   moveTo: (st: Record<number, number[]>, dx: number, dy: number) =>
     set({ parts: get().parts.map((p: Part) => (st[p.id] ? { ...p, x: st[p.id][0] + dx, y: st[p.id][1] + dy } : p)) }),
   add: (kind: string, chip?: string, x?: number, y?: number) => {
@@ -90,7 +92,7 @@ export const useKairo = create<any>((set, get) => ({
     } catch (e) {
       return set({ msg: 'That file is not valid JSON.' })
     }
-    const okp = (a: any) => Array.isArray(a) && a.every((p: any) => p && p.id > 0 && p.id < 131072 && ['in', 'out', 'nand', 'clk', 'chip'].includes(p.kind) && typeof p.x === 'number' && typeof p.y === 'number')
+    const okp = (a: any) => Array.isArray(a) && a.every((p: any) => p && p.id > 0 && p.id < 131072 && ['in', 'out', 'nand', 'clk', 'chip', 'btn', 'hi', 'and', 'or', 'not', 'nor', 'xor', 'xnor', 'dff', 'seg', 'buf', 'bar'].includes(p.kind) && typeof p.x === 'number' && typeof p.y === 'number')
     const okw = (a: any) => Array.isArray(a) && a.every((w: any) => w && typeof w.id === 'number' && Array.isArray(w.from) && Array.isArray(w.to))
     if (!d || !okp(d.parts) || !okw(d.wires)) return set({ msg: 'That does not look like a Kairo file.' })
     const s = get()
@@ -106,6 +108,21 @@ export const useKairo = create<any>((set, get) => ({
     const top = Math.max(s.nid, ...parts.map((p: Part) => Math.max(p.id, p.g || 0)), ...d.wires.map((w: Wire) => w.id))
     get().mark()
     set({ parts, wires: d.wires, sel: [], wsel: 0, lib: { ...s.lib, ...lib }, libVer: s.libVer + 1, nid: top + 1, msg: 'Imported ' + parts.length + ' parts.' })
+    setTimeout(() => {
+      const g = get().stage
+      if (g) g.fit()
+    }, 0)
+  },
+  loadSample: (name: string) => {
+    const d = buildSample(name)
+    const s = get()
+    get().mark()
+    const top = Math.max(...d.parts.map((p: Part) => Math.max(p.id, p.g || 0)), ...d.wires.map((w: Wire) => w.id))
+    set({ parts: d.parts, wires: d.wires, sel: [], wsel: 0, nid: Math.max(s.nid, top + 1), msg: '' })
+    setTimeout(() => {
+      const g = get().stage
+      if (g) g.fit()
+    }, 0)
   },
   connect: (a: number[], b: number[]) => {
     const s = get()

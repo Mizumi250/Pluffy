@@ -469,6 +469,7 @@ public final class Generate {
         routes.add(new RouterRoute(method, path, middleware, code));
       }
     }
+    routes.addAll(ssePollRoutes(payload));
     for (Object rawCustomRoute : list(payload.get("customRoutes"))) {
       Map<String, Object> customRoute = map(rawCustomRoute);
       List<String> middleware = new ArrayList<>();
@@ -487,6 +488,30 @@ public final class Generate {
     }
     routes.sort((a, b) -> Integer.compare(dynamicSegments(a.path), dynamicSegments(b.path)));
     return routes;
+  }
+
+  /** GET /api/<slug>/sse-poll/{channelType}: the Lynx realtime poll, present when a broadcast API exists. */
+  private static List<RouterRoute> ssePollRoutes(Map<String, Object> payload) {
+    String slug = text(payload.get("name"), "");
+    for (Object rawApi : list(payload.get("apis"))) {
+      Map<String, Object> api = map(rawApi);
+      boolean broadcast = false;
+      for (Object rawEndpoint : map(api.get("endpoints")).values()) {
+        if ("broadcast".equals(text(map(rawEndpoint).get("type"), ""))) broadcast = true;
+      }
+      if (!broadcast) continue;
+      Map<String, String> events = new LinkedHashMap<>();
+      for (Map.Entry<String, Map<String, Object>> entry : sections(list(payload.get("realtimes"))).entrySet()) {
+        Map<String, Object> config = entry.getValue();
+        if (!config.containsKey("channel")) continue;
+        events.putIfAbsent(text(config.get("type"), "public"), slug + "." + entry.getKey());
+      }
+      String model = identifier(text(api.get("model"), ""));
+      String code = "return SsePoll.poll(request, response, " + model + ".query(), "
+          + stringMapLiteral(events) + ", String.valueOf(request.route(\"channelType\")));";
+      return List.of(new RouterRoute("GET", "/api/" + slug + "/sse-poll/{channelType}", new ArrayList<>(), code));
+    }
+    return List.of();
   }
 
   private static int dynamicSegments(String path) {

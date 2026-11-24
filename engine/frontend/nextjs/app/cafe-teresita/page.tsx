@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — cafe-teresita/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T02:03:39.155Z
+// Generated: 2026-11-24T07:19:25.731Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

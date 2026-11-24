@@ -31,7 +31,7 @@ const IMPORTS = `import {
   validate, now, Command, Job, Event, Listener, Mailable, Notification, MailMessage, BroadcastEvent, createToken,
   connection, userModelFor, registerOAuth, authMiddleware, optionalAuth, roleMiddleware, authCookie, clearAuthCookie, handle, middleware as wrapMiddleware,
   registerCommand, ValidationException, HttpException, AuthorizationException, ModelNotFoundException,
-  resourceTransform, factoryFor, runCommand, type Request, type ResponseFactory,
+  resourceTransform, factoryFor, runCommand, pollBroadcastMessages, type Request, type ResponseFactory,
 } from '@pluff/runtime'
 `
 
@@ -515,11 +515,17 @@ ${mailBody ? `  toMail(notifiable: any) {\n${ind(mailBody, 2)}\n  }\n` : `  toMa
     }
   }
   const realtimeNames = Object.keys(realtimes)
+  const ssePrefixes: string[] = []
   if (realtimeNames.length) {
     const broadcastApi = apis.find(a => Object.values(a.endpoints ?? {}).some((e: any) => e.type === 'broadcast'))
     const realtimeModel = broadcastApi?.model
     if (realtimeModel) {
-      rts += `  r.get(${q(`${prefixOf}/sse-poll/:channelType`)}, handle(S, async (_request, response) => response.json({ data: await ${realtimeModel}.latest().limit(50).get(), channel: _request.route('channelType') })))\n`
+      const pollEvents: Record<string, string> = {}
+      for (const [rtName, rtCfg] of Object.entries(realtimes) as [string, any][]) {
+        if (rtCfg?.channel) pollEvents[rtCfg.type ?? 'public'] ??= `${slug}.${rtName}`
+      }
+      ssePrefixes.push(`${prefixOf}/sse-poll`, `${prefixOf}/sse`)
+      rts += `  r.get(${q(`${prefixOf}/sse-poll/:channelType`)}, optionalAuth(S), handle(S, (rq, rs) => pollBroadcastMessages(rq, rs, ${realtimeModel}, ${JSON.stringify(pollEvents)}, String(rq.route('channelType')))))\n`
       rts += `  r.get(${q(`${prefixOf}/sse/:channelType`)}, handle(S, async (_request, response) => response.sse(_request.route('channelType'), { data: await ${realtimeModel}.latest().limit(50).get(), channel: _request.route('channelType') })))\n`
     }
   }
@@ -537,7 +543,7 @@ ${mailBody ? `  toMail(notifiable: any) {\n${ind(mailBody, 2)}\n  }\n` : `  toMa
     `export const events: LoadedModule['events'] = { ${eventClasses.join(', ')} }\n` +
     `export const listenerMap: LoadedModule['listenerMap'] = ${JSON.stringify(listenerMap)}\n` +
     `export const commands = [${cmdClasses.join(', ')}]\n` +
-    `export const routePrefixes = ${JSON.stringify([...new Set([...apis.map(a => String(a.prefix ?? '').replace(/\/+$/, '')).filter(Boolean), ...(hasAuth ? [`${prefixOf}/auth`] : []), ...((p.customRoutes ?? []).flatMap((r: any) => (r.routes ?? []).map((x: any) => String(x.route ?? '').split('/').slice(0, 3).join('/'))))])])}\n`
+    `export const routePrefixes = ${JSON.stringify([...new Set([...apis.map(a => String(a.prefix ?? '').replace(/\/+$/, '')).filter(Boolean), ...(hasAuth ? [`${prefixOf}/auth`] : []), ...ssePrefixes, ...((p.customRoutes ?? []).flatMap((r: any) => (r.routes ?? []).map((x: any) => String(x.route ?? '').split('/').slice(0, 3).join('/'))))])])}\n`
 
   return { files, registry: { models: [...modelNames.values(), ...(hasAuth ? ['User'] : [])], controllers: controllerNames, tables: dbs.map(d => T(d.table)) }, warnings }
 }

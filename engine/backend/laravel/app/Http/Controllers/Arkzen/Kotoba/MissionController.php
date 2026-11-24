@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — MissionController
 // Tatemono: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T02:04:00.786790Z
+// Generated: 2026-11-24T07:19:43.242059Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Kotoba;

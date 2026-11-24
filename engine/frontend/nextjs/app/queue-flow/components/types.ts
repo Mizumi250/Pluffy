@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — queue-flow
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T02:04:10.904Z
+// Generated: 2026-11-24T07:19:56.554Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

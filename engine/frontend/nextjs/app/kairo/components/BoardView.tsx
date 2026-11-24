@@ -3,15 +3,15 @@
 // ARKZEN GENERATED COMPONENT — BoardView
 // Source: @arkzen:components (kairo)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T03:16:25.482Z
+// Generated: 2026-11-24T07:36:54.168Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { START, Stage, gcol, truthTable } from '@/arkzen/generated/kairo.scripts'
+import { START, Stage, buildSample, gcol, truthTable } from '@/arkzen/generated/kairo.scripts'
 import type { Lib, Part, Wire } from '@/arkzen/generated/kairo.scripts'
-import { Check, ChevronLeft, ChevronRight, Cpu, Download, Info, Layers, Lightbulb, MousePointer2, Package, Pause, Play, Redo2, RotateCcw, RotateCw, Timer, ToggleRight, Trash2, Undo2, Upload } from 'lucide-react'
+import { BookOpen, Check, ChevronLeft, ChevronRight, Cpu, Download, Info, Layers, Lightbulb, Maximize, MousePointer2, Package, Pause, Play, Redo2, RotateCcw, RotateCw, Timer, ToggleRight, Trash2, Undo2, Upload } from 'lucide-react'
 import { create } from 'zustand'
 import { KR_NAME } from './constants'
 import { useKairo, useLive } from './hooks'
@@ -95,7 +95,7 @@ export const BoardView = () => {
       {fresh && !gone && (
         <div className="kr-bubble">
           <span className="kr-tag">TRY THIS</span>
-          <p>Click the switch. With it on, the lamp blinks with the clock through the NAND gate. With it off, the lamp stays lit.</p>
+          <p>Click the switch. With it on, the lamp blinks with the clock through the NAND gate. With it off, the lamp stays lit. Open Examples on the left for bigger builds.</p>
           <button className="kr-pill lime" onClick={() => setGone(true)}>Got it</button>
         </div>
       )}
@@ -114,6 +114,7 @@ export const BoardView = () => {
         <button className="kr-pill" onClick={() => snap(st.current ? st.current.az : 0, 1.5)}>Top</button>
         <button className="kr-pill" aria-label="Rotate left" onClick={() => snap(st.current.az + Math.PI / 2, st.current.el)}><RotateCcw size={14} /></button>
         <button className="kr-pill" aria-label="Rotate right" onClick={() => snap(st.current.az - Math.PI / 2, st.current.el)}><RotateCw size={14} /></button>
+        <button className="kr-pill" title="Fit all (F)" aria-label="Fit all" onClick={() => st.current && st.current.fit()}><Maximize size={14} /></button>
         <i className="kr-sep" />
         <button className="kr-pill" aria-label="Delete selection" onClick={() => useKairo.getState().remove()}><Trash2 size={14} /></button>
       </div>

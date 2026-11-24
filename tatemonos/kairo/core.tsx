@@ -103,9 +103,108 @@ export const START: Def = {
   ],
 }
 
+// Gate ops: 0 NAND, 3 NOT, 4 AND, 5 OR, 6 NOR, 7 XOR, 8 XNOR. Also 1 copy, 2 D flip-flop, 9 constant 1.
+export const buildSample = (name: string): Def => {
+  const parts: Part[] = []
+  const wires: Wire[] = []
+  let n = 1
+  const P = (kind: string, x: number, y: number, o?: { on?: boolean; g?: number; gn?: string }) => {
+    parts.push({ id: n, kind, x, y, ...o })
+    return n++
+  }
+  const W = (a: number, ak: number, b: number, bk: number) => {
+    wires.push({ id: n++, from: [a, ak], to: [b, bk] })
+  }
+  const cell = (X: number, a: boolean, b: boolean, cin: number, gn: string, grp: boolean) => {
+    const o = grp ? { g: n++, gn } : {}
+    const A = P('in', X, 0, { on: a, ...o })
+    const B = P('in', X, 2, { on: b, ...o })
+    const x1 = P('xor', X + 3, 1, o)
+    const a1 = P('and', X + 3, 4, o)
+    const x2 = P('xor', X + 7, 1, o)
+    const a2 = P('and', X + 7, 4, o)
+    const or = P('or', X + 11, 5, o)
+    const s = P('out', X + 11, 1, o)
+    W(A, 0, x1, 0)
+    W(B, 0, x1, 1)
+    W(A, 0, a1, 0)
+    W(B, 0, a1, 1)
+    W(x1, 0, x2, 0)
+    W(cin, 0, x2, 1)
+    W(x1, 0, a2, 0)
+    W(cin, 0, a2, 1)
+    W(a1, 0, or, 0)
+    W(a2, 0, or, 1)
+    W(x2, 0, s, 0)
+    return or
+  }
+  if (name === 'fulladder') {
+    const cin = P('in', 3, 9)
+    W(cell(0, true, false, cin, '', false), 0, P('out', 15, 5), 0)
+  } else if (name === 'adder') {
+    let c = P('in', 3, 9)
+    const a = [1, 0, 1, 0]
+    const b = [1, 1, 0, 0]
+    for (let i = 0; i < 4; i++) c = cell(i * 14, !!a[i], !!b[i], c, 'Bit ' + i, true)
+    W(c, 0, P('out', 57, 5), 0)
+  } else if (name === 'counter') {
+    let prev = P('clk', 0, 3)
+    let pin = 0
+    for (let i = 0; i < 4; i++) {
+      const X = 6 + i * 7
+      const ff = P('dff', X, 3)
+      W(prev, pin, ff, 1)
+      W(ff, 1, ff, 0)
+      W(ff, 0, P('out', X + 3.5, -1), 0)
+      prev = ff
+      pin = 1
+    }
+  } else {
+    const gc = n++
+    const gd = n++
+    const clk = P('clk', 0, 6, { g: gc, gn: 'Counter' })
+    const f0 = P('dff', 5, 6, { g: gc, gn: 'Counter' })
+    const f1 = P('dff', 11, 6, { g: gc, gn: 'Counter' })
+    W(clk, 0, f0, 1)
+    W(f0, 1, f0, 0)
+    W(f0, 1, f1, 1)
+    W(f1, 1, f1, 0)
+    const d = { g: gd, gn: 'Decoder' }
+    const n1 = P('not', 16, 9, d)
+    const n0 = P('not', 16, 12, d)
+    const a1 = P('nand', 21, 9, d)
+    const c1 = P('nand', 21, 12, d)
+    const fx = P('nor', 21, 15, d)
+    const hi = P('hi', 21, 3, d)
+    const sg = P('seg', 29, 9)
+    W(f1, 0, n1, 0)
+    W(f0, 0, n0, 0)
+    W(n1, 0, a1, 0)
+    W(f0, 0, a1, 1)
+    W(f1, 0, c1, 0)
+    W(n0, 0, c1, 1)
+    W(f1, 0, fx, 0)
+    W(f0, 0, fx, 1)
+    W(a1, 0, sg, 0)
+    W(hi, 0, sg, 1)
+    W(c1, 0, sg, 2)
+    W(a1, 0, sg, 3)
+    W(n0, 0, sg, 4)
+    W(fx, 0, sg, 5)
+    W(f1, 0, sg, 6)
+  }
+  return { parts, wires }
+}
+
+export const GATE: Record<string, number> = { nand: 0, buf: 1, not: 3, and: 4, or: 5, nor: 6, xor: 7, xnor: 8 }
+export const GATE_COL: Record<string, number> = { nand: 0xb9e03c, and: 0xa7d8f0, or: 0xf7d28a, not: 0xf4b6c2, nor: 0xf2a08a, xor: 0x9fe0c9, xnor: 0xe6d27a, buf: 0xd5dcc8 }
+
 export const pinsOf = (p: Part, lib: Lib) => {
-  if (p.kind === 'nand') return { i: 2, o: 1, w: 2, h: 1 }
-  if (p.kind === 'in' || p.kind === 'clk') return { i: 0, o: 1, w: 1, h: 1 }
+  if (GATE[p.kind] !== undefined) return { i: p.kind === 'not' || p.kind === 'buf' ? 1 : 2, o: 1, w: 2, h: 1 }
+  if (p.kind === 'in' || p.kind === 'clk' || p.kind === 'btn' || p.kind === 'hi') return { i: 0, o: 1, w: 1, h: 1 }
+  if (p.kind === 'dff') return { i: 2, o: 2, w: 3, h: 2 }
+  if (p.kind === 'seg') return { i: 7, o: 0, w: 3, h: 5 }
+  if (p.kind === 'bar') return { i: 4, o: 0, w: 2, h: 4 }
   if (p.kind === 'out') return { i: 1, o: 0, w: 1, h: 1 }
   const d = lib[p.chip || '']
   const i = d ? d.parts.filter((q) => q.kind === 'in').length : 0
@@ -129,6 +228,8 @@ export const compile = (def: Def, lib: Lib) => {
   const ins: { id: number; net: number }[] = []
   const outs: { id: number; net: number }[] = []
   const clks: { id: number; net: number }[] = []
+  const btns: { id: number; net: number }[] = []
+  const segs: { id: number; nets: number[] }[] = []
   const run = (d: Def, inNets: number[], depth: number, isTop: boolean): number[] => {
     const src = new Map<string, number>()
     const ord = (k: string) => d.parts.filter((p) => p.kind === k).sort((a, b) => a.y - b.y || a.x - b.x)
@@ -138,7 +239,17 @@ export const compile = (def: Def, lib: Lib) => {
       if (isTop) ins.push({ id: p.id, net })
     })
     d.parts.forEach((p) => {
-      if (p.kind === 'nand') src.set(p.id + ':0', n++)
+      if (GATE[p.kind] !== undefined || p.kind === 'hi') src.set(p.id + ':0', n++)
+      if (p.kind === 'btn') {
+        src.set(p.id + ':0', n)
+        if (isTop) btns.push({ id: p.id, net: n })
+        n++
+      }
+      if (p.kind === 'dff') {
+        src.set(p.id + ':0', n)
+        src.set(p.id + ':1', n + 1)
+        n += 3
+      }
       if (p.kind === 'clk') {
         src.set(p.id + ':0', n)
         clks.push({ id: isTop ? p.id : 0, net: n++ })
@@ -153,7 +264,11 @@ export const compile = (def: Def, lib: Lib) => {
       return w ? src.get(w.from[0] + ':' + w.from[1]) ?? 0 : 0
     }
     d.parts.forEach((p) => {
-      if (p.kind === 'nand') gates.push(0, get(p.id, 0), get(p.id, 1), src.get(p.id + ':0') as number)
+      const o = src.get(p.id + ':0') as number
+      if (GATE[p.kind] !== undefined) gates.push(GATE[p.kind], get(p.id, 0), p.kind === 'not' || p.kind === 'buf' ? 0 : get(p.id, 1), o)
+      if (p.kind === 'hi') gates.push(9, 0, 0, o)
+      if (p.kind === 'dff') gates.push(2, get(p.id, 0), get(p.id, 1), o, 3, o, 0, src.get(p.id + ':1') as number)
+      if ((p.kind === 'seg' || p.kind === 'bar') && isTop) segs.push({ id: p.id, nets: (p.kind === 'seg' ? [0, 1, 2, 3, 4, 5, 6] : [0, 1, 2, 3]).map((k) => get(p.id, k)) })
       if (p.kind === 'chip' && depth < 12 && lib[p.chip || '']) {
         const s = pinsOf(p, lib)
         const feed: number[] = []
@@ -168,19 +283,31 @@ export const compile = (def: Def, lib: Lib) => {
     return ord('out').map((p) => get(p.id, 0))
   }
   run(def, [], 0, true)
-  return { gates, n, top, ins, outs, clks }
+  return { gates, n, top, ins, outs, clks, btns, segs }
 }
 
 // One tick: every gate reads the previous values, so feedback (latches) works.
 export const step = (c: any, v: Uint8Array, sw: Record<number, boolean>, t = 0) => {
   const nv = new Uint8Array(c.n)
   const g = c.gates
-  for (let i = 0; i < g.length; i += 4) nv[g[i + 3]] = g[i] ? v[g[i + 1]] : (v[g[i + 1]] & v[g[i + 2]]) ^ 1
+  for (let i = 0; i < g.length; i += 4) {
+    const op = g[i]
+    const a = v[g[i + 1]]
+    const b = v[g[i + 2]]
+    const o = g[i + 3]
+    if (op === 2) {
+      nv[o] = b && !v[o + 2] ? a : v[o]
+      nv[o + 2] = b
+    } else nv[o] = op === 0 ? (a & b) ^ 1 : op === 1 ? a : op === 3 ? a ^ 1 : op === 4 ? a & b : op === 5 ? a | b : op === 6 ? (a | b) ^ 1 : op === 7 ? a ^ b : op === 8 ? (a ^ b) ^ 1 : 1
+  }
   c.ins.forEach((s: any) => {
     nv[s.net] = sw[s.id] ? 1 : 0
   })
   c.clks.forEach((s: any) => {
     nv[s.net] = Math.floor(t / 24) % 2
+  })
+  c.btns.forEach((s: any) => {
+    nv[s.net] = sw[s.id] ? 1 : 0
   })
   return nv
 }
@@ -207,8 +334,8 @@ const WB = 0x800000
 const GB = 0xc00000
 export const GCOL = [0x6c9a0a, 0xe8643f, 0x3f93d0, 0xd99a0b, 0x24a08a, 0xd6477f]
 export const gcol = (n: string) => GCOL[Array.from(n).reduce((a, c) => a + c.charCodeAt(0), 0) % GCOL.length]
-const OFF: Record<string, number> = { in: 0xf6f9f1, out: 0xe9eadf, clk: 0xf6f9f1 }
-const LIT: Record<string, number> = { in: 0xf2704f, out: 0xf7cf3d, clk: 0x9be000 }
+const OFF: Record<string, number> = { in: 0xf6f9f1, out: 0xe9eadf, clk: 0xf6f9f1, btn: 0xf2a08a }
+const LIT: Record<string, number> = { in: 0xf2704f, out: 0xf7cf3d, clk: 0x9be000, btn: 0xf2704f }
 
 export class Stage {
   cv: HTMLCanvasElement
@@ -227,6 +354,7 @@ export class Stage {
   ghKey = ''
   ghMats: THREE.Material[] = []
   tagHost: HTMLElement | null = null
+  dl: THREE.DirectionalLight | null = null
   onTick: (t: number, vals: any, tags: any[]) => void = () => {}
   w = 1
   h = 1
@@ -263,12 +391,14 @@ export class Stage {
     Object.assign(dl.shadow.camera, { left: -26, right: 26, top: 26, bottom: -26, near: 1, far: 60 })
     dl.shadow.radius = 4
     this.sc.add(dl)
-    const slab = new THREE.Mesh(new RoundedBoxGeometry(44, 0.6, 44, 3, 0.28), this.m(0xfbfcf8))
+    this.sc.add(dl.target)
+    this.dl = dl
+    const slab = new THREE.Mesh(new RoundedBoxGeometry(400, 0.6, 400, 3, 0.28), this.m(0xfbfcf8))
     slab.position.y = -0.3
     slab.receiveShadow = true
     slab.userData.skip = 1
     this.sc.add(slab)
-    const grid = new THREE.GridHelper(42, 42, 0xe1e6d9, 0xeaeee4)
+    const grid = new THREE.GridHelper(240, 240, 0xe1e6d9, 0xeaeee4)
     grid.position.y = 0.01
     grid.userData.skip = 1
     this.sc.add(grid)
@@ -316,12 +446,74 @@ export class Stage {
     this.cam.position.copy(this.tgt).add(new THREE.Vector3(ce * Math.sin(this.az), Math.sin(this.el), ce * Math.cos(this.az)).multiplyScalar(80))
     this.cam.lookAt(this.tgt)
     this.cam.updateProjectionMatrix()
+    this.cam.updateMatrixWorld(true)
+    if (this.dl) {
+      this.dl.position.set(this.tgt.x - 8, 14, this.tgt.z + 6)
+      this.dl.target.position.set(this.tgt.x, 0, this.tgt.z)
+      this.r.shadowMap.needsUpdate = true
+    }
   }
 
   world(cx: number, cy: number) {
     const [px, py] = this.xy({ clientX: cx, clientY: cy })
     const g = this.ground(px, py)
     return [Math.round(g.x), Math.round(g.z)]
+  }
+
+  panBy(dx: number, dy: number) {
+    const sa = Math.sin(this.az)
+    const ca = Math.cos(this.az)
+    const z = 1 / this.zoom
+    const f = 1 / (this.zoom * Math.sin(this.el))
+    this.tgt.x += -dx * z * ca - dy * f * sa
+    this.tgt.z += dx * z * sa - dy * f * ca
+    this.view()
+  }
+
+  fit() {
+    const st = this.store.getState()
+    if (!st.parts.length) return
+    let x0 = 1e9
+    let x1 = -1e9
+    let y0 = 1e9
+    let y1 = -1e9
+    st.parts.forEach((p: Part) => {
+      const q = pinsOf(p, st.lib)
+      x0 = Math.min(x0, p.x - q.w / 2 - 0.6)
+      x1 = Math.max(x1, p.x + q.w / 2 + 0.6)
+      y0 = Math.min(y0, p.y - q.h / 2 - 0.6)
+      y1 = Math.max(y1, p.y + q.h / 2 + 0.6)
+    })
+    this.tgt.set((x0 + x1) / 2, 0, (y0 + y1) / 2)
+    this.view()
+    const box = () => {
+      let a = 1e9
+      let b = -1e9
+      let c = 1e9
+      let d = -1e9
+      ;[x0, x1].forEach((x) =>
+        [y0, y1].forEach((z) =>
+          [0, 0.8].forEach((h) => {
+            const v = new THREE.Vector3(x, h, z).project(this.cam)
+            const sx = ((v.x + 1) / 2) * this.w
+            const sy = ((1 - v.y) / 2) * this.h
+            a = Math.min(a, sx)
+            b = Math.max(b, sx)
+            c = Math.min(c, sy)
+            d = Math.max(d, sy)
+          }),
+        ),
+      )
+      return [a, b, c, d]
+    }
+    const ui = st.ui || { l: 76, r: 56 }
+    const fw = Math.max(this.w - ui.l - ui.r, 240)
+    const fh = Math.max(this.h - 170, 240)
+    let [a, b, c, d] = box()
+    this.zoom = Math.min(56, Math.max(8, this.zoom * Math.min(fw / (b - a || 1), fh / (d - c || 1))))
+    this.view()
+    ;[a, b, c, d] = box()
+    this.panBy(ui.l + fw / 2 - (a + b) / 2, 86 + fh / 2 - (c + d) / 2)
   }
 
   orbitBy(dx: number, dy: number) {
@@ -431,11 +623,25 @@ export class Stage {
     const g = new THREE.Group()
     const s = pinsOf(p, lib)
     const id = p.id * 64
+    const MET = 0xc9cfc6
     const at = (m: THREE.Mesh, x: number, y: number, z: number) => {
       m.position.set(p.x + x, y, p.y + z)
       g.add(m)
       return m
     }
+    const cyl = (r: number, h: number, c: number, pid?: number, seg = 20) => this.mesh(new THREE.CylinderGeometry(r, r, h, seg), this.m(c), pid)
+    const ring = (r: number, t: number, c: number, y: number) => {
+      const m = this.mesh(new THREE.TorusGeometry(r, t, 8, 28), this.m(c), id)
+      m.rotation.x = -Math.PI / 2
+      return at(m, 0, y, 0)
+    }
+    const zs = (out: boolean, k: number) => pinPos(p, lib, out, k)[1] - p.y
+    const text = (t: string, w: number, h: number, x: number, y: number, z: number, col?: string) => {
+      const m = this.mesh(new THREE.PlaneGeometry(w, h), this.lab(t, col))
+      m.rotation.x = -Math.PI / 2
+      return at(m, x, y, z)
+    }
+    const led = (x: number, z: number, lit?: boolean) => at(this.mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 12), lit ? this.lit(0x7ccf00) : this.m(0xb4bfb1), id), x, 0.29, z)
     g.userData.kind = p.kind
     if (sel) {
       ;[[0.35, 0.5], [0.8, 0.2]].forEach(([e, o]) => {
@@ -443,45 +649,114 @@ export class Stage {
         at(this.mesh(new RoundedBoxGeometry(s.w + e, 0.04, s.h + e, 2, 0.02), mat), 0, 0.02 + o * 0.01, 0)
       })
     }
-    if (p.kind === 'nand') {
+    if (p.kind !== 'chip') {
+      at(this.rb(s.w * 0.96, 0.06, s.h * 0.94, 0xdde6d0, id, 0.04), 0, 0.03, 0)
+      ;[-1, 1].forEach((a) => [-1, 1].forEach((b) => at(cyl(0.05, 0.03, MET, undefined, 10), a * s.w * 0.44, 0.07, b * s.h * 0.4)))
+    }
+    const kind = p.kind
+    if (GATE[kind] !== undefined) {
       const sh = new THREE.Shape()
-      sh.moveTo(-0.85, -0.4)
-      sh.lineTo(0, -0.4)
-      sh.absarc(0, 0, 0.4, -Math.PI / 2, Math.PI / 2, false)
-      sh.lineTo(-0.85, 0.4)
-      sh.closePath()
+      if (kind === 'and' || kind === 'nand') {
+        sh.moveTo(-0.85, -0.4)
+        sh.lineTo(0, -0.4)
+        sh.absarc(0, 0, 0.4, -Math.PI / 2, Math.PI / 2, false)
+        sh.lineTo(-0.85, 0.4)
+        sh.closePath()
+      } else if (kind === 'not' || kind === 'buf') {
+        sh.moveTo(-0.7, -0.42)
+        sh.lineTo(0.35, 0)
+        sh.lineTo(-0.7, 0.42)
+        sh.closePath()
+      } else {
+        const ox = kind === 'xor' || kind === 'xnor' ? 0.06 : 0
+        sh.moveTo(-0.85 + ox, -0.4)
+        sh.quadraticCurveTo(-0.45 + ox, 0, -0.85 + ox, 0.4)
+        sh.quadraticCurveTo(-0.1 + ox, 0.4, 0.4 + ox, 0)
+        sh.quadraticCurveTo(-0.1 + ox, -0.4, -0.85 + ox, -0.4)
+      }
       const geo = new THREE.ExtrudeGeometry(sh, { depth: 0.34, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.07, bevelSegments: 4, curveSegments: 24 })
       geo.rotateX(-Math.PI / 2)
-      geo.translate(0.22, 0.08, 0)
-      at(this.mesh(geo, this.m(0xb9e03c), id), 0, 0, 0)
-      at(this.mesh(new THREE.SphereGeometry(0.13, 16, 12), this.m(0xf6f9f1), id), 0.82, 0.25, 0)
-      ;[-0.25, 0.25].forEach((z) => at(this.rb(0.34, 0.08, 0.08, 0xc9cfc6, id, 0.03), -0.85, 0.25, z))
-    } else if (p.kind === 'in') {
-      at(this.rb(0.92, 0.2, 0.92, 0xf6c1b0, id, 0.12), 0, 0.1, 0)
-      at(this.rb(0.64, 0.05, 0.22, 0x1d2618, id, 0.02), 0, 0.21, 0)
-      g.userData.lamp = at(this.rb(0.32, 0.3, 0.32, p.on ? LIT.in : OFF.in, id, 0.1), p.on ? 0.17 : -0.17, 0.33, 0)
-    } else if (p.kind === 'out') {
-      at(this.mesh(new THREE.CylinderGeometry(0.36, 0.4, 0.16, 24), this.m(0x3a4a2a), id), 0, 0.08, 0)
-      at(this.mesh(new THREE.CylinderGeometry(0.2, 0.25, 0.14, 20), this.m(0xc9cfc6), id), 0, 0.22, 0)
-      g.userData.lamp = at(this.mesh(new THREE.SphereGeometry(0.32, 24, 18), this.m(OFF.out), id), 0, 0.56, 0)
-    } else if (p.kind === 'clk') {
-      at(this.rb(0.92, 0.2, 0.92, 0xcfe58a, id, 0.12), 0, 0.1, 0)
-      g.userData.lamp = at(this.mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.1, 28), this.m(OFF.clk), id), 0, 0.25, 0)
+      geo.translate(0.22, 0.1, 0)
+      at(this.mesh(geo, this.m(GATE_COL[kind]), id), 0, 0, 0)
+      if (kind === 'xor' || kind === 'xnor') {
+        const cs = new THREE.Shape()
+        cs.moveTo(-0.99, -0.4)
+        cs.quadraticCurveTo(-0.59, 0, -0.99, 0.4)
+        cs.lineTo(-0.94, 0.4)
+        cs.quadraticCurveTo(-0.54, 0, -0.94, -0.4)
+        cs.closePath()
+        const cg = new THREE.ExtrudeGeometry(cs, { depth: 0.3, bevelEnabled: false })
+        cg.rotateX(-Math.PI / 2)
+        cg.translate(0.22, 0.1, 0)
+        at(this.mesh(cg, this.m(0x1d2618), id), 0, 0, 0)
+      }
+      if (kind === 'nand' || kind === 'nor' || kind === 'xnor' || kind === 'not') at(this.mesh(new THREE.SphereGeometry(0.13, 16, 12), this.m(0xf6f9f1), id), 0.82, 0.3, 0)
+      else at(this.rb(0.3, 0.08, 0.08, MET, id, 0.03), 0.85, 0.28, 0)
+      for (let k = 0; k < s.i; k++) at(this.rb(0.36, 0.08, 0.08, MET, id, 0.03), -0.83, 0.28, zs(false, k))
+      text(kind.toUpperCase(), 0.72, 0.27, -0.18, 0.53, 0)
+    } else if (kind === 'in') {
+      at(this.rb(0.8, 0.2, 0.8, 0xf6c1b0, id, 0.1), 0, 0.16, 0)
+      at(this.rb(0.56, 0.05, 0.2, 0x1d2618, id, 0.02), 0, 0.27, 0)
+      const kx = p.on ? 0.17 : -0.17
+      g.userData.lamp = at(this.rb(0.3, 0.3, 0.3, p.on ? LIT.in : OFF.in, id, 0.1), kx, 0.4, 0)
+      ;[-0.06, 0, 0.06].forEach((dx) => at(this.rb(0.015, 0.02, 0.24, 0x14180f, undefined, 0.005), kx + dx, 0.56, 0))
+      g.userData.lamp2 = led(0.3, -0.3)
+    } else if (kind === 'btn') {
+      at(this.rb(0.8, 0.2, 0.8, 0xf6c1b0, id, 0.1), 0, 0.16, 0)
+      ring(0.27, 0.05, 0x1d2618, 0.27)
+      g.userData.lamp = at(cyl(0.22, p.on ? 0.08 : 0.16, OFF.btn, id, 28), 0, p.on ? 0.31 : 0.35, 0)
+      g.userData.lamp2 = led(0.3, -0.3)
+    } else if (kind === 'hi') {
+      at(this.rb(0.8, 0.2, 0.8, 0xd7e87a, id, 0.1), 0, 0.16, 0)
+      text('HIGH', 0.7, 0.26, 0, 0.27, 0.05)
+      led(0.3, -0.3, true)
+    } else if (kind === 'out') {
+      at(cyl(0.38, 0.14, 0x3a4a2a, id, 28), 0, 0.13, 0)
+      at(cyl(0.26, 0.12, MET, id), 0, 0.26, 0)
+      ring(0.27, 0.025, 0x8c948a, 0.22)
+      ring(0.27, 0.025, 0x8c948a, 0.3)
+      g.userData.lamp = at(this.mesh(new THREE.SphereGeometry(0.33, 28, 20), this.m(OFF.out), id), 0, 0.6, 0)
+    } else if (kind === 'clk') {
+      at(this.rb(0.8, 0.2, 0.8, 0xcfe58a, id, 0.1), 0, 0.16, 0)
+      g.userData.lamp = at(cyl(0.32, 0.08, OFF.clk, id, 32), 0, 0.3, 0)
+      for (let i = 0; i < 12; i++) {
+        const a = (i * Math.PI) / 6
+        const t = at(this.rb(0.03, 0.02, 0.08, 0x1d2618, undefined, 0.005), Math.sin(a) * 0.26, 0.35, Math.cos(a) * 0.26)
+        t.rotation.y = a
+      }
+      at(cyl(0.07, 0.14, MET, id, 12), 0.3, 0.33, 0.3)
       const piv = new THREE.Group()
-      piv.position.set(p.x, 0.34, p.y)
+      piv.position.set(p.x, 0.38, p.y)
       const hand = this.rb(0.07, 0.07, 0.3, 0x1d2618, id, 0.02)
       hand.position.z = -0.14
       piv.add(hand)
       g.add(piv)
       g.userData.hand = piv
+    } else if (kind === 'bar') {
+      at(this.rb(1.3, 0.4, 3.7, 0x1b2118, id, 0.12), 0.1, 0.26, 0)
+      for (let k = 0; k < 4; k++) at(this.rb(0.5, 0.06, 0.1, MET, id, 0.02), -0.95, 0.2, zs(false, k))
+      g.userData.segLit = 0x9be000
+      g.userData.segs = [0, 1, 2, 3].map((k) => at(this.rb(0.8, 0.05, 0.56, 0x2a3326, id, 0.06), 0.1, 0.5, zs(false, k)))
+      text('BAR', 0.5, 0.2, 0.1, 0.47, -1.7, '#e6f2c8')
+    } else if (kind === 'seg') {
+      at(this.rb(2.2, 0.5, 4.6, 0x1b2118, id, 0.14), 0, 0.31, 0)
+      at(this.rb(1.5, 0.05, 3.2, 0x0f130c, id, 0.05), 0.15, 0.58, 0)
+      for (let k = 0; k < 7; k++) at(this.rb(0.46, 0.06, 0.16, MET, id, 0.02), -1.3, 0.2, zs(false, k))
+      const cx = 0.15
+      const spec: number[][] = [[0, -1.15, 1], [0.5, -0.58, 0], [0.5, 0.58, 0], [0, 1.15, 1], [-0.5, 0.58, 0], [-0.5, -0.58, 0], [0, 0, 1]]
+      g.userData.segs = spec.map(([x, z, h]) => at(this.rb(h ? 0.9 : 0.18, 0.05, h ? 0.18 : 0.9, 0x2a3326, id, 0.04), cx + x, 0.62, z))
+      at(cyl(0.07, 0.05, 0x2a3326, id, 12), cx + 0.62, 0.62, 1.15)
+      text('7SEG', 0.6, 0.22, -0.6, 0.58, -2.0, '#e6f2c8')
     } else {
       at(this.rb(2, 0.42, s.h * 0.9, 0x2f3a2c, id, 0.1), 0, 0.21, 0)
       at(this.mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.02, 16), this.m(0x5d6e55)), -0.75, 0.43, -s.h * 0.34)
-      for (let k = 0; k < s.i; k++) at(this.rb(0.5, 0.06, 0.16, 0xc9cfc6, id, 0.02), -1.25, 0.21, pinPos(p, lib, false, k)[1] - p.y)
-      for (let k = 0; k < s.o; k++) at(this.rb(0.5, 0.06, 0.16, 0xc9cfc6, id, 0.02), 1.25, 0.21, pinPos(p, lib, true, k)[1] - p.y)
-      const lb = this.mesh(new THREE.PlaneGeometry(1.7, 0.64), this.lab((p.chip || '').toUpperCase().slice(0, 9), '#e6f2c8'))
-      lb.rotation.x = -Math.PI / 2
-      at(lb, 0, 0.44, 0)
+      for (let k = 0; k < s.i; k++) at(this.rb(0.5, 0.06, 0.16, MET, id, 0.02), -1.25, 0.21, zs(false, k))
+      for (let k = 0; k < s.o; k++) at(this.rb(0.5, 0.06, 0.16, MET, id, 0.02), 1.25, 0.21, zs(true, k))
+      if (kind === 'dff') {
+        ;['D', 'CK'].forEach((t, k) => text(t, 0.34, 0.2, -0.72, 0.44, zs(false, k), '#e6f2c8'))
+        ;['Q', 'NQ'].forEach((t, k) => text(t, 0.34, 0.2, 0.72, 0.44, zs(true, k), '#e6f2c8'))
+        text('D-FF', 0.9, 0.34, 0, 0.44, 0, '#e6f2c8')
+      } else text((p.chip || '').toUpperCase().slice(0, 9), 1.7, 0.64, 0, 0.44, 0, '#e6f2c8')
     }
     const pin = (out: boolean, k: number) => {
       const slot = out ? 33 + k : 1 + k
@@ -499,7 +774,12 @@ export class Stage {
     const g = new THREE.Group()
     const mx = (A[0] + B[0]) / 2
     const pts: THREE.Vector3[] = []
-    ;[[A[0], A[1]], [mx, A[1]], [mx, B[1]], [B[0], B[1]]].forEach((q) => {
+    const back = B[0] < A[0] + 0.4
+    const tz = Math.min(A[1], B[1]) - 1.6
+    const route = back
+      ? [[A[0], A[1]], [A[0] + 0.7, A[1]], [A[0] + 0.7, tz], [B[0] - 0.7, tz], [B[0] - 0.7, B[1]], [B[0], B[1]]]
+      : [[A[0], A[1]], [mx, A[1]], [mx, B[1]], [B[0], B[1]]]
+    route.forEach((q) => {
       const v = new THREE.Vector3(q[0], 0.3, q[1])
       if (!pts.length || pts[pts.length - 1].distanceTo(v) > 0.01) pts.push(v)
     })
@@ -626,6 +906,9 @@ export class Stage {
     c.clks.forEach((q: any) => {
       if (q.id) val[q.id] = this.v[q.net]
     })
+    c.btns.forEach((q: any) => (val[q.id] = this.v[q.net]))
+    const segv: Record<number, number[]> = {}
+    c.segs.forEach((q: any) => (segv[q.id] = q.nets))
     this.objs.forEach((o, k) => {
       const id = +k.slice(1)
       if (k[0] === 'w') {
@@ -634,6 +917,8 @@ export class Stage {
         return
       }
       const u = o.g.userData
+      if (u.lamp2) u.lamp2.material = val[id] ? this.lit(0x7ccf00) : this.m(0xb4bfb1)
+      if (u.segs && segv[id]) u.segs.forEach((m: THREE.Mesh, i: number) => (m.material = this.v[segv[id][i]] ? this.lit(u.segLit || 0xff5a36) : this.m(0x2a3326)))
       if (u.lamp) u.lamp.material = val[id] ? this.lit(LIT[u.kind]) : this.m(OFF[u.kind])
       if (u.hand) u.hand.rotation.y = -this.t * (Math.PI / 24)
     })
@@ -779,12 +1064,17 @@ export class Stage {
     const k = this.kind(id)
     const st = this.store.getState()
     const d: any = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, id, k, mv: false, mode: 'none', shift: e.shiftKey, alt: e.altKey }
-    if (e.button === 2 || (e.button === 1 && !e.shiftKey)) d.mode = 'orbit'
-    else if (e.button === 1 || this.space) d.mode = 'pan'
+    if (e.button === 1 && !e.shiftKey) d.mode = 'orbit'
+    else if (e.button === 2 || e.button === 1 || this.space) d.mode = 'pan'
     else if (k === 'pin-in' || k === 'pin-out') d.mode = 'wire'
     else if (k === 'body' || k === 'group') {
       d.mode = 'body'
       d.pid = k === 'body' ? id >> 6 : 0
+      const bp = st.parts.find((q: Part) => q.id === d.pid)
+      if (bp && bp.kind === 'btn' && !e.altKey) {
+        st.hold(bp.id, true)
+        d.btn = bp.id
+      }
       const mem: number[] = k === 'body' ? [d.pid] : st.parts.filter((p: Part) => p.g === id - GB).map((p: Part) => p.id)
       let sel: number[] = st.sel
       const has = mem.every((x) => sel.includes(x))
@@ -879,6 +1169,7 @@ export class Stage {
     if (!d) return
     const [px, py] = this.xy(e)
     const st = this.store.getState()
+    if (d.btn) st.hold(d.btn, false)
     this.prev.visible = false
     this.onMarquee(null)
     if (d.mode === 'wire' && d.mv) {
@@ -912,6 +1203,7 @@ export class Stage {
     on(cv, 'pointerup', (e: PointerEvent) => this.up(e))
     on(cv, 'contextmenu', (e: Event) => e.preventDefault())
     const reset = () => {
+      if (this.d && this.d.btn) this.store.getState().hold(this.d.btn, false)
       this.d = null
       this.prev.visible = false
       this.onMarquee(null)
@@ -928,7 +1220,13 @@ export class Stage {
       'wheel',
       (e: WheelEvent) => {
         e.preventDefault()
-        this.zoom = Math.min(90, Math.max(16, this.zoom * Math.exp(-e.deltaY * 0.0015)))
+        const [px, py] = this.xy(e)
+        const g0 = this.ground(px, py)
+        this.zoom = Math.min(90, Math.max(8, this.zoom * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015))))
+        this.view()
+        const g1 = this.ground(px, py)
+        this.tgt.x += g0.x - g1.x
+        this.tgt.z += g0.z - g1.z
         this.view()
       },
       { passive: false },
@@ -955,6 +1253,12 @@ export class Stage {
         this.store.getState().redo()
       }
       if (!mod && k === 'v') this.store.setState({ tool: this.store.getState().tool === 'select' ? 'orbit' : 'select' })
+      if (!mod && k === 'f') this.fit()
+      const pn: Record<string, number[]> = { arrowleft: [90, 0], a: [90, 0], arrowright: [-90, 0], d: [-90, 0], arrowup: [0, 90], w: [0, 90], arrowdown: [0, -90], s: [0, -90] }
+      if (!mod && pn[k]) {
+        e.preventDefault()
+        this.panBy(pn[k][0], pn[k][1])
+      }
     })
     on(window, 'keyup', (e: KeyboardEvent) => {
       if (e.code === 'Space') {
@@ -1013,7 +1317,11 @@ export class Stage {
 .kr-rb { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; color: var(--ink); cursor: pointer; }
 .kr-rb.on { background: var(--lime); border-color: var(--lime); }
 .kr-col { position: absolute; top: 20px; z-index: 2; max-height: calc(100% - 118px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: 14px; border-radius: 22px; }
-.kr-l { left: 84px; width: 216px; }
+.kr-l { left: 84px; width: 232px; }
+.kr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kr-tilebtn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 6px; border: 1px solid var(--edge); border-radius: 14px; background: rgba(255, 255, 255, 0.5); cursor: pointer; text-align: center; }
+.kr-tilebtn:hover { border-color: var(--lime-d); }
+.kr-tilebtn b { font-size: 12px; font-weight: 600; }
 .kr-r { right: 20px; width: 256px; }
 .kr-hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .kr-x { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: var(--ink); cursor: pointer; }
@@ -1096,20 +1404,32 @@ export class Stage {
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { create } from 'zustand'
-import { Play, Pause, ToggleRight, Cpu, Lightbulb, Package, Trash2, Timer, Layers, Info, RotateCcw, RotateCw, Check, ChevronLeft, ChevronRight, Undo2, Redo2, MousePointer2, Download, Upload } from 'lucide-react'
+import { Play, Pause, ToggleRight, Cpu, Lightbulb, Package, Trash2, Timer, Layers, Info, RotateCcw, RotateCw, Check, ChevronLeft, ChevronRight, Undo2, Redo2, MousePointer2, Download, Upload, BookOpen, Maximize } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { Stage, START, truthTable, gcol } from '@/arkzen/generated/kairo.scripts'
+import { Stage, START, truthTable, gcol, buildSample } from '@/arkzen/generated/kairo.scripts'
 import type { Part, Wire, Lib } from '@/arkzen/generated/kairo.scripts'
 
-export const KR_NAME: Record<string, string> = { in: 'Switch', clk: 'Clock', nand: 'NAND gate', out: 'Lamp', chip: 'Chip' }
+export const KR_NAME: Record<string, string> = { in: 'Switch', btn: 'Button', clk: 'Clock', hi: 'High', nand: 'NAND', and: 'AND', or: 'OR', not: 'NOT', nor: 'NOR', xor: 'XOR', xnor: 'XNOR', buf: 'Buffer', dff: 'D flip-flop', out: 'Lamp', bar: 'LED bar', seg: '7-segment', chip: 'Chip' }
 export const KR_DESC: Record<string, string> = {
   in: 'An input you flip by clicking it.',
+  btn: 'An input that is 1 only while you hold it down.',
   clk: 'Swaps between 0 and 1 on its own while the board runs.',
+  hi: 'Always outputs 1.',
   nand: 'Outputs 0 only when both inputs are 1.',
+  and: 'Outputs 1 only when both inputs are 1.',
+  or: 'Outputs 1 when at least one input is 1.',
+  not: 'Flips its input.',
+  buf: 'Passes its input through, one tick later.',
+  bar: 'Four inputs light four bars, top to bottom.',
+  nor: 'Outputs 1 only when both inputs are 0.',
+  xor: 'Outputs 1 when the inputs differ.',
+  xnor: 'Outputs 1 when the inputs match.',
+  dff: 'Copies D to Q on the rising edge of CK. NQ is the opposite of Q.',
   out: 'Lights up when its input is 1.',
+  seg: 'Seven inputs, a to g from the top, light the segments of one digit.',
   chip: 'A saved circuit that works as one part.',
 }
-export const KR_TILE: Record<string, string> = { in: '#f6c1b0', clk: '#cfe58a', nand: '#b9e03c', out: '#f7cf3d', chip: '#86c1ea' }
+export const KR_TILE: Record<string, string> = { in: '#f6c1b0', btn: '#f2a08a', clk: '#cfe58a', hi: '#d7e87a', nand: '#b9e03c', and: '#a7d8f0', or: '#f7d28a', not: '#f4b6c2', nor: '#f2a08a', xor: '#9fe0c9', xnor: '#e6d27a', dff: '#86c1ea', out: '#f7cf3d', seg: '#cfd8c4', buf: '#d5dcc8', bar: '#cfe58a', chip: '#86c1ea' }
 
 export const useLive = create<any>(() => ({ t: 0, vals: {}, tags: [] }))
 
@@ -1120,7 +1440,7 @@ export const useKairo = create<any>((set, get) => ({
   wsel: 0,
   run: true,
   speed: 2,
-  lib: {},
+  lib: { 'full-adder': buildSample('fulladder') },
   libVer: 0,
   nid: 10,
   view: [5, 1],
@@ -1131,6 +1451,7 @@ export const useKairo = create<any>((set, get) => ({
   drag: null,
   dragPos: null,
   stage: null,
+  ui: { l: 336, r: 296 },
   select: (sel: number[]) => set({ sel, wsel: 0 }),
   pickWire: (id: number) => set({ wsel: id, sel: [] }),
   setView: (view: number[]) => set({ view }),
@@ -1153,6 +1474,7 @@ export const useKairo = create<any>((set, get) => ({
     set({ future: s.future.slice(0, -1), past: [...s.past, { parts: s.parts, wires: s.wires }], parts: f.parts.map((q: Part) => ({ ...q, on: on.get(q.id) })), wires: f.wires, sel: [], wsel: 0 })
   },
   toggle: (id: number) => set({ parts: get().parts.map((p: Part) => (p.id === id ? { ...p, on: !p.on } : p)) }),
+  hold: (id: number, on: boolean) => set({ parts: get().parts.map((p: Part) => (p.id === id ? { ...p, on } : p)) }),
   moveTo: (st: Record<number, number[]>, dx: number, dy: number) =>
     set({ parts: get().parts.map((p: Part) => (st[p.id] ? { ...p, x: st[p.id][0] + dx, y: st[p.id][1] + dy } : p)) }),
   add: (kind: string, chip?: string, x?: number, y?: number) => {
@@ -1187,7 +1509,7 @@ export const useKairo = create<any>((set, get) => ({
     } catch (e) {
       return set({ msg: 'That file is not valid JSON.' })
     }
-    const okp = (a: any) => Array.isArray(a) && a.every((p: any) => p && p.id > 0 && p.id < 131072 && ['in', 'out', 'nand', 'clk', 'chip'].includes(p.kind) && typeof p.x === 'number' && typeof p.y === 'number')
+    const okp = (a: any) => Array.isArray(a) && a.every((p: any) => p && p.id > 0 && p.id < 131072 && ['in', 'out', 'nand', 'clk', 'chip', 'btn', 'hi', 'and', 'or', 'not', 'nor', 'xor', 'xnor', 'dff', 'seg', 'buf', 'bar'].includes(p.kind) && typeof p.x === 'number' && typeof p.y === 'number')
     const okw = (a: any) => Array.isArray(a) && a.every((w: any) => w && typeof w.id === 'number' && Array.isArray(w.from) && Array.isArray(w.to))
     if (!d || !okp(d.parts) || !okw(d.wires)) return set({ msg: 'That does not look like a Kairo file.' })
     const s = get()
@@ -1203,6 +1525,21 @@ export const useKairo = create<any>((set, get) => ({
     const top = Math.max(s.nid, ...parts.map((p: Part) => Math.max(p.id, p.g || 0)), ...d.wires.map((w: Wire) => w.id))
     get().mark()
     set({ parts, wires: d.wires, sel: [], wsel: 0, lib: { ...s.lib, ...lib }, libVer: s.libVer + 1, nid: top + 1, msg: 'Imported ' + parts.length + ' parts.' })
+    setTimeout(() => {
+      const g = get().stage
+      if (g) g.fit()
+    }, 0)
+  },
+  loadSample: (name: string) => {
+    const d = buildSample(name)
+    const s = get()
+    get().mark()
+    const top = Math.max(...d.parts.map((p: Part) => Math.max(p.id, p.g || 0)), ...d.wires.map((w: Wire) => w.id))
+    set({ parts: d.parts, wires: d.wires, sel: [], wsel: 0, nid: Math.max(s.nid, top + 1), msg: '' })
+    setTimeout(() => {
+      const g = get().stage
+      if (g) g.fit()
+    }, 0)
   },
   connect: (a: number[], b: number[]) => {
     const s = get()
@@ -1289,8 +1626,32 @@ export const useKairo = create<any>((set, get) => ({
 }))
 
 export const PartTile = ({ kind }: { kind: string }) => {
-  const I: any = { in: ToggleRight, clk: Timer, nand: Cpu, out: Lightbulb, chip: Package }[kind] || Package
-  return <span className="kr-tile" style={{ background: KR_TILE[kind] }}><I size={18} /></span>
+  const gl = (d: string, extra?: React.ReactNode) => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {extra}
+      <path d={d} />
+    </svg>
+  )
+  const bub = (cx: number) => <circle cx={cx} cy="12" r="1.6" />
+  const G: Record<string, React.ReactNode> = {
+    and: gl('M5 5h6a7 7 0 0 1 0 14H5zM1 9h4M1 15h4M18 12h5'),
+    nand: gl('M5 5h6a7 7 0 0 1 0 14H5zM1 9h4M1 15h4M21.2 12H23', bub(19.6)),
+    or: gl('M4 5c5 0 10 2 14 7-4 5-9 7-14 7 3-5 3-9 0-14zM1 9h4M1 15h4M18 12h5'),
+    nor: gl('M4 5c4.5 0 9 2 13 7-4 5-8.5 7-13 7 3-5 3-9 0-14zM1 9h4M1 15h4M20.6 12H23', bub(18.8)),
+    xor: gl('M6 5c5 0 9 2 12 7-3 5-7 7-12 7 3-5 3-9 0-14zM2 5c3 5 3 9 0 14M1 9h3.6M1 15h3.6M18 12h5'),
+    xnor: gl('M5 5c4.5 0 8.5 2 11 7-2.5 5-6.5 7-11 7 3-5 3-9 0-14zM1.5 5c3 5 3 9 0 14M1 9h3M1 15h3M19.4 12H23', bub(17.7)),
+    not: gl('M5 5v14l11-7zM1 12h4M19.4 12H23', bub(17.7)),
+    buf: gl('M5 5v14l13-7zM1 12h4M18 12h5'),
+    bar: gl('M8 7h8M8 11h8M8 15h8M8 19h8', <rect x="5" y="3" width="14" height="18" rx="2" />),
+    dff: gl('M4 15l3-2-3-2M9 8h1M14 8h1', <rect x="4" y="4" width="16" height="16" rx="2" />),
+    seg: gl('M8 7h8M8 12h8M8 17h8', <rect x="5" y="3" width="14" height="18" rx="2" />),
+    btn: gl('M12 9.4v0', <><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2.6" fill="currentColor" /></>),
+    hi: gl('M9 8l3-3v14M8.5 19h7'),
+    in: <ToggleRight size={18} />,
+    clk: <Timer size={18} />,
+    out: <Lightbulb size={18} />,
+  }
+  return <span className="kr-tile" style={{ background: KR_TILE[kind] }}>{G[kind] || <Package size={18} />}</span>
 }
 
 export const Rail = ({ tab, open, pick }: any) => (
@@ -1300,7 +1661,7 @@ export const Rail = ({ tab, open, pick }: any) => (
       <path d="M7 9h9a7 7 0 0 1 0 14H7z" fill="#14180f" />
       <circle cx="25.6" cy="16" r="2.3" fill="#14180f" />
     </svg>
-    {[['parts', Layers, 'Parts'], ['chips', Package, 'Your chips'], ['help', Info, 'How to']].map(([k, I, t]: any) => (
+    {[['parts', Layers, 'Parts'], ['chips', Package, 'Your chips'], ['ex', BookOpen, 'Examples'], ['help', Info, 'How to']].map(([k, I, t]: any) => (
       <button key={k} className={'kr-rb' + (tab === k && open ? ' on' : '')} aria-label={t} aria-pressed={tab === k && open} onClick={() => pick(k)}>
         <I size={18} />
       </button>
@@ -1321,6 +1682,7 @@ export const SidePanel = ({ tab, onHide }: { tab: string; onHide: () => void }) 
   const lib: Lib = useKairo((s: any) => s.lib)
   const n = useKairo((s: any) => s.parts.length)
   const exportChip = useKairo((s: any) => s.exportChip)
+  const loadSample = useKairo((s: any) => s.loadSample)
   const names = Object.keys(lib)
   const dragged = useRef(false)
   const begin = (e: React.PointerEvent, k: string, chip?: string) => {
@@ -1405,6 +1767,56 @@ export const SidePanel = ({ tab, onHide }: { tab: string; onHide: () => void }) 
       )}
     </div>
   )
+  const tile = (k: string) => (
+    <div
+      key={k}
+      role="button"
+      tabIndex={0}
+      className="kr-tilebtn"
+      title={KR_NAME[k] + ': ' + KR_DESC[k]}
+      onPointerDown={(e) => begin(e, k)}
+      onClick={() => {
+        if (!dragged.current) add(k)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          add(k)
+        }
+      }}
+    >
+      <PartTile kind={k} />
+      <b>{KR_NAME[k]}</b>
+    </div>
+  )
+  if (tab === 'ex')
+    return (
+      <aside className="kr-col kr-l">
+        <Hd t="Examples" onHide={onHide} />
+        {[
+          ['adder', '4-bit adder', 'Flip the A and B switches. The lamps show the sum in binary, lowest bit on the left. The last lamp is the carry.'],
+          ['counter', '4-bit counter', 'Four flip-flops count clock pulses in binary. Raise the speed to watch the high bits move.'],
+          ['display', 'Counter with display', 'A 2-bit counter drives a 7-segment digit through a few gates. It counts 0 to 3.'],
+        ].map(([k, t, d]) => (
+          <div
+            key={k}
+            role="button"
+            tabIndex={0}
+            className="kr-card btn"
+            onClick={() => loadSample(k)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                loadSample(k)
+              }
+            }}
+          >
+            <span className="kr-tile" style={{ background: '#cfe58a' }}><BookOpen size={18} /></span>
+            <span><b>{t}</b><small>{d}</small></span>
+          </div>
+        ))}
+      </aside>
+    )
   if (tab === 'help')
     return (
       <aside className="kr-col kr-l">
@@ -1414,7 +1826,8 @@ export const SidePanel = ({ tab, onHide }: { tab: string; onHide: () => void }) 
           ['Wire two parts', 'Drag from a dark green output pin to an input pin.'],
           ['Flip a switch', 'Click it.'],
           ['Orbit the board', 'Drag empty space, or use the orbit disc.'],
-          ['Pan', 'Hold Space and drag, or Shift and middle-drag.'],
+          ['Pan', 'Right-drag, middle-drag, hold Space and drag, or use the arrow keys or WASD.'],
+          ['Fit everything', 'Press F or the fit button in the bottom bar.'],
           ['Select several', 'Press V or the pointer button, then drag a box. Shift-drag works anytime.'],
           ['Add or remove one', 'Alt-click a part.'],
           ['Undo and redo', 'Ctrl+Z and Ctrl+Shift+Z.'],
@@ -1439,11 +1852,12 @@ export const SidePanel = ({ tab, onHide }: { tab: string; onHide: () => void }) 
   return (
     <aside className="kr-col kr-l">
       <Hd t="Parts" onHide={onHide} />
-      {card('in')}
-      {card('clk')}
-      <div className="kr-lbl"><span>GATES AND OUTPUTS</span><span>{n} ON BOARD</span></div>
-      {card('nand')}
-      {card('out')}
+      {[['INPUTS', ['in', 'btn', 'clk', 'hi']], ['GATES', ['nand', 'and', 'or', 'buf', 'not', 'nor', 'xor', 'xnor']], ['MEMORY', ['dff']], ['OUTPUTS', ['out', 'bar', 'seg']]].map(([label, ks]: any) => (
+        <div key={label}>
+          <div className="kr-lbl"><span>{label}</span><span>{label === 'INPUTS' ? n + ' ON BOARD' : ''}</span></div>
+          <div className="kr-grid">{ks.map((k: string) => tile(k))}</div>
+        </div>
+      ))}
     </aside>
   )
 }
@@ -1527,7 +1941,7 @@ export const BoardView = () => {
       {fresh && !gone && (
         <div className="kr-bubble">
           <span className="kr-tag">TRY THIS</span>
-          <p>Click the switch. With it on, the lamp blinks with the clock through the NAND gate. With it off, the lamp stays lit.</p>
+          <p>Click the switch. With it on, the lamp blinks with the clock through the NAND gate. With it off, the lamp stays lit. Open Examples on the left for bigger builds.</p>
           <button className="kr-pill lime" onClick={() => setGone(true)}>Got it</button>
         </div>
       )}
@@ -1546,6 +1960,7 @@ export const BoardView = () => {
         <button className="kr-pill" onClick={() => snap(st.current ? st.current.az : 0, 1.5)}>Top</button>
         <button className="kr-pill" aria-label="Rotate left" onClick={() => snap(st.current.az + Math.PI / 2, st.current.el)}><RotateCcw size={14} /></button>
         <button className="kr-pill" aria-label="Rotate right" onClick={() => snap(st.current.az - Math.PI / 2, st.current.el)}><RotateCw size={14} /></button>
+        <button className="kr-pill" title="Fit all (F)" aria-label="Fit all" onClick={() => st.current && st.current.fit()}><Maximize size={14} /></button>
         <i className="kr-sep" />
         <button className="kr-pill" aria-label="Delete selection" onClick={() => useKairo.getState().remove()}><Trash2 size={14} /></button>
       </div>
@@ -1574,9 +1989,9 @@ export const Inspector = ({ onHide }: { onHide: () => void }) => {
   const cur = parts.find((p) => p.id === sel[0])
   const k = sel.length > 1 ? '' : cur ? cur.kind : ''
   const cnt: Record<string, number> = {}
-  const rows = parts.filter((p) => p.kind === 'in' || p.kind === 'out' || p.kind === 'clk').map((p) => {
+  const rows = parts.filter((p) => p.kind === 'in' || p.kind === 'out' || p.kind === 'clk' || p.kind === 'btn').map((p) => {
     const i = (cnt[p.kind] = (cnt[p.kind] || 0) + 1)
-    return { id: p.id, title: p.kind === 'in' ? 'Switch ' + 'ABCDEFGH'[i - 1] : p.kind === 'out' ? 'Lamp ' + i : 'Clock', hi: !!vals[p.id] }
+    return { id: p.id, title: p.kind === 'in' ? 'Switch ' + 'ABCDEFGH'[i - 1] : p.kind === 'out' ? 'Lamp ' + i : p.kind === 'btn' ? 'Button ' + i : 'Clock', hi: !!vals[p.id] }
   })
   return (
     <aside className="kr-col kr-r">
@@ -1665,6 +2080,9 @@ export const KairoApp = () => {
   useEffect(() => {
     load()
   }, [load])
+  useEffect(() => {
+    useKairo.setState({ ui: { l: lo ? 336 : 76, r: ro ? 296 : 56 } })
+  }, [lo, ro])
   const pick = (k: string) => {
     if (k === tab && lo) setLo(false)
     else {

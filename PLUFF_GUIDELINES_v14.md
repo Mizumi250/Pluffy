@@ -1925,6 +1925,8 @@
 
   ### Capability matrix
 
+  Validation rules are checked by the shared vectors in `engine/backend/conformance/` (177 cases, all seven backends run them). `role:a,b` returns 403 "Forbidden. Insufficient role." on every backend.
+
   This matrix describes the runtime mechanisms and generality of support, not whether a shipped Tatemono fixture passes. Behavioral parity means the Tatemono has the same expected behavior; engines may implement it with generated code, interpretation, built-ins or named workflows. The maintainer reports that all shipped Tatemono fixtures have been run on Go and Rust with the same behavior as the other backends. That test coverage does not guarantee arbitrary, untested combinations of DSL features. For a specific feature, check `engine/backend/<name>/README.md`; "named" means engine support for declared workflows, not general execution of arbitrary source bodies.
 
   | Feature | laravel | express | fastapi | spring-boot | aspnet | go | rust |
@@ -1935,7 +1937,7 @@
   | SQLite and PostgreSQL | yes | yes | yes | yes (PostgreSQL untested) | yes | yes | yes |
   | Token auth (`auth: true`) | yes | yes | yes | yes | yes | yes | yes |
   | `roles-test` role workflows | yes | yes | yes | yes | yes | yes (engine-supported workflow) | yes (engine-supported workflow) |
-  | Generic `role:` middleware | yes | yes | yes | yes | yes | no (role behavior is not generic middleware) | no (role behavior is not generic middleware) |
+  | Generic `role:` middleware | yes | yes | yes | yes | yes | yes | yes |
   | Jobs and queue | worker | worker | worker | in memory, not durable | in process, not durable | database queue with interpreted `:go` job bodies | generated `:rs` job bodies; pending rows retried at startup (at-least-once) |
   | Cron scheduler | yes | yes (`npm run queue`) | yes | in process, per minute | not implemented | supported console schedules, per minute | supported console schedules, per minute (UTC; missed runs not replayed) |
   | Realtime | Reverb | Pusher protocol | Pusher protocol | Pusher compatible | Pusher compatible hub | Pusher protocol | Pusher protocol |
@@ -4246,7 +4248,7 @@
     families: api, database, endpoint, jobs · stacks: web, native, lynx · M (~10k tokens, 31 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/job-test/core.tsx
   - **kairo** — (no description in meta)
-    families: api, database · stacks: web · M (~12k tokens, 38 KB) · has assets/
+    families: api, database · stacks: web · M (~29k tokens, 92 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/kairo/core.tsx
   - **kotoba** — (no description in meta)
     families: api, database, desktop, handler, module, realtime, routes · stacks: web, native · XL (never fetch in full) (~225k tokens, 703 KB)

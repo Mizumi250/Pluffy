@@ -13,5 +13,6 @@ from .commands import *          # noqa: F401,F403
 from .mail import *              # noqa: F401,F403
 from .notifications import *     # noqa: F401,F403
 from .broadcast import *         # noqa: F401,F403
+from .sse_poll import *          # noqa: F401,F403
 from .storage import *           # noqa: F401,F403
 from .http import Request, ResponseFactory   # noqa: F401  (not exported by __all__)

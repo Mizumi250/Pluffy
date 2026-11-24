@@ -700,6 +700,59 @@ async fn dispatch(
                 }
             };
         }
+        if let Some(channel_type) = path
+            .strip_prefix(&format!("/api/{slug}/sse-poll/"))
+            .map(str::to_owned)
+        {
+            if method != Method::GET {
+                return (
+                    StatusCode::METHOD_NOT_ALLOWED,
+                    Json(json!({"message": "Method not allowed"})),
+                )
+                    .into_response();
+            }
+            if !matches!(channel_type.as_str(), "public" | "private" | "presence") {
+                return (StatusCode::NOT_FOUND, Json(json!({"message": "Not Found"}))).into_response();
+            }
+            if channel_type != "public" {
+                let mut authenticated = false;
+                if module.get("auth").and_then(Value::as_bool) == Some(true) {
+                    let database_dir = state.config.database_dir.clone();
+                    let auth_module = slug.clone();
+                    let auth_header = authorization.clone();
+                    let result = tokio::task::spawn_blocking(move || {
+                        auth::authenticated_user(&database_dir, &auth_module, auth_header.as_deref())
+                    })
+                    .await;
+                    authenticated = matches!(result, Ok(Ok(Some(_))));
+                }
+                if !authenticated {
+                    return (
+                        StatusCode::UNAUTHORIZED,
+                        Json(json!({"message": "Unauthenticated."})),
+                    )
+                        .into_response();
+                }
+            }
+            let after_id = query_string
+                .split('&')
+                .find_map(|pair| pair.strip_prefix("after_id="))
+                .and_then(|value| value.parse::<i64>().ok())
+                .unwrap_or(0);
+            let database_dir = state.config.database_dir.clone();
+            let poll_module = module.clone();
+            let poll_slug = slug.clone();
+            let result = tokio::task::spawn_blocking(move || {
+                api::sse_poll(&database_dir, &poll_slug, &poll_module, &channel_type, after_id)
+            })
+            .await;
+            return match result {
+                Ok((status, payload)) => (status, Json(payload)).into_response(),
+                Err(error) => {
+                    internal_error(format!("SSE poll worker failed: {error}")).into_response()
+                }
+            };
+        }
         if let Some(route) = api::match_route(&module, method.as_str(), &path) {
             let mut broadcast_target = None;
             let mut body_for_db = body.clone();

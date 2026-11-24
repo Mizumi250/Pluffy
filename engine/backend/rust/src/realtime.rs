@@ -504,6 +504,14 @@ pub(crate) fn resolve_broadcast_target(
     None
 }
 
+/// Event name delivered for a channel type, without resolving the channel itself ("<module>.<section>").
+pub(crate) fn broadcast_event_name(module: &Value, requested_type: &str) -> Option<String> {
+    realtime_sections(module)
+        .into_iter()
+        .find(|section| section.values.get("type").map(String::as_str) == Some(requested_type))
+        .and_then(|section| Some(format!("{}.{}", module["name"].as_str()?, section.name)))
+}
+
 pub(crate) fn broadcast_api_type(endpoint: &Value) -> bool {
     endpoint.get("type").and_then(Value::as_str) == Some("broadcast")
 }

@@ -989,6 +989,86 @@ pub fn execute_upload_download(
     response
 }
 
+/// Table and schema of the module's broadcast API (the API with a `type: broadcast` endpoint).
+fn broadcast_table(module: &Value) -> Option<(String, Value)> {
+    for api in module.get("apis")?.as_array()? {
+        let has_broadcast = api
+            .get("endpoints")
+            .and_then(Value::as_object)
+            .is_some_and(|endpoints| endpoints.values().any(crate::realtime::broadcast_api_type));
+        if !has_broadcast {
+            continue;
+        }
+        let table = super::database::table_for_model(module, api)?;
+        let schema = module["databases"]
+            .as_array()?
+            .iter()
+            .find(|database| database["table"].as_str() == Some(table))
+            .cloned()
+            .unwrap_or_else(|| json!({}));
+        return Some((table.to_owned(), schema));
+    }
+    None
+}
+
+/// `GET /api/<slug>/sse-poll/<public|private|presence>?after_id=N`, the one-shot poll the Lynx client
+/// uses instead of SSE. Same contract as Laravel's LynxSseBridgeController::poll(): public reads rows
+/// whose channel_type is "public" or NULL, private/presence read an exact match, ordered by id, 50 max.
+pub fn sse_poll(
+    database_dir: &Path,
+    slug: &str,
+    module: &Value,
+    channel_type: &str,
+    after_id: i64,
+) -> (axum::http::StatusCode, Value) {
+    let Some((table, schema)) = broadcast_table(module) else {
+        return (
+            axum::http::StatusCode::NOT_FOUND,
+            json!({"message": "No broadcast API is configured for this module."}),
+        );
+    };
+    let connection = match open_connection(database_dir, slug) {
+        Ok(connection) => connection,
+        Err(error) => return internal_error(error),
+    };
+    match column_names(&connection, &table) {
+        Ok(columns) if columns.iter().any(|column| column == "channel_type") => {}
+        Ok(_) => return internal_error("Broadcast table has no channel_type column".to_owned()),
+        Err(error) => return internal_error(format!("Unable to inspect broadcast table: {error}")),
+    }
+    let filter = if channel_type == "public" {
+        "(\"channel_type\" = ?1 OR \"channel_type\" IS NULL)"
+    } else {
+        "\"channel_type\" = ?1"
+    };
+    let sql = format!(
+        "SELECT * FROM {} WHERE {filter} AND \"id\" > ?2 ORDER BY \"id\" LIMIT 50",
+        quote(&table)
+    );
+    let rows = match read_rows(
+        &connection,
+        &sql,
+        vec![sql_value(&json!(channel_type)), sql_value(&json!(after_id))],
+        &schema,
+    ) {
+        Ok(rows) => rows,
+        Err(error) => return internal_error(format!("Unable to read broadcast messages: {error}")),
+    };
+    let event = crate::realtime::broadcast_event_name(module, channel_type);
+    let last_id = rows
+        .last()
+        .and_then(|row| row["id"].as_i64())
+        .unwrap_or(after_id);
+    let messages: Vec<Value> = rows
+        .into_iter()
+        .map(|row| json!({"event": event, "data": row}))
+        .collect();
+    (
+        axum::http::StatusCode::OK,
+        json!({"messages": messages, "last_id": last_id}),
+    )
+}
+
 fn open_connection(database_dir: &Path, slug: &str) -> Result<Connection, String> {
     crate::db::open_module(database_dir, slug)
 }
@@ -1891,6 +1971,55 @@ mod tests {
         );
         assert_eq!(status, axum::http::StatusCode::NOT_FOUND);
         assert_eq!(missing["message"], "Not Found");
+    }
+
+    #[test]
+    fn sse_poll_follows_the_laravel_contract() {
+        let directory = tempfile::tempdir().unwrap();
+        let payload = json!({
+            "name": "sample",
+            "databases": [{
+                "table": "messages",
+                "columns": {
+                    "body": {"type": "string", "nullable": false},
+                    "channel_type": {"type": "string", "nullable": true}
+                },
+                "seeder": {"data": [
+                    {"body": "a", "channel_type": "public"},
+                    {"body": "b", "channel_type": null},
+                    {"body": "c", "channel_type": "private"},
+                    {"body": "d", "channel_type": "public"}
+                ]}
+            }],
+            "apis": [{"model": "Message", "endpoints": {"store": {"type": "broadcast"}}}],
+            "realtimes": ["message-sent-public:\n  channel: sample-public\n  type: public\n  body: ''"]
+        });
+        super::super::database::apply_schema(directory.path(), "sample", &payload).unwrap();
+
+        let (status, body) = sse_poll(directory.path(), "sample", &payload, "public", 0);
+        assert_eq!(status, axum::http::StatusCode::OK);
+        let messages = body["messages"].as_array().unwrap();
+        // public = "public" or NULL channel_type, ordered by id
+        assert_eq!(messages.len(), 3);
+        assert_eq!(messages[0]["data"]["body"], "a");
+        assert_eq!(messages[1]["data"]["body"], "b");
+        assert_eq!(messages[0]["event"], "sample.message-sent-public");
+        assert_eq!(body["last_id"], 4);
+
+        // after_id skips what the client already has
+        let (_, body) = sse_poll(directory.path(), "sample", &payload, "public", 3);
+        assert_eq!(body["messages"].as_array().unwrap().len(), 1);
+        assert_eq!(body["last_id"], 4);
+
+        // private = exact match; unknown event name becomes null
+        let (_, body) = sse_poll(directory.path(), "sample", &payload, "private", 0);
+        assert_eq!(body["messages"].as_array().unwrap().len(), 1);
+        assert!(body["messages"][0]["event"].is_null());
+
+        // empty result keeps after_id as last_id
+        let (_, body) = sse_poll(directory.path(), "sample", &payload, "presence", 7);
+        assert_eq!(body["messages"].as_array().unwrap().len(), 0);
+        assert_eq!(body["last_id"], 7);
     }
 
     #[test]

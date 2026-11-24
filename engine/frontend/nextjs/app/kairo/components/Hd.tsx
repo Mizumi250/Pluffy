@@ -3,15 +3,15 @@
 // ARKZEN GENERATED COMPONENT — Hd
 // Source: @arkzen:components (kairo)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T03:16:25.473Z
+// Generated: 2026-11-24T07:36:54.148Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { START, Stage, gcol, truthTable } from '@/arkzen/generated/kairo.scripts'
+import { START, Stage, buildSample, gcol, truthTable } from '@/arkzen/generated/kairo.scripts'
 import type { Lib, Part, Wire } from '@/arkzen/generated/kairo.scripts'
-import { Check, ChevronLeft, ChevronRight, Cpu, Download, Info, Layers, Lightbulb, MousePointer2, Package, Pause, Play, Redo2, RotateCcw, RotateCw, Timer, ToggleRight, Trash2, Undo2, Upload } from 'lucide-react'
+import { BookOpen, Check, ChevronLeft, ChevronRight, Cpu, Download, Info, Layers, Lightbulb, Maximize, MousePointer2, Package, Pause, Play, Redo2, RotateCcw, RotateCw, Timer, ToggleRight, Trash2, Undo2, Upload } from 'lucide-react'
 import { create } from 'zustand'
 
 export const Hd = ({ t, onHide }: { t: string; onHide: () => void }) => (

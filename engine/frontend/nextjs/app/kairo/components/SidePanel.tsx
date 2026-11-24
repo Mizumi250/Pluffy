@@ -3,15 +3,15 @@
 // ARKZEN GENERATED COMPONENT — SidePanel
 // Source: @arkzen:components (kairo)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T03:16:25.478Z
+// Generated: 2026-11-24T07:36:54.154Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { START, Stage, gcol, truthTable } from '@/arkzen/generated/kairo.scripts'
+import { START, Stage, buildSample, gcol, truthTable } from '@/arkzen/generated/kairo.scripts'
 import type { Lib, Part, Wire } from '@/arkzen/generated/kairo.scripts'
-import { Check, ChevronLeft, ChevronRight, Cpu, Download, Info, Layers, Lightbulb, MousePointer2, Package, Pause, Play, Redo2, RotateCcw, RotateCw, Timer, ToggleRight, Trash2, Undo2, Upload } from 'lucide-react'
+import { BookOpen, Check, ChevronLeft, ChevronRight, Cpu, Download, Info, Layers, Lightbulb, Maximize, MousePointer2, Package, Pause, Play, Redo2, RotateCcw, RotateCw, Timer, ToggleRight, Trash2, Undo2, Upload } from 'lucide-react'
 import { create } from 'zustand'
 import { KR_DESC, KR_NAME } from './constants'
 import { useKairo } from './hooks'
@@ -24,6 +24,7 @@ export const SidePanel = ({ tab, onHide }: { tab: string; onHide: () => void }) 
   const lib: Lib = useKairo((s: any) => s.lib)
   const n = useKairo((s: any) => s.parts.length)
   const exportChip = useKairo((s: any) => s.exportChip)
+  const loadSample = useKairo((s: any) => s.loadSample)
   const names = Object.keys(lib)
   const dragged = useRef(false)
   const begin = (e: React.PointerEvent, k: string, chip?: string) => {
@@ -108,6 +109,56 @@ export const SidePanel = ({ tab, onHide }: { tab: string; onHide: () => void }) 
       )}
     </div>
   )
+  const tile = (k: string) => (
+    <div
+      key={k}
+      role="button"
+      tabIndex={0}
+      className="kr-tilebtn"
+      title={KR_NAME[k] + ': ' + KR_DESC[k]}
+      onPointerDown={(e) => begin(e, k)}
+      onClick={() => {
+        if (!dragged.current) add(k)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          add(k)
+        }
+      }}
+    >
+      <PartTile kind={k} />
+      <b>{KR_NAME[k]}</b>
+    </div>
+  )
+  if (tab === 'ex')
+    return (
+      <aside className="kr-col kr-l">
+        <Hd t="Examples" onHide={onHide} />
+        {[
+          ['adder', '4-bit adder', 'Flip the A and B switches. The lamps show the sum in binary, lowest bit on the left. The last lamp is the carry.'],
+          ['counter', '4-bit counter', 'Four flip-flops count clock pulses in binary. Raise the speed to watch the high bits move.'],
+          ['display', 'Counter with display', 'A 2-bit counter drives a 7-segment digit through a few gates. It counts 0 to 3.'],
+        ].map(([k, t, d]) => (
+          <div
+            key={k}
+            role="button"
+            tabIndex={0}
+            className="kr-card btn"
+            onClick={() => loadSample(k)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                loadSample(k)
+              }
+            }}
+          >
+            <span className="kr-tile" style={{ background: '#cfe58a' }}><BookOpen size={18} /></span>
+            <span><b>{t}</b><small>{d}</small></span>
+          </div>
+        ))}
+      </aside>
+    )
   if (tab === 'help')
     return (
       <aside className="kr-col kr-l">
@@ -117,7 +168,8 @@ export const SidePanel = ({ tab, onHide }: { tab: string; onHide: () => void }) 
           ['Wire two parts', 'Drag from a dark green output pin to an input pin.'],
           ['Flip a switch', 'Click it.'],
           ['Orbit the board', 'Drag empty space, or use the orbit disc.'],
-          ['Pan', 'Hold Space and drag, or Shift and middle-drag.'],
+          ['Pan', 'Right-drag, middle-drag, hold Space and drag, or use the arrow keys or WASD.'],
+          ['Fit everything', 'Press F or the fit button in the bottom bar.'],
           ['Select several', 'Press V or the pointer button, then drag a box. Shift-drag works anytime.'],
           ['Add or remove one', 'Alt-click a part.'],
           ['Undo and redo', 'Ctrl+Z and Ctrl+Shift+Z.'],
@@ -142,11 +194,12 @@ export const SidePanel = ({ tab, onHide }: { tab: string; onHide: () => void }) 
   return (
     <aside className="kr-col kr-l">
       <Hd t="Parts" onHide={onHide} />
-      {card('in')}
-      {card('clk')}
-      <div className="kr-lbl"><span>GATES AND OUTPUTS</span><span>{n} ON BOARD</span></div>
-      {card('nand')}
-      {card('out')}
+      {[['INPUTS', ['in', 'btn', 'clk', 'hi']], ['GATES', ['nand', 'and', 'or', 'buf', 'not', 'nor', 'xor', 'xnor']], ['MEMORY', ['dff']], ['OUTPUTS', ['out', 'bar', 'seg']]].map(([label, ks]: any) => (
+        <div key={label}>
+          <div className="kr-lbl"><span>{label}</span><span>{label === 'INPUTS' ? n + ' ON BOARD' : ''}</span></div>
+          <div className="kr-grid">{ks.map((k: string) => tile(k))}</div>
+        </div>
+      ))}
     </aside>
   )
 }

@@ -373,6 +373,14 @@ def generate(p: Any) -> Any:
             controller_names.append(controller)
     for controller, methods in controller_methods.items():
         ctl += f"class {controller}:\n" + "\n".join(methods) + "\n\n"
+    broadcast_api = next((a for a in apis if any(ep.get("type") == "broadcast" for ep in (a.get("endpoints") or {}).values())), None)
+    if broadcast_api:
+        poll_events: dict[str, str] = {}
+        for rt_name, rt_cfg in realtimes.items():
+            if rt_cfg.get("channel"):
+                poll_events.setdefault(rt_cfg.get("type") or "public", f"{slug}.{rt_name}")
+        ctl += ("async def sse_poll(request, response, channel_type):\n"
+                f"    return await poll_broadcast_messages(request, response, {broadcast_api['model']}, {poll_events!r}, channel_type)\n\n\n")
     files["controllers.py"] = ctl
 
     # ── jobs ──
@@ -510,6 +518,9 @@ def generate(p: Any) -> Any:
             route_parts = [str(part).strip("/") for part in (api.get("prefix"), ep.get("route")) if part]
             path = "/" + "/".join(part for part in route_parts if part)
             rts += f"    r.add({q(str(ep.get('method') or 'GET').upper())}, {q(path)}, [{', '.join(chain)}], handle(S, C.{api['controller']}.{name}))\n"
+    if broadcast_api:
+        rts += (f"    r.add('GET', {q(prefix + '/sse-poll/{channel_type}')}, [optional_auth(S)], "
+                "handle(S, lambda rq, rs: C.sse_poll(rq, rs, *rq.route().values())))\n")
     for cr in p.get("customRoutes") or []:
         chain = [f"mw({q(str(m).strip())})" for m in (cr.get("middleware") or [])]
         controller = custom_controller_names[id(cr)]

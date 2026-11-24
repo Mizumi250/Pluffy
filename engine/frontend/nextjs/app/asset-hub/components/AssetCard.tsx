@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — AssetCard
 // Source: @arkzen:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T02:03:33.257Z
+// Generated: 2026-11-24T07:19:21.670Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

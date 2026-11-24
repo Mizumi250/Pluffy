@@ -29,7 +29,11 @@
 .kr-rb { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; color: var(--ink); cursor: pointer; }
 .kr-rb.on { background: var(--lime); border-color: var(--lime); }
 .kr-col { position: absolute; top: 20px; z-index: 2; max-height: calc(100% - 118px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: 14px; border-radius: 22px; }
-.kr-l { left: 84px; width: 216px; }
+.kr-l { left: 84px; width: 232px; }
+.kr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kr-tilebtn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 6px; border: 1px solid var(--edge); border-radius: 14px; background: rgba(255, 255, 255, 0.5); cursor: pointer; text-align: center; }
+.kr-tilebtn:hover { border-color: var(--lime-d); }
+.kr-tilebtn b { font-size: 12px; font-weight: 600; }
 .kr-r { right: 20px; width: 256px; }
 .kr-hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .kr-x { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: var(--ink); cursor: pointer; }

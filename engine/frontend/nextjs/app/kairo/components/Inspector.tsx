@@ -3,15 +3,15 @@
 // ARKZEN GENERATED COMPONENT — Inspector
 // Source: @arkzen:components (kairo)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T03:16:25.490Z
+// Generated: 2026-11-24T07:36:54.171Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { START, Stage, gcol, truthTable } from '@/arkzen/generated/kairo.scripts'
+import { START, Stage, buildSample, gcol, truthTable } from '@/arkzen/generated/kairo.scripts'
 import type { Lib, Part, Wire } from '@/arkzen/generated/kairo.scripts'
-import { Check, ChevronLeft, ChevronRight, Cpu, Download, Info, Layers, Lightbulb, MousePointer2, Package, Pause, Play, Redo2, RotateCcw, RotateCw, Timer, ToggleRight, Trash2, Undo2, Upload } from 'lucide-react'
+import { BookOpen, Check, ChevronLeft, ChevronRight, Cpu, Download, Info, Layers, Lightbulb, Maximize, MousePointer2, Package, Pause, Play, Redo2, RotateCcw, RotateCw, Timer, ToggleRight, Trash2, Undo2, Upload } from 'lucide-react'
 import { create } from 'zustand'
 import { KR_DESC, KR_NAME } from './constants'
 import { useKairo, useLive } from './hooks'
@@ -38,9 +38,9 @@ export const Inspector = ({ onHide }: { onHide: () => void }) => {
   const cur = parts.find((p) => p.id === sel[0])
   const k = sel.length > 1 ? '' : cur ? cur.kind : ''
   const cnt: Record<string, number> = {}
-  const rows = parts.filter((p) => p.kind === 'in' || p.kind === 'out' || p.kind === 'clk').map((p) => {
+  const rows = parts.filter((p) => p.kind === 'in' || p.kind === 'out' || p.kind === 'clk' || p.kind === 'btn').map((p) => {
     const i = (cnt[p.kind] = (cnt[p.kind] || 0) + 1)
-    return { id: p.id, title: p.kind === 'in' ? 'Switch ' + 'ABCDEFGH'[i - 1] : p.kind === 'out' ? 'Lamp ' + i : 'Clock', hi: !!vals[p.id] }
+    return { id: p.id, title: p.kind === 'in' ? 'Switch ' + 'ABCDEFGH'[i - 1] : p.kind === 'out' ? 'Lamp ' + i : p.kind === 'btn' ? 'Button ' + i : 'Clock', hi: !!vals[p.id] }
   })
   return (
     <aside className="kr-col kr-r">

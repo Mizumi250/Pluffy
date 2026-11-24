@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — VocabCard
 // Tatemono: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T02:04:00.683828Z
+// Generated: 2026-11-24T07:19:43.144423Z
 // ============================================================
 
 namespace App\Models\Arkzen\Kotoba;

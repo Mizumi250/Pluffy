@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — ProductArkzenSeeder
 // Tatemono: pay-lab  |  Connection: pay_lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T02:04:10.201657Z
+// Generated: 2026-11-24T07:19:55.150672Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\PayLab;
