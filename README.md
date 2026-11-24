@@ -89,7 +89,7 @@ V0 ARKZEN
 V1
 - [Kotoba](https://kotoba-khaki.vercel.app/)
 - [Rubik-Solver](https://rubik-solver-gamma.vercel.app/)
-- [Kaori](https://kairo-delta-eight.vercel.app/)
+- [Kairo](https://kairo-delta-eight.vercel.app/)
 
 As the engine and its AI improve, so does the output.
 
