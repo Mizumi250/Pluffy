@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — kairo
 // Source: @arkzen:components (kairo)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:42.425Z
+// Generated: 2026-11-24T12:54:03.447Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
@@ -92,7 +92,7 @@ export const useKairo = create<any>((set, get) => ({
     } catch (e) {
       return set({ msg: 'That file is not valid JSON.' })
     }
-    const okp = (a: any) => Array.isArray(a) && a.every((p: any) => p && p.id > 0 && p.id < 131072 && ['in', 'out', 'nand', 'clk', 'chip', 'btn', 'hi', 'and', 'or', 'not', 'nor', 'xor', 'xnor', 'dff', 'seg', 'buf', 'bar'].includes(p.kind) && typeof p.x === 'number' && typeof p.y === 'number')
+    const okp = (a: any) => Array.isArray(a) && a.every((p: any) => p && p.id > 0 && p.id < 131072 && ['in', 'out', 'nand', 'clk', 'chip', 'btn', 'hi', 'and', 'or', 'not', 'nor', 'xor', 'xnor', 'dff', 'seg', 'buf', 'bar', 'tl', 'fan', 'motor'].includes(p.kind) && typeof p.x === 'number' && typeof p.y === 'number')
     const okw = (a: any) => Array.isArray(a) && a.every((w: any) => w && typeof w.id === 'number' && Array.isArray(w.from) && Array.isArray(w.to))
     if (!d || !okp(d.parts) || !okw(d.wires)) return set({ msg: 'That does not look like a Kairo file.' })
     const s = get()
@@ -112,6 +112,27 @@ export const useKairo = create<any>((set, get) => ({
       const g = get().stage
       if (g) g.fit()
     }, 0)
+  },
+  placeSample: (key: string, ox?: number, oy?: number) => {
+    const d = buildSample(key)
+    const s = get()
+    const title: Record<string, string> = { adder: '4-bit adder', counter: '4-bit counter', display: 'Counter with display', traffic: 'Traffic light', fan: 'Fan and motor', fulladder: 'Full adder' }
+    const mx = Math.min(...d.parts.map((p: Part) => p.x))
+    const my = Math.min(...d.parts.map((p: Part) => p.y))
+    let n = s.nid
+    const solo = d.parts.some((p: Part) => p.g) ? 0 : n++
+    const map: Record<number, number> = {}
+    const gm: Record<number, number> = {}
+    const np = d.parts.map((p: Part) => {
+      const id = n++
+      map[p.id] = id
+      if (p.g && !gm[p.g]) gm[p.g] = n++
+      const g = p.g ? gm[p.g] : solo
+      return { id, kind: p.kind, x: p.x - mx + (ox ?? s.view[0]), y: p.y - my + (oy ?? s.view[1]), on: p.on, g: g || undefined, gn: g ? p.gn || title[key] : undefined }
+    })
+    const nw = d.wires.map((w: Wire) => ({ id: n++, from: [map[w.from[0]], w.from[1]], to: [map[w.to[0]], w.to[1]] }))
+    get().mark()
+    set({ nid: n, sel: np.map((p: Part) => p.id), wsel: 0, parts: [...s.parts, ...np], wires: [...s.wires, ...nw] })
   },
   loadSample: (name: string) => {
     const d = buildSample(name)

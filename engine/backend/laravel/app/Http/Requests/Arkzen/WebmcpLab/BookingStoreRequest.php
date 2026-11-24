@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — BookingStoreRequest
 // Tatemono: webmcp-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:58.464825Z
+// Generated: 2026-11-24T12:30:40.199898Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\WebmcpLab;

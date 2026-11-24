@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — SectionHeader
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:26.341Z
+// Generated: 2026-11-24T12:30:07.677Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

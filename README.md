@@ -56,7 +56,8 @@ index from web screenshots already in `Shots/web/`, run
 
 <!-- TATEMONO_SHOTS:START -->
 <table>
-<tr><td align="center"><a href="./tatemonos/kotoba/core.tsx"><img src="./Shots/web/nextjs/kotoba/index.png" alt="kotoba index screenshot" width="420"><br><strong>kotoba</strong></a></td><td align="center"><a href="./tatemonos/rubik-solver/core.tsx"><img src="./Shots/web/react-vite/rubik-solver/index.png" alt="rubik-solver index screenshot" width="420"><br><strong>rubik-solver</strong></a></td></tr>
+<tr><td align="center"><a href="./tatemonos/kairo/core.tsx"><img src="./Shots/web/nextjs/kairo/index.png" alt="kairo index screenshot" width="420"><br><strong>kairo</strong></a></td><td align="center"><a href="./tatemonos/kotoba/core.tsx"><img src="./Shots/web/nextjs/kotoba/index.png" alt="kotoba index screenshot" width="420"><br><strong>kotoba</strong></a></td></tr>
+<tr><td align="center"><a href="./tatemonos/rubik-solver/core.tsx"><img src="./Shots/web/react-vite/rubik-solver/index.png" alt="rubik-solver index screenshot" width="420"><br><strong>rubik-solver</strong></a></td><td></td></tr>
 </table>
 <!-- TATEMONO_SHOTS:END -->
 
@@ -88,6 +89,7 @@ V0 ARKZEN
 V1
 - [Kotoba](https://kotoba-khaki.vercel.app/)
 - [Rubik-Solver](https://rubik-solver-gamma.vercel.app/)
+- [Kaori](https://kairo-delta-eight.vercel.app/)
 
 As the engine and its AI improve, so does the output.
 

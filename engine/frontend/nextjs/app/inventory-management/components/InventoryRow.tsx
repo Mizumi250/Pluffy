@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — InventoryRow
 // Source: @arkzen:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:40.551Z
+// Generated: 2026-11-24T12:30:21.775Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

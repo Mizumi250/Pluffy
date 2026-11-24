@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Ticket
 // Tatemono: fastapi-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:37.191531Z
+// Generated: 2026-11-24T12:30:18.488911Z
 // ============================================================
 
 namespace App\Models\Arkzen\FastapiTest;

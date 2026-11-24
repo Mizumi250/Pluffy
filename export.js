@@ -478,6 +478,8 @@ const BACKEND_EXCLUDE_FILTER = (src) => {
   if (rel === 'routes/arkzen.php')                      return false
   if (rel === 'routes/api.php')                         return false
   if (rel === 'bootstrap/app.php')                      return false
+    if (rel === 'public/storage')                         return false
+  try { if (fs.lstatSync(src).isSymbolicLink()) return false } catch {}
   return true
 }
 

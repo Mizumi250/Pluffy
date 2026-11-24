@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — AccountArkzenSeeder
 // Tatemono: aspnet-ledger  |  Connection: aspnet_ledger
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:26.906950Z
+// Generated: 2026-11-24T12:30:08.400767Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\AspnetLedger;

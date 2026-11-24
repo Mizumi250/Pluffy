@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — ServiceArkzenSeeder
 // Tatemono: webmcp-lab  |  Connection: webmcp_lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:58.485391Z
+// Generated: 2026-11-24T12:30:40.214817Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\WebmcpLab;

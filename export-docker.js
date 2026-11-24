@@ -246,7 +246,8 @@ RUN install-php-extensions pdo_pgsql pgsql pdo_sqlite pcntl bcmath zip intl gd e
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . .
-${n.inertia ? 'COPY --from=assets /app/public/build ./public/build\n' : ''}RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts \\
+${n.inertia ? 'COPY --from=assets /app/public/build ./public/build\n' : ''}RUN rm -f bootstrap/cache/packages.php bootstrap/cache/services.php \
+ && composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts \
  && (php artisan package:discover --ansi || true)
 ENV PHP_CLI_SERVER_WORKERS=4 APP_DIR=/app
 EXPOSE ${p}

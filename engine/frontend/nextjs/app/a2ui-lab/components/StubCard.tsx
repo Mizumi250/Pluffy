@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — StubCard
 // Source: @arkzen:components (a2ui-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:23.366Z
+// Generated: 2026-11-24T12:30:05.984Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

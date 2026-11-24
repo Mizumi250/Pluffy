@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Chip
 // Tatemono: kairo
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:42.613889Z
+// Generated: 2026-11-24T12:54:06.433099Z
 // ============================================================
 
 namespace App\Models\Arkzen\Kairo;

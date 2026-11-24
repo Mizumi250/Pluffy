@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-21T15:28:08.852Z",
+  "generatedAt": "2026-11-24T12:31:36.225Z",
   "backendReady": true,
   "webReady": true,
-  "selectedModule": "rubik-solver",
+  "selectedModule": "kairo",
   "settleMs": 8000,
-  "webStack": "react-vite",
+  "webStack": "nextjs",
   "appStack": "lynx",
   "desktopStack": "tauri",
   "results": {
@@ -12,10 +12,10 @@
       "success": true,
       "captures": [
         {
-          "module": "rubik-solver",
+          "module": "kairo",
           "page": "index",
-          "path": "Shots\\web\\react-vite\\rubik-solver\\index.png",
-          "url": "http://localhost:3000/rubik-solver",
+          "path": "Shots\\web\\nextjs\\kairo\\index.png",
+          "url": "http://localhost:3000/kairo",
           "settleMs": 8000
         }
       ]

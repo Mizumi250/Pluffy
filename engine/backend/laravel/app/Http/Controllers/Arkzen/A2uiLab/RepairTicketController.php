@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — RepairTicketController
 // Tatemono: a2ui-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:24.783194Z
+// Generated: 2026-11-24T12:30:06.273639Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\A2uiLab;

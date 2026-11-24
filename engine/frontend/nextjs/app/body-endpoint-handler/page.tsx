@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — body-endpoint-handler/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:29.561Z
+// Generated: 2026-11-24T12:30:10.838Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

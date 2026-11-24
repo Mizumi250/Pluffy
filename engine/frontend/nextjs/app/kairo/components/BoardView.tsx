@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — BoardView
 // Source: @arkzen:components (kairo)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:42.440Z
+// Generated: 2026-11-24T12:54:03.466Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
@@ -23,6 +23,17 @@ export const BoardView = () => {
   const [gone, setGone] = useState(false)
   const op = useRef<number[] | null>(null)
   const th = useRef<HTMLDivElement>(null)
+  const hold = useRef<any>(null)
+  const stop = () => {
+    if (hold.current) clearInterval(hold.current)
+    hold.current = null
+  }
+  const press = (dx: number, dy: number) => {
+    stop()
+    if (st.current) st.current.panBy(dx, dy)
+    hold.current = setInterval(() => st.current && st.current.panBy(dx, dy), 16)
+  }
+  useEffect(() => stop, [])
   const parts: Part[] = useKairo((s: any) => s.parts)
   const tool = useKairo((s: any) => s.tool)
   const canU = useKairo((s: any) => s.past.length > 0)
@@ -99,6 +110,37 @@ export const BoardView = () => {
           <button className="kr-pill lime" onClick={() => setGone(true)}>Got it</button>
         </div>
       )}
+      <div className="kr-pad" role="group" aria-label="Pan the board">
+        {[['', 0, 0, ''], ['W', 0, 12, 'Pan up'], ['F', 0, 0, 'Fit everything'], ['A', 12, 0, 'Pan left'], ['S', 0, -12, 'Pan down'], ['D', -12, 0, 'Pan right']].map(([k, dx, dy, t]: any, i) =>
+          k === '' ? (
+            <span key={i} />
+          ) : k === 'F' ? (
+            <button key={k} className="kr-key" title={t + ' (F)'} aria-label={t} onClick={() => st.current && st.current.fit()}>{k}</button>
+          ) : (
+            <button
+              key={k}
+              className="kr-key"
+              title={t + ' (' + k + ')'}
+              aria-label={t}
+              onPointerDown={(e) => {
+                e.preventDefault()
+                press(dx, dy)
+              }}
+              onPointerUp={stop}
+              onPointerLeave={stop}
+              onPointerCancel={stop}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  if (st.current) st.current.panBy(dx * 6, dy * 6)
+                }
+              }}
+            >
+              {k}
+            </button>
+          ),
+        )}
+      </div>
       <div className="kr-dock">
         <button className="kr-pill dark" onClick={() => useKairo.setState({ run: !run })}>
           {run ? <Pause size={14} /> : <Play size={14} />}

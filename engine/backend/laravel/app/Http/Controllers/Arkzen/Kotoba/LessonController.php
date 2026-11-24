@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — LessonController
 // Tatemono: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:44.518201Z
+// Generated: 2026-11-24T12:30:25.912561Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Kotoba;

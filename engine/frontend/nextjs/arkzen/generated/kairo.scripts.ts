@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — kairo
 // Source: @arkzen:script (global)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:42.362Z
+// Generated: 2026-11-24T12:54:03.204Z
 // ============================================================
 
 import * as THREE from 'three'
@@ -90,6 +90,41 @@ export const buildSample = (name: string): Def => {
       prev = ff
       pin = 1
     }
+  } else if (name === 'traffic') {
+    const c = { g: n++, gn: 'Counter' }
+    const clk = P('clk', 0, 6, c)
+    const f0 = P('dff', 5, 6, c)
+    const f1 = P('dff', 11, 6, c)
+    W(clk, 0, f0, 1)
+    W(f0, 1, f0, 0)
+    W(f0, 1, f1, 1)
+    W(f1, 1, f1, 0)
+    const d = { g: n++, gn: 'Decoder' }
+    const n1 = P('not', 16, 9, d)
+    const yl = P('and', 21, 9, d)
+    const gr = P('nor', 21, 12, d)
+    const tl = P('tl', 28, 8)
+    W(f1, 0, n1, 0)
+    W(n1, 0, yl, 0)
+    W(f0, 0, yl, 1)
+    W(f1, 0, gr, 0)
+    W(f0, 0, gr, 1)
+    W(f1, 0, tl, 0)
+    W(yl, 0, tl, 1)
+    W(gr, 0, tl, 2)
+  } else if (name === 'fan') {
+    const pw = P('in', 0, 0, { on: true })
+    const hot = P('btn', 0, 3)
+    const nb = P('not', 4, 3)
+    const an = P('and', 8, 1)
+    const fan = P('fan', 14, 1)
+    W(hot, 0, nb, 0)
+    W(pw, 0, an, 0)
+    W(nb, 0, an, 1)
+    W(an, 0, fan, 0)
+    const ck = P('clk', 0, 9)
+    const mo = P('motor', 8, 9)
+    W(ck, 0, mo, 0)
   } else {
     const gc = n++
     const gd = n++
@@ -130,12 +165,17 @@ export const buildSample = (name: string): Def => {
 export const GATE: Record<string, number> = { nand: 0, buf: 1, not: 3, and: 4, or: 5, nor: 6, xor: 7, xnor: 8 }
 export const GATE_COL: Record<string, number> = { nand: 0xb9e03c, and: 0xa7d8f0, or: 0xf7d28a, not: 0xf4b6c2, nor: 0xf2a08a, xor: 0x9fe0c9, xnor: 0xe6d27a, buf: 0xd5dcc8 }
 
+export const PROBE: Record<string, number> = { seg: 7, bar: 4, tl: 3, fan: 1, motor: 1 }
+
 export const pinsOf = (p: Part, lib: Lib) => {
   if (GATE[p.kind] !== undefined) return { i: p.kind === 'not' || p.kind === 'buf' ? 1 : 2, o: 1, w: 2, h: 1 }
   if (p.kind === 'in' || p.kind === 'clk' || p.kind === 'btn' || p.kind === 'hi') return { i: 0, o: 1, w: 1, h: 1 }
   if (p.kind === 'dff') return { i: 2, o: 2, w: 3, h: 2 }
   if (p.kind === 'seg') return { i: 7, o: 0, w: 3, h: 5 }
   if (p.kind === 'bar') return { i: 4, o: 0, w: 2, h: 4 }
+  if (p.kind === 'tl') return { i: 3, o: 0, w: 2, h: 3 }
+  if (p.kind === 'fan') return { i: 1, o: 0, w: 2, h: 2 }
+  if (p.kind === 'motor') return { i: 1, o: 0, w: 2, h: 1 }
   if (p.kind === 'out') return { i: 1, o: 0, w: 1, h: 1 }
   const d = lib[p.chip || '']
   const i = d ? d.parts.filter((q) => q.kind === 'in').length : 0
@@ -199,7 +239,7 @@ export const compile = (def: Def, lib: Lib) => {
       if (GATE[p.kind] !== undefined) gates.push(GATE[p.kind], get(p.id, 0), p.kind === 'not' || p.kind === 'buf' ? 0 : get(p.id, 1), o)
       if (p.kind === 'hi') gates.push(9, 0, 0, o)
       if (p.kind === 'dff') gates.push(2, get(p.id, 0), get(p.id, 1), o, 3, o, 0, src.get(p.id + ':1') as number)
-      if ((p.kind === 'seg' || p.kind === 'bar') && isTop) segs.push({ id: p.id, nets: (p.kind === 'seg' ? [0, 1, 2, 3, 4, 5, 6] : [0, 1, 2, 3]).map((k) => get(p.id, k)) })
+      if (PROBE[p.kind] && isTop) segs.push({ id: p.id, nets: Array.from({ length: PROBE[p.kind] }, (_, k) => get(p.id, k)) })
       if (p.kind === 'chip' && depth < 12 && lib[p.chip || '']) {
         const s = pinsOf(p, lib)
         const feed: number[] = []
@@ -286,6 +326,7 @@ export class Stage {
   ghMats: THREE.Material[] = []
   tagHost: HTMLElement | null = null
   dl: THREE.DirectionalLight | null = null
+  spin = new Map<number, { w: number; a: number }>()
   onTick: (t: number, vals: any, tags: any[]) => void = () => {}
   w = 1
   h = 1
@@ -663,6 +704,48 @@ export class Stage {
       piv.add(hand)
       g.add(piv)
       g.userData.hand = piv
+    } else if (kind === 'fan') {
+      at(cyl(0.45, 0.1, 0x3a4a2a, id, 28), 0, 0.11, 0)
+      at(cyl(0.07, 0.75, MET, id, 14), 0, 0.5, 0)
+      at(cyl(0.2, 0.22, 0x39433a, id, 24), 0, 0.95, 0)
+      at(this.rb(0.55, 0.05, 0.12, MET, id, 0.02), -0.75, 0.2, 0)
+      const piv = new THREE.Group()
+      piv.position.set(p.x, 1.1, p.y)
+      piv.add(this.mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.1, 20), this.m(MET), id))
+      for (let i = 0; i < 4; i++) {
+        const a = (i * Math.PI) / 2
+        const b = this.rb(0.95, 0.03, 0.26, 0xf6f9f1, id, 0.012)
+        b.position.set(Math.cos(a) * 0.55, 0, Math.sin(a) * 0.55)
+        b.rotation.y = -a
+        b.rotation.z = 0.12
+        piv.add(b)
+      }
+      g.add(piv)
+      g.userData.spinner = piv
+    } else if (kind === 'motor') {
+      at(this.rb(1.0, 0.46, 0.62, 0x39433a, id, 0.1), 0.2, 0.29, 0)
+      at(this.rb(0.7, 0.05, 0.12, MET, id, 0.02), -0.65, 0.2, 0)
+      at(cyl(0.05, 0.12, MET, id, 10), 0.2, 0.56, 0)
+      const piv = new THREE.Group()
+      piv.position.set(p.x + 0.2, 0.64, p.y)
+      piv.add(this.mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.07, 28), this.m(0xe6d27a), id))
+      piv.add(this.mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.12, 12), this.m(MET), id))
+      for (let i = 0; i < 8; i++) {
+        const a = (i * Math.PI) / 4
+        const t = this.rb(0.1, 0.07, 0.1, 0xe6d27a, id, 0.01)
+        t.position.set(Math.cos(a) * 0.33, 0, Math.sin(a) * 0.33)
+        t.rotation.y = -a
+        piv.add(t)
+      }
+      g.add(piv)
+      g.userData.spinner = piv
+    } else if (kind === 'tl') {
+      at(this.rb(0.34, 1.75, 0.34, 0x262c22, id, 0.1), 0.2, 0.93, 0)
+      g.userData.segLit = [0xff4d3a, 0xffd23a, 0x4cd964]
+      g.userData.segOff = [0x5a2a26, 0x5a4a22, 0x2a4a2c]
+      g.userData.segs = [0, 1, 2].map((k) => at(this.mesh(new THREE.SphereGeometry(0.25, 22, 16), this.m(g.userData.segOff[k]), id), 0.2, 1.5 - k * 0.5, 0))
+      for (let k = 0; k < 3; k++) at(this.rb(0.7, 0.05, 0.12, MET, id, 0.02), -0.65, 0.2, zs(false, k))
+      ;['R', 'Y', 'G'].forEach((t, k) => text(t, 0.26, 0.2, -0.55, 0.07, zs(false, k)))
     } else if (kind === 'bar') {
       at(this.rb(1.3, 0.4, 3.7, 0x1b2118, id, 0.12), 0.1, 0.26, 0)
       for (let k = 0; k < 4; k++) at(this.rb(0.5, 0.06, 0.1, MET, id, 0.02), -0.95, 0.2, zs(false, k))
@@ -765,7 +848,7 @@ export class Stage {
       m.position.set(g.x0, y, g.y1)
       grp.add(m)
     }
-    add(fill, 0.1, 0.02)
+    add(fill, 0.12, 0.02, GB + id)
     add(new THREE.ShapeGeometry(sh), sel ? 1 : 0.85, 0.03, GB + id)
     return grp
   }
@@ -849,7 +932,21 @@ export class Stage {
       }
       const u = o.g.userData
       if (u.lamp2) u.lamp2.material = val[id] ? this.lit(0x7ccf00) : this.m(0xb4bfb1)
-      if (u.segs && segv[id]) u.segs.forEach((m: THREE.Mesh, i: number) => (m.material = this.v[segv[id][i]] ? this.lit(u.segLit || 0xff5a36) : this.m(0x2a3326)))
+      if (u.segs && segv[id])
+        u.segs.forEach((m: THREE.Mesh, i: number) => {
+          const on = Array.isArray(u.segLit) ? u.segLit[i] : u.segLit || 0xff5a36
+          const off = Array.isArray(u.segOff) ? u.segOff[i] : 0x2a3326
+          m.material = this.v[segv[id][i]] ? this.lit(on) : this.m(off)
+        })
+      if (u.spinner && segv[id]) {
+        const sp = this.spin.get(id) || { w: 0, a: 0 }
+        if (s.run) {
+          sp.w += ((this.v[segv[id][0]] ? 14 : 0) - sp.w) * 0.05
+          sp.a += sp.w * 0.016
+        }
+        this.spin.set(id, sp)
+        u.spinner.rotation.y = sp.a
+      }
       if (u.lamp) u.lamp.material = val[id] ? this.lit(LIT[u.kind]) : this.m(OFF[u.kind])
       if (u.hand) u.hand.rotation.y = -this.t * (Math.PI / 24)
     })
@@ -857,14 +954,19 @@ export class Stage {
   }
 
   ghost(d: any, x: number, y: number) {
-    const key = (d.chip || d.k) + '|' + x + '|' + y
+    const key = (d.sample || d.chip || d.k) + '|' + x + '|' + y
     if (key === this.ghKey) return
     this.clearGhost()
     this.ghKey = key
     const st = this.store.getState()
     const g = new THREE.Group()
     const put = (kind: string, px: number, py: number, chip?: string) => g.add(this.mkPart({ id: -1, kind, chip, x: px, y: py } as Part, st.lib, true, 0))
-    if (d.chip) {
+    if (d.sample) {
+      const def = buildSample(d.sample)
+      const mx = Math.min(...def.parts.map((p: Part) => p.x))
+      const my = Math.min(...def.parts.map((p: Part) => p.y))
+      def.parts.forEach((p: Part) => put(p.kind, p.x - mx + x, p.y - my + y))
+    } else if (d.chip) {
       const def = st.lib[d.chip]
       if (!def || !def.parts.length) return
       const mx = Math.min(...def.parts.map((p: Part) => p.x))

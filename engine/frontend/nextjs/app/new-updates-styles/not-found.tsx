@@ -2,7 +2,7 @@
 // ARKZEN GENERATED — new-updates-styles/not-found.tsx
 // Next.js segment-scoped 404 handler.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:404 block in the tatemono instead.
-// Generated: 2026-11-24T11:53:48.715Z
+// Generated: 2026-11-24T12:30:30.226Z
 // ============================================================
 
 import React from 'react'

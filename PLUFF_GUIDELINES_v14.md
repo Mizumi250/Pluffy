@@ -4143,7 +4143,7 @@
   | Godot game | `godot-block-arena`, `godot-sky-islands`, `godot-crystal-cave` |
   | Unity game | `dino-runner`, `unity-fox-hurdles`, `unity-garden-topdown` |
 
-  Full index of 63 tatemonos (title · description · block families · stacks · size · raw URL):
+  Full index of 62 tatemonos (title · description · block families · stacks · size · raw URL):
 
   - **a2ui-lab** — (no description in meta)
     families: api, database, endpoint · stacks: web · S (~9k tokens, 29 KB)
@@ -4160,9 +4160,6 @@
   - **asset-hub** — (no description in meta)
     families: UI only (no backend blocks) · stacks: web, native, lynx · S (~7k tokens, 20 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/asset-hub/core.tsx
-  - **atelier** — (no description in meta)
-    families: UI only (no backend blocks) · stacks: web, native · L (~49k tokens, 153 KB)
-    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/atelier/core.tsx
   - **auth-test** — (no description in meta)
     families: UI only (no backend blocks) · stacks: web, native, lynx · S (~9k tokens, 27 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/auth-test/core.tsx
@@ -4248,7 +4245,7 @@
     families: api, database, endpoint, jobs · stacks: web, native, lynx · M (~10k tokens, 31 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/job-test/core.tsx
   - **kairo** — (no description in meta)
-    families: api, database · stacks: web · M (~29k tokens, 92 KB) · has assets/
+    families: api, database · stacks: web · L (~32k tokens, 101 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/kairo/core.tsx
   - **kotoba** — (no description in meta)
     families: api, database, desktop, handler, module, realtime, routes · stacks: web, native · XL (never fetch in full) (~225k tokens, 703 KB)

@@ -159,6 +159,41 @@ export const buildSample = (name: string): Def => {
       prev = ff
       pin = 1
     }
+  } else if (name === 'traffic') {
+    const c = { g: n++, gn: 'Counter' }
+    const clk = P('clk', 0, 6, c)
+    const f0 = P('dff', 5, 6, c)
+    const f1 = P('dff', 11, 6, c)
+    W(clk, 0, f0, 1)
+    W(f0, 1, f0, 0)
+    W(f0, 1, f1, 1)
+    W(f1, 1, f1, 0)
+    const d = { g: n++, gn: 'Decoder' }
+    const n1 = P('not', 16, 9, d)
+    const yl = P('and', 21, 9, d)
+    const gr = P('nor', 21, 12, d)
+    const tl = P('tl', 28, 8)
+    W(f1, 0, n1, 0)
+    W(n1, 0, yl, 0)
+    W(f0, 0, yl, 1)
+    W(f1, 0, gr, 0)
+    W(f0, 0, gr, 1)
+    W(f1, 0, tl, 0)
+    W(yl, 0, tl, 1)
+    W(gr, 0, tl, 2)
+  } else if (name === 'fan') {
+    const pw = P('in', 0, 0, { on: true })
+    const hot = P('btn', 0, 3)
+    const nb = P('not', 4, 3)
+    const an = P('and', 8, 1)
+    const fan = P('fan', 14, 1)
+    W(hot, 0, nb, 0)
+    W(pw, 0, an, 0)
+    W(nb, 0, an, 1)
+    W(an, 0, fan, 0)
+    const ck = P('clk', 0, 9)
+    const mo = P('motor', 8, 9)
+    W(ck, 0, mo, 0)
   } else {
     const gc = n++
     const gd = n++
@@ -199,12 +234,17 @@ export const buildSample = (name: string): Def => {
 export const GATE: Record<string, number> = { nand: 0, buf: 1, not: 3, and: 4, or: 5, nor: 6, xor: 7, xnor: 8 }
 export const GATE_COL: Record<string, number> = { nand: 0xb9e03c, and: 0xa7d8f0, or: 0xf7d28a, not: 0xf4b6c2, nor: 0xf2a08a, xor: 0x9fe0c9, xnor: 0xe6d27a, buf: 0xd5dcc8 }
 
+export const PROBE: Record<string, number> = { seg: 7, bar: 4, tl: 3, fan: 1, motor: 1 }
+
 export const pinsOf = (p: Part, lib: Lib) => {
   if (GATE[p.kind] !== undefined) return { i: p.kind === 'not' || p.kind === 'buf' ? 1 : 2, o: 1, w: 2, h: 1 }
   if (p.kind === 'in' || p.kind === 'clk' || p.kind === 'btn' || p.kind === 'hi') return { i: 0, o: 1, w: 1, h: 1 }
   if (p.kind === 'dff') return { i: 2, o: 2, w: 3, h: 2 }
   if (p.kind === 'seg') return { i: 7, o: 0, w: 3, h: 5 }
   if (p.kind === 'bar') return { i: 4, o: 0, w: 2, h: 4 }
+  if (p.kind === 'tl') return { i: 3, o: 0, w: 2, h: 3 }
+  if (p.kind === 'fan') return { i: 1, o: 0, w: 2, h: 2 }
+  if (p.kind === 'motor') return { i: 1, o: 0, w: 2, h: 1 }
   if (p.kind === 'out') return { i: 1, o: 0, w: 1, h: 1 }
   const d = lib[p.chip || '']
   const i = d ? d.parts.filter((q) => q.kind === 'in').length : 0
@@ -268,7 +308,7 @@ export const compile = (def: Def, lib: Lib) => {
       if (GATE[p.kind] !== undefined) gates.push(GATE[p.kind], get(p.id, 0), p.kind === 'not' || p.kind === 'buf' ? 0 : get(p.id, 1), o)
       if (p.kind === 'hi') gates.push(9, 0, 0, o)
       if (p.kind === 'dff') gates.push(2, get(p.id, 0), get(p.id, 1), o, 3, o, 0, src.get(p.id + ':1') as number)
-      if ((p.kind === 'seg' || p.kind === 'bar') && isTop) segs.push({ id: p.id, nets: (p.kind === 'seg' ? [0, 1, 2, 3, 4, 5, 6] : [0, 1, 2, 3]).map((k) => get(p.id, k)) })
+      if (PROBE[p.kind] && isTop) segs.push({ id: p.id, nets: Array.from({ length: PROBE[p.kind] }, (_, k) => get(p.id, k)) })
       if (p.kind === 'chip' && depth < 12 && lib[p.chip || '']) {
         const s = pinsOf(p, lib)
         const feed: number[] = []
@@ -355,6 +395,7 @@ export class Stage {
   ghMats: THREE.Material[] = []
   tagHost: HTMLElement | null = null
   dl: THREE.DirectionalLight | null = null
+  spin = new Map<number, { w: number; a: number }>()
   onTick: (t: number, vals: any, tags: any[]) => void = () => {}
   w = 1
   h = 1
@@ -732,6 +773,48 @@ export class Stage {
       piv.add(hand)
       g.add(piv)
       g.userData.hand = piv
+    } else if (kind === 'fan') {
+      at(cyl(0.45, 0.1, 0x3a4a2a, id, 28), 0, 0.11, 0)
+      at(cyl(0.07, 0.75, MET, id, 14), 0, 0.5, 0)
+      at(cyl(0.2, 0.22, 0x39433a, id, 24), 0, 0.95, 0)
+      at(this.rb(0.55, 0.05, 0.12, MET, id, 0.02), -0.75, 0.2, 0)
+      const piv = new THREE.Group()
+      piv.position.set(p.x, 1.1, p.y)
+      piv.add(this.mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.1, 20), this.m(MET), id))
+      for (let i = 0; i < 4; i++) {
+        const a = (i * Math.PI) / 2
+        const b = this.rb(0.95, 0.03, 0.26, 0xf6f9f1, id, 0.012)
+        b.position.set(Math.cos(a) * 0.55, 0, Math.sin(a) * 0.55)
+        b.rotation.y = -a
+        b.rotation.z = 0.12
+        piv.add(b)
+      }
+      g.add(piv)
+      g.userData.spinner = piv
+    } else if (kind === 'motor') {
+      at(this.rb(1.0, 0.46, 0.62, 0x39433a, id, 0.1), 0.2, 0.29, 0)
+      at(this.rb(0.7, 0.05, 0.12, MET, id, 0.02), -0.65, 0.2, 0)
+      at(cyl(0.05, 0.12, MET, id, 10), 0.2, 0.56, 0)
+      const piv = new THREE.Group()
+      piv.position.set(p.x + 0.2, 0.64, p.y)
+      piv.add(this.mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.07, 28), this.m(0xe6d27a), id))
+      piv.add(this.mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.12, 12), this.m(MET), id))
+      for (let i = 0; i < 8; i++) {
+        const a = (i * Math.PI) / 4
+        const t = this.rb(0.1, 0.07, 0.1, 0xe6d27a, id, 0.01)
+        t.position.set(Math.cos(a) * 0.33, 0, Math.sin(a) * 0.33)
+        t.rotation.y = -a
+        piv.add(t)
+      }
+      g.add(piv)
+      g.userData.spinner = piv
+    } else if (kind === 'tl') {
+      at(this.rb(0.34, 1.75, 0.34, 0x262c22, id, 0.1), 0.2, 0.93, 0)
+      g.userData.segLit = [0xff4d3a, 0xffd23a, 0x4cd964]
+      g.userData.segOff = [0x5a2a26, 0x5a4a22, 0x2a4a2c]
+      g.userData.segs = [0, 1, 2].map((k) => at(this.mesh(new THREE.SphereGeometry(0.25, 22, 16), this.m(g.userData.segOff[k]), id), 0.2, 1.5 - k * 0.5, 0))
+      for (let k = 0; k < 3; k++) at(this.rb(0.7, 0.05, 0.12, MET, id, 0.02), -0.65, 0.2, zs(false, k))
+      ;['R', 'Y', 'G'].forEach((t, k) => text(t, 0.26, 0.2, -0.55, 0.07, zs(false, k)))
     } else if (kind === 'bar') {
       at(this.rb(1.3, 0.4, 3.7, 0x1b2118, id, 0.12), 0.1, 0.26, 0)
       for (let k = 0; k < 4; k++) at(this.rb(0.5, 0.06, 0.1, MET, id, 0.02), -0.95, 0.2, zs(false, k))
@@ -834,7 +917,7 @@ export class Stage {
       m.position.set(g.x0, y, g.y1)
       grp.add(m)
     }
-    add(fill, 0.1, 0.02)
+    add(fill, 0.12, 0.02, GB + id)
     add(new THREE.ShapeGeometry(sh), sel ? 1 : 0.85, 0.03, GB + id)
     return grp
   }
@@ -918,7 +1001,21 @@ export class Stage {
       }
       const u = o.g.userData
       if (u.lamp2) u.lamp2.material = val[id] ? this.lit(0x7ccf00) : this.m(0xb4bfb1)
-      if (u.segs && segv[id]) u.segs.forEach((m: THREE.Mesh, i: number) => (m.material = this.v[segv[id][i]] ? this.lit(u.segLit || 0xff5a36) : this.m(0x2a3326)))
+      if (u.segs && segv[id])
+        u.segs.forEach((m: THREE.Mesh, i: number) => {
+          const on = Array.isArray(u.segLit) ? u.segLit[i] : u.segLit || 0xff5a36
+          const off = Array.isArray(u.segOff) ? u.segOff[i] : 0x2a3326
+          m.material = this.v[segv[id][i]] ? this.lit(on) : this.m(off)
+        })
+      if (u.spinner && segv[id]) {
+        const sp = this.spin.get(id) || { w: 0, a: 0 }
+        if (s.run) {
+          sp.w += ((this.v[segv[id][0]] ? 14 : 0) - sp.w) * 0.05
+          sp.a += sp.w * 0.016
+        }
+        this.spin.set(id, sp)
+        u.spinner.rotation.y = sp.a
+      }
       if (u.lamp) u.lamp.material = val[id] ? this.lit(LIT[u.kind]) : this.m(OFF[u.kind])
       if (u.hand) u.hand.rotation.y = -this.t * (Math.PI / 24)
     })
@@ -926,14 +1023,19 @@ export class Stage {
   }
 
   ghost(d: any, x: number, y: number) {
-    const key = (d.chip || d.k) + '|' + x + '|' + y
+    const key = (d.sample || d.chip || d.k) + '|' + x + '|' + y
     if (key === this.ghKey) return
     this.clearGhost()
     this.ghKey = key
     const st = this.store.getState()
     const g = new THREE.Group()
     const put = (kind: string, px: number, py: number, chip?: string) => g.add(this.mkPart({ id: -1, kind, chip, x: px, y: py } as Part, st.lib, true, 0))
-    if (d.chip) {
+    if (d.sample) {
+      const def = buildSample(d.sample)
+      const mx = Math.min(...def.parts.map((p: Part) => p.x))
+      const my = Math.min(...def.parts.map((p: Part) => p.y))
+      def.parts.forEach((p: Part) => put(p.kind, p.x - mx + x, p.y - my + y))
+    } else if (d.chip) {
       const def = st.lib[d.chip]
       if (!def || !def.parts.length) return
       const mx = Math.min(...def.parts.map((p: Part) => p.x))
@@ -1316,7 +1418,7 @@ export class Stage {
 .kr-logo { width: 32px; height: 32px; margin-bottom: 10px; }
 .kr-rb { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; color: var(--ink); cursor: pointer; }
 .kr-rb.on { background: var(--lime); border-color: var(--lime); }
-.kr-col { position: absolute; top: 20px; z-index: 2; max-height: calc(100% - 118px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: 14px; border-radius: 22px; }
+.kr-col { position: absolute; top: 20px; z-index: 2; max-height: calc(100% - 170px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: 14px; border-radius: 22px; }
 .kr-l { left: 84px; width: 232px; }
 .kr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .kr-tilebtn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 6px; border: 1px solid var(--edge); border-radius: 14px; background: rgba(255, 255, 255, 0.5); cursor: pointer; text-align: center; }
@@ -1349,6 +1451,10 @@ export class Stage {
 .kr-live i.on { background: #7ccf00; }
 .kr-orb { position: absolute; right: 24px; bottom: 24px; width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%; cursor: grab; touch-action: none; }
 .kr-orb:active { cursor: grabbing; }
+.kr-pad { position: absolute; right: 92px; bottom: 24px; display: grid; grid-template-columns: repeat(3, 30px); gap: 4px; padding: 6px; border-radius: 16px; background: var(--glass); border: 1px solid var(--edge); box-shadow: var(--soft); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3); }
+.kr-key { height: 28px; display: grid; place-items: center; border: 1px solid var(--edge); border-radius: 8px; background: rgba(255, 255, 255, 0.6); color: var(--ink); font: 600 12px 'Instrument Sans', system-ui, sans-serif; cursor: pointer; touch-action: none; }
+.kr-key:hover { border-color: var(--lime-d); }
+.kr-key:active { background: var(--lime); }
 .kr-orb svg { position: absolute; inset: 7px; fill: none; stroke: var(--ink); stroke-opacity: 0.35; stroke-width: 1.2; pointer-events: none; }
 .kr-bubble { position: absolute; left: 50%; top: 112px; width: 260px; transform: translateX(-50%); padding: 12px 14px; border: 2px solid var(--ink); border-radius: 18px; background: rgba(253, 254, 251, 0.85); font-size: 13px; line-height: 1.45; }
 .kr-bubble::after { content: ''; position: absolute; left: 34px; bottom: -10px; width: 16px; height: 16px; background: rgba(253, 254, 251, 0.95); border-right: 2px solid var(--ink); border-bottom: 2px solid var(--ink); transform: rotate(45deg); }
@@ -1409,7 +1515,7 @@ import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { Stage, START, truthTable, gcol, buildSample } from '@/arkzen/generated/kairo.scripts'
 import type { Part, Wire, Lib } from '@/arkzen/generated/kairo.scripts'
 
-export const KR_NAME: Record<string, string> = { in: 'Switch', btn: 'Button', clk: 'Clock', hi: 'High', nand: 'NAND', and: 'AND', or: 'OR', not: 'NOT', nor: 'NOR', xor: 'XOR', xnor: 'XNOR', buf: 'Buffer', dff: 'D flip-flop', out: 'Lamp', bar: 'LED bar', seg: '7-segment', chip: 'Chip' }
+export const KR_NAME: Record<string, string> = { in: 'Switch', btn: 'Button', clk: 'Clock', hi: 'High', nand: 'NAND', and: 'AND', or: 'OR', not: 'NOT', nor: 'NOR', xor: 'XOR', xnor: 'XNOR', buf: 'Buffer', dff: 'D flip-flop', out: 'Lamp', bar: 'LED bar', seg: '7-segment', tl: 'Traffic light', fan: 'Fan', motor: 'Motor', chip: 'Chip' }
 export const KR_DESC: Record<string, string> = {
   in: 'An input you flip by clicking it.',
   btn: 'An input that is 1 only while you hold it down.',
@@ -1421,6 +1527,9 @@ export const KR_DESC: Record<string, string> = {
   not: 'Flips its input.',
   buf: 'Passes its input through, one tick later.',
   bar: 'Four inputs light four bars, top to bottom.',
+  tl: 'Three inputs light red, yellow and green, top to bottom.',
+  fan: 'Spins up while its input is 1 and slows down when it is 0.',
+  motor: 'Turns a gear while its input is 1.',
   nor: 'Outputs 1 only when both inputs are 0.',
   xor: 'Outputs 1 when the inputs differ.',
   xnor: 'Outputs 1 when the inputs match.',
@@ -1429,7 +1538,7 @@ export const KR_DESC: Record<string, string> = {
   seg: 'Seven inputs, a to g from the top, light the segments of one digit.',
   chip: 'A saved circuit that works as one part.',
 }
-export const KR_TILE: Record<string, string> = { in: '#f6c1b0', btn: '#f2a08a', clk: '#cfe58a', hi: '#d7e87a', nand: '#b9e03c', and: '#a7d8f0', or: '#f7d28a', not: '#f4b6c2', nor: '#f2a08a', xor: '#9fe0c9', xnor: '#e6d27a', dff: '#86c1ea', out: '#f7cf3d', seg: '#cfd8c4', buf: '#d5dcc8', bar: '#cfe58a', chip: '#86c1ea' }
+export const KR_TILE: Record<string, string> = { in: '#f6c1b0', btn: '#f2a08a', clk: '#cfe58a', hi: '#d7e87a', nand: '#b9e03c', and: '#a7d8f0', or: '#f7d28a', not: '#f4b6c2', nor: '#f2a08a', xor: '#9fe0c9', xnor: '#e6d27a', dff: '#86c1ea', out: '#f7cf3d', seg: '#cfd8c4', buf: '#d5dcc8', bar: '#cfe58a', tl: '#f4b6c2', fan: '#a7d8f0', motor: '#e6d27a', chip: '#86c1ea' }
 
 export const useLive = create<any>(() => ({ t: 0, vals: {}, tags: [] }))
 
@@ -1509,7 +1618,7 @@ export const useKairo = create<any>((set, get) => ({
     } catch (e) {
       return set({ msg: 'That file is not valid JSON.' })
     }
-    const okp = (a: any) => Array.isArray(a) && a.every((p: any) => p && p.id > 0 && p.id < 131072 && ['in', 'out', 'nand', 'clk', 'chip', 'btn', 'hi', 'and', 'or', 'not', 'nor', 'xor', 'xnor', 'dff', 'seg', 'buf', 'bar'].includes(p.kind) && typeof p.x === 'number' && typeof p.y === 'number')
+    const okp = (a: any) => Array.isArray(a) && a.every((p: any) => p && p.id > 0 && p.id < 131072 && ['in', 'out', 'nand', 'clk', 'chip', 'btn', 'hi', 'and', 'or', 'not', 'nor', 'xor', 'xnor', 'dff', 'seg', 'buf', 'bar', 'tl', 'fan', 'motor'].includes(p.kind) && typeof p.x === 'number' && typeof p.y === 'number')
     const okw = (a: any) => Array.isArray(a) && a.every((w: any) => w && typeof w.id === 'number' && Array.isArray(w.from) && Array.isArray(w.to))
     if (!d || !okp(d.parts) || !okw(d.wires)) return set({ msg: 'That does not look like a Kairo file.' })
     const s = get()
@@ -1529,6 +1638,27 @@ export const useKairo = create<any>((set, get) => ({
       const g = get().stage
       if (g) g.fit()
     }, 0)
+  },
+  placeSample: (key: string, ox?: number, oy?: number) => {
+    const d = buildSample(key)
+    const s = get()
+    const title: Record<string, string> = { adder: '4-bit adder', counter: '4-bit counter', display: 'Counter with display', traffic: 'Traffic light', fan: 'Fan and motor', fulladder: 'Full adder' }
+    const mx = Math.min(...d.parts.map((p: Part) => p.x))
+    const my = Math.min(...d.parts.map((p: Part) => p.y))
+    let n = s.nid
+    const solo = d.parts.some((p: Part) => p.g) ? 0 : n++
+    const map: Record<number, number> = {}
+    const gm: Record<number, number> = {}
+    const np = d.parts.map((p: Part) => {
+      const id = n++
+      map[p.id] = id
+      if (p.g && !gm[p.g]) gm[p.g] = n++
+      const g = p.g ? gm[p.g] : solo
+      return { id, kind: p.kind, x: p.x - mx + (ox ?? s.view[0]), y: p.y - my + (oy ?? s.view[1]), on: p.on, g: g || undefined, gn: g ? p.gn || title[key] : undefined }
+    })
+    const nw = d.wires.map((w: Wire) => ({ id: n++, from: [map[w.from[0]], w.from[1]], to: [map[w.to[0]], w.to[1]] }))
+    get().mark()
+    set({ nid: n, sel: np.map((p: Part) => p.id), wsel: 0, parts: [...s.parts, ...np], wires: [...s.wires, ...nw] })
   },
   loadSample: (name: string) => {
     const d = buildSample(name)
@@ -1642,6 +1772,9 @@ export const PartTile = ({ kind }: { kind: string }) => {
     xnor: gl('M5 5c4.5 0 8.5 2 11 7-2.5 5-6.5 7-11 7 3-5 3-9 0-14zM1.5 5c3 5 3 9 0 14M1 9h3M1 15h3M19.4 12H23', bub(17.7)),
     not: gl('M5 5v14l11-7zM1 12h4M19.4 12H23', bub(17.7)),
     buf: gl('M5 5v14l13-7zM1 12h4M18 12h5'),
+    fan: gl('M12 12c0-4 1-7 4-7 1 2 0 5-4 7zM12 12c4 0 7 1 7 4-2 1-5 0-7-4zM12 12c0 4-1 7-4 7-1-2 0-5 4-7zM12 12c-4 0-7-1-7-4 2-1 5 0 7 4z'),
+    motor: gl('M12 8V5M12 19v-3M8 12H5M19 12h-3M9.2 9.2L7 7M17 17l-2.2-2.2M14.8 9.2L17 7M7 17l2.2-2.2', <circle cx="12" cy="12" r="3.5" />),
+    tl: gl('M9 3h6a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z', <><circle cx="12" cy="8" r="1.3" /><circle cx="12" cy="12" r="1.3" /><circle cx="12" cy="16" r="1.3" /></>),
     bar: gl('M8 7h8M8 11h8M8 15h8M8 19h8', <rect x="5" y="3" width="14" height="18" rx="2" />),
     dff: gl('M4 15l3-2-3-2M9 8h1M14 8h1', <rect x="4" y="4" width="16" height="16" rx="2" />),
     seg: gl('M8 7h8M8 12h8M8 17h8', <rect x="5" y="3" width="14" height="18" rx="2" />),
@@ -1683,9 +1816,10 @@ export const SidePanel = ({ tab, onHide }: { tab: string; onHide: () => void }) 
   const n = useKairo((s: any) => s.parts.length)
   const exportChip = useKairo((s: any) => s.exportChip)
   const loadSample = useKairo((s: any) => s.loadSample)
+  const placeSample = useKairo((s: any) => s.placeSample)
   const names = Object.keys(lib)
   const dragged = useRef(false)
-  const begin = (e: React.PointerEvent, k: string, chip?: string) => {
+  const begin = (e: React.PointerEvent, k: string, chip?: string, sample?: string) => {
     if (e.button !== 0) return
     const sx = e.clientX
     const sy = e.clientY
@@ -1699,7 +1833,7 @@ export const SidePanel = ({ tab, onHide }: { tab: string; onHide: () => void }) 
       if (!on) {
         on = true
         document.body.style.cursor = 'grabbing'
-        useKairo.setState({ drag: { k, chip } })
+        useKairo.setState({ drag: { k, chip, sample } })
       }
       useKairo.setState({ dragPos: over(ev.clientX, ev.clientY) ? [ev.clientX, ev.clientY] : null })
     }
@@ -1712,7 +1846,8 @@ export const SidePanel = ({ tab, onHide }: { tab: string; onHide: () => void }) 
       const g = useKairo.getState().stage
       if (ev.type === 'pointerup' && g && over(ev.clientX, ev.clientY)) {
         const [x, y] = g.world(ev.clientX, ev.clientY)
-        if (chip) stamp(chip, x, y)
+        if (sample) placeSample(sample, x, y)
+        else if (chip) stamp(chip, x, y)
         else add(k, undefined, x, y)
       }
       useKairo.setState({ drag: null, dragPos: null })
@@ -1793,17 +1928,23 @@ export const SidePanel = ({ tab, onHide }: { tab: string; onHide: () => void }) 
     return (
       <aside className="kr-col kr-l">
         <Hd t="Examples" onHide={onHide} />
+        <p style={{ margin: '0 0 12px', fontSize: 12, lineHeight: 1.45, color: 'var(--ink2)' }}>Click one to replace the board, or drag it onto the board to add it next to what you have.</p>
         {[
           ['adder', '4-bit adder', 'Flip the A and B switches. The lamps show the sum in binary, lowest bit on the left. The last lamp is the carry.'],
           ['counter', '4-bit counter', 'Four flip-flops count clock pulses in binary. Raise the speed to watch the high bits move.'],
           ['display', 'Counter with display', 'A 2-bit counter drives a 7-segment digit through a few gates. It counts 0 to 3.'],
+          ['traffic', 'Traffic light', 'A 2-bit counter and three gates step through green, yellow and red. Red lasts two steps.'],
+          ['fan', 'Fan and motor', 'Flip the switch to spin the fan. Hold the button to cut its power. The clock pulses the motor on and off.'],
         ].map(([k, t, d]) => (
           <div
             key={k}
             role="button"
             tabIndex={0}
             className="kr-card btn"
-            onClick={() => loadSample(k)}
+            onPointerDown={(e) => begin(e, 'sample', undefined, k)}
+            onClick={() => {
+              if (!dragged.current) loadSample(k)
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
@@ -1826,7 +1967,7 @@ export const SidePanel = ({ tab, onHide }: { tab: string; onHide: () => void }) 
           ['Wire two parts', 'Drag from a dark green output pin to an input pin.'],
           ['Flip a switch', 'Click it.'],
           ['Orbit the board', 'Drag empty space, or use the orbit disc.'],
-          ['Pan', 'Right-drag, middle-drag, hold Space and drag, or use the arrow keys or WASD.'],
+          ['Pan', 'Right-drag, middle-drag, hold Space and drag, press W A S D, or use the key pad at the bottom right.'],
           ['Fit everything', 'Press F or the fit button in the bottom bar.'],
           ['Select several', 'Press V or the pointer button, then drag a box. Shift-drag works anytime.'],
           ['Add or remove one', 'Alt-click a part.'],
@@ -1852,7 +1993,7 @@ export const SidePanel = ({ tab, onHide }: { tab: string; onHide: () => void }) 
   return (
     <aside className="kr-col kr-l">
       <Hd t="Parts" onHide={onHide} />
-      {[['INPUTS', ['in', 'btn', 'clk', 'hi']], ['GATES', ['nand', 'and', 'or', 'buf', 'not', 'nor', 'xor', 'xnor']], ['MEMORY', ['dff']], ['OUTPUTS', ['out', 'bar', 'seg']]].map(([label, ks]: any) => (
+      {[['INPUTS', ['in', 'btn', 'clk', 'hi']], ['GATES', ['nand', 'and', 'or', 'buf', 'not', 'nor', 'xor', 'xnor']], ['MEMORY', ['dff']], ['OUTPUTS', ['out', 'bar', 'seg', 'tl']], ['ROBOTICS', ['fan', 'motor']]].map(([label, ks]: any) => (
         <div key={label}>
           <div className="kr-lbl"><span>{label}</span><span>{label === 'INPUTS' ? n + ' ON BOARD' : ''}</span></div>
           <div className="kr-grid">{ks.map((k: string) => tile(k))}</div>
@@ -1869,6 +2010,17 @@ export const BoardView = () => {
   const [gone, setGone] = useState(false)
   const op = useRef<number[] | null>(null)
   const th = useRef<HTMLDivElement>(null)
+  const hold = useRef<any>(null)
+  const stop = () => {
+    if (hold.current) clearInterval(hold.current)
+    hold.current = null
+  }
+  const press = (dx: number, dy: number) => {
+    stop()
+    if (st.current) st.current.panBy(dx, dy)
+    hold.current = setInterval(() => st.current && st.current.panBy(dx, dy), 16)
+  }
+  useEffect(() => stop, [])
   const parts: Part[] = useKairo((s: any) => s.parts)
   const tool = useKairo((s: any) => s.tool)
   const canU = useKairo((s: any) => s.past.length > 0)
@@ -1945,6 +2097,37 @@ export const BoardView = () => {
           <button className="kr-pill lime" onClick={() => setGone(true)}>Got it</button>
         </div>
       )}
+      <div className="kr-pad" role="group" aria-label="Pan the board">
+        {[['', 0, 0, ''], ['W', 0, 12, 'Pan up'], ['F', 0, 0, 'Fit everything'], ['A', 12, 0, 'Pan left'], ['S', 0, -12, 'Pan down'], ['D', -12, 0, 'Pan right']].map(([k, dx, dy, t]: any, i) =>
+          k === '' ? (
+            <span key={i} />
+          ) : k === 'F' ? (
+            <button key={k} className="kr-key" title={t + ' (F)'} aria-label={t} onClick={() => st.current && st.current.fit()}>{k}</button>
+          ) : (
+            <button
+              key={k}
+              className="kr-key"
+              title={t + ' (' + k + ')'}
+              aria-label={t}
+              onPointerDown={(e) => {
+                e.preventDefault()
+                press(dx, dy)
+              }}
+              onPointerUp={stop}
+              onPointerLeave={stop}
+              onPointerCancel={stop}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  if (st.current) st.current.panBy(dx * 6, dy * 6)
+                }
+              }}
+            >
+              {k}
+            </button>
+          ),
+        )}
+      </div>
       <div className="kr-dock">
         <button className="kr-pill dark" onClick={() => useKairo.setState({ run: !run })}>
           {run ? <Pause size={14} /> : <Play size={14} />}

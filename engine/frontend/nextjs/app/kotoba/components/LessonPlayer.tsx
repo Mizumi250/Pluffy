@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — LessonPlayer
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T11:53:43.532Z
+// Generated: 2026-11-24T12:30:24.887Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
