@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — ServiceArkzenSeeder
 // Tatemono: a2ui-lab  |  Connection: a2ui_lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:03:44.827319Z
+// Generated: 2026-11-24T02:03:28.800327Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\A2uiLab;

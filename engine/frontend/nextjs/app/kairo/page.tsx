@@ -3,16 +3,18 @@
 // ARKZEN GENERATED PAGE — kairo/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:40:33.623Z
+// Generated: 2026-11-24T03:16:25.627Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { BoardView } from './components/BoardView'
+import { Hd } from './components/Hd'
 import { Inspector } from './components/Inspector'
 import { KairoApp } from './components/KairoApp'
-import { Parts } from './components/Parts'
-import type { KairoState } from './components/types'
+import { PartTile } from './components/PartTile'
+import { Rail } from './components/Rail'
+import { SidePanel } from './components/SidePanel'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 
 // Page component code (from @arkzen:page:index)

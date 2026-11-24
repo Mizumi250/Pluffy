@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — TicketController
 // Tatemono: fastapi-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:20.891501Z
+// Generated: 2026-11-24T02:03:48.743926Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\FastapiTest;

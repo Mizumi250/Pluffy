@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPHover3DSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:40:13.246Z
+// Generated: 2026-11-24T02:03:29.632Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

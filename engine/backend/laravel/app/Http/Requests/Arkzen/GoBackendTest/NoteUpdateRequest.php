@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — NoteUpdateRequest
 // Tatemono: go-backend-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:22.263578Z
+// Generated: 2026-11-24T02:03:50.527825Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\GoBackendTest;

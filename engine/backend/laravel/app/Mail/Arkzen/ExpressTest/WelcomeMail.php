@@ -5,7 +5,7 @@
 // Tatemono: express-test
 // Subject: Welcome to Pluff
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:19.080904Z
+// Generated: 2026-11-24T02:03:45.983069Z
 // ============================================================
 
 namespace App\Mail\Arkzen\ExpressTest;

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — errors-test
 // Source: @arkzen:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:40:23.662Z
+// Generated: 2026-11-24T02:03:41.954Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

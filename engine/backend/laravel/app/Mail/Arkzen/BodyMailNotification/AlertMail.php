@@ -5,7 +5,7 @@
 // Tatemono: body-mail-notification
 // Subject: ⚠ Action Required — blade_body injection test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:01.131130Z
+// Generated: 2026-11-24T02:03:37.737694Z
 // ============================================================
 
 namespace App\Mail\Arkzen\BodyMailNotification;

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — UploadedFile
 // Tatemono: express-test-2
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:19.726534Z
+// Generated: 2026-11-24T02:03:47.149735Z
 // ============================================================
 
 namespace App\Models\Arkzen\ExpressTest2;

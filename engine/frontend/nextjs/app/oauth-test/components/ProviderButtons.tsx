@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ProviderButtons
 // Source: @arkzen:components (oauth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:40:39.879Z
+// Generated: 2026-11-24T02:04:07.420Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

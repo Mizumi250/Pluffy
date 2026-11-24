@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — webmcp-lab
 // Source: @arkzen:components (webmcp-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:40:49.855Z
+// Generated: 2026-11-24T02:04:20.098Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

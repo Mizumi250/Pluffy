@@ -4,7 +4,7 @@
 // ARKZEN GENERATED EVENT — TicketCreated
 // Tatemono: express-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:19.026756Z
+// Generated: 2026-11-24T02:03:45.326389Z
 // ============================================================
 
 namespace App\Events\Arkzen\ExpressTest;

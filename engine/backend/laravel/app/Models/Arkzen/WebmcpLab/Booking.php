@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Booking
 // Tatemono: webmcp-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:46.816719Z
+// Generated: 2026-11-24T02:04:20.663913Z
 // ============================================================
 
 namespace App\Models\Arkzen\WebmcpLab;

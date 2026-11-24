@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ProductBand
 // Source: @arkzen:components (pay-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:40:41.357Z
+// Generated: 2026-11-24T02:04:09.341Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

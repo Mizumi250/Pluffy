@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Stepper
 // Source: @arkzen:components (pay-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:40:41.353Z
+// Generated: 2026-11-24T02:04:09.337Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

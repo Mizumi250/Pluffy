@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ArtCarousel
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:40:36.800Z
+// Generated: 2026-11-24T02:04:02.656Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

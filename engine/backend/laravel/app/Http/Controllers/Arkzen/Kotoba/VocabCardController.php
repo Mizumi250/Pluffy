@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — VocabCardController
 // Tatemono: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:29.667156Z
+// Generated: 2026-11-24T02:04:00.799204Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Kotoba;

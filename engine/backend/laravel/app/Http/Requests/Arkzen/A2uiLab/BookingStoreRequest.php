@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — BookingStoreRequest
 // Tatemono: a2ui-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:03:44.748994Z
+// Generated: 2026-11-24T02:03:28.717691Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\A2uiLab;

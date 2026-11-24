@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — HTMLCanvasSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:40:49.432Z
+// Generated: 2026-11-24T02:04:19.678Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

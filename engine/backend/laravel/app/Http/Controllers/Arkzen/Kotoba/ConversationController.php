@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — ConversationController
 // Tatemono: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:04:29.669615Z
+// Generated: 2026-11-24T02:04:00.801113Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Kotoba;

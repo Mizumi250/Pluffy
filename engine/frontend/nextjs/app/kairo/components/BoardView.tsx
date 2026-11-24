@@ -3,45 +3,119 @@
 // ARKZEN GENERATED COMPONENT — BoardView
 // Source: @arkzen:components (kairo)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:40:33.591Z
+// Generated: 2026-11-24T03:16:25.482Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { START, Stage, truthTable } from '@/arkzen/generated/kairo.scripts'
+import { START, Stage, gcol, truthTable } from '@/arkzen/generated/kairo.scripts'
 import type { Lib, Part, Wire } from '@/arkzen/generated/kairo.scripts'
-import { Cpu, Lightbulb, Package, Pause, Play, ToggleRight, Trash2 } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, Cpu, Download, Info, Layers, Lightbulb, MousePointer2, Package, Pause, Play, Redo2, RotateCcw, RotateCw, Timer, ToggleRight, Trash2, Undo2, Upload } from 'lucide-react'
 import { create } from 'zustand'
-import { useKairo } from './hooks'
-import type { KairoState } from './types'
+import { KR_NAME } from './constants'
+import { useKairo, useLive } from './hooks'
 
 export const BoardView = () => {
   const ref = useRef<HTMLCanvasElement>(null)
+  const st = useRef<any>(null)
   const [rect, setRect] = useState<any>(null)
-  const run = useKairo((s) => s.run)
-  const speed = useKairo((s) => s.speed)
-  const fresh = useKairo((s) => s.parts.length <= 4 && s.wires.length <= 3)
+  const [gone, setGone] = useState(false)
+  const op = useRef<number[] | null>(null)
+  const th = useRef<HTMLDivElement>(null)
+  const parts: Part[] = useKairo((s: any) => s.parts)
+  const tool = useKairo((s: any) => s.tool)
+  const canU = useKairo((s: any) => s.past.length > 0)
+  const canR = useKairo((s: any) => s.future.length > 0)
+  const sel: number[] = useKairo((s: any) => s.sel)
+  const groups = useMemo(() => {
+    const m = new Map<number, string>()
+    parts.forEach((q) => {
+      if (q.g) m.set(q.g, q.gn || 'Group')
+    })
+    return Array.from(m, ([id, name]) => ({ id, name, c: '#' + gcol(name).toString(16).padStart(6, '0') }))
+  }, [parts])
+  const run = useKairo((s: any) => s.run)
+  const speed = useKairo((s: any) => s.speed)
+  const np = useKairo((s: any) => s.parts.length)
+  const nw = useKairo((s: any) => s.wires.length)
+  const fresh = np <= 4 && nw <= 3
+  const t = useLive((s: any) => s.t)
   useEffect(() => {
-    const st = new Stage(ref.current as HTMLCanvasElement, useKairo)
-    st.onMarquee = setRect
-    return () => st.dispose()
+    const g = new Stage(ref.current as HTMLCanvasElement, useKairo)
+    let c = 0
+    g.onMarquee = setRect
+    g.onTick = (tk: number, vals: any, tg: any[]) => {
+      const cur = useLive.getState()
+      if (c++ % 3 === 0) useLive.setState({ t: tk, vals })
+      if (tg.length || cur.tags.length) useLive.setState({ tags: tg })
+    }
+    g.tagHost = th.current
+    st.current = g
+    useKairo.setState({ stage: g })
+    return () => {
+      useKairo.setState({ stage: null })
+      g.dispose()
+    }
   }, [])
+  const snap = (a: number, e: number) => st.current && st.current.snap(a, e)
   return (
     <section className="kr-board">
-      <canvas ref={ref} tabIndex={0} aria-label="Circuit board. Drag a part to move it, drag from a pin to wire, scroll to zoom, hold space and drag to pan." />
+      <canvas ref={ref} tabIndex={0} aria-label="Circuit board. Drag a part to move it, drag from a pin to wire, right-drag to orbit, scroll to zoom." />
+      <div className="kr-bh"><h2>Kairo board</h2><p>{np} parts, {nw} wires</p></div>
+      <div className="kr-live"><i className={run ? 'on' : ''} />{run ? 'live' : 'paused'} <span>t {String(t).padStart(5, '0')}</span></div>
+      <div
+        className="kr-orb"
+        aria-label="Orbit. Drag to rotate the board."
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId)
+          op.current = [e.clientX, e.clientY]
+        }}
+        onPointerMove={(e) => {
+          if (!op.current || !st.current) return
+          st.current.orbitBy(e.clientX - op.current[0], e.clientY - op.current[1])
+          op.current = [e.clientX, e.clientY]
+        }}
+        onPointerUp={() => {
+          op.current = null
+        }}
+      >
+        <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" /><ellipse cx="32" cy="32" rx="30" ry="11" /><ellipse cx="32" cy="32" rx="11" ry="30" /></svg>
+      </div>
+      <div className="kr-tags" ref={th}>
+        {sel.slice(0, 6).map((id) => {
+          const q = parts.find((x) => x.id === id)
+          return q ? <span key={'p' + id} data-t={'p:' + id} className="kr-tag kr-ptag">{(KR_NAME[q.kind] || q.kind).toUpperCase()}</span> : null
+        })}
+        {groups.map((g) => (
+          <button key={'g' + g.id} data-t={'g:' + g.id} className="kr-gtag" style={{ borderColor: g.c }} onClick={() => useKairo.getState().selectGroup(g.id)}><i style={{ background: g.c }} />{g.name}</button>
+        ))}
+      </div>
       {rect && <div className="kr-marq" style={{ left: rect.x, top: rect.y, width: rect.w, height: rect.h }} />}
-      {fresh && <p className="kr-hint">Drag from a dark green output pin to an input pin to wire two parts. Click a switch to flip it. Scroll to zoom, hold space and drag to pan.</p>}
-      <div className="kr-bar">
-        <button className="kr-btn" onClick={() => useKairo.setState({ run: !run })}>
-          {run ? <Pause size={18} /> : <Play size={18} />}
+      {fresh && !gone && (
+        <div className="kr-bubble">
+          <span className="kr-tag">TRY THIS</span>
+          <p>Click the switch. With it on, the lamp blinks with the clock through the NAND gate. With it off, the lamp stays lit.</p>
+          <button className="kr-pill lime" onClick={() => setGone(true)}>Got it</button>
+        </div>
+      )}
+      <div className="kr-dock">
+        <button className="kr-pill dark" onClick={() => useKairo.setState({ run: !run })}>
+          {run ? <Pause size={14} /> : <Play size={14} />}
           {run ? 'Pause' : 'Run'}
         </button>
-        {[1, 2, 4, 8].map((n) => (
-          <button key={n} className={'kr-seg' + (speed === n ? ' on' : '')} aria-pressed={speed === n} onClick={() => useKairo.setState({ speed: n })}>
-            {n}x
-          </button>
-        ))}
+        <button className="kr-pill" title="Simulation speed" aria-label="Simulation speed" onClick={() => useKairo.setState({ speed: speed >= 8 ? 1 : speed * 2 })}>{speed}x</button>
+        <i className="kr-sep" />
+        <button className="kr-pill" title="Undo (Ctrl+Z)" aria-label="Undo" disabled={!canU} onClick={() => useKairo.getState().undo()}><Undo2 size={14} /></button>
+        <button className="kr-pill" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled={!canR} onClick={() => useKairo.getState().redo()}><Redo2 size={14} /></button>
+        <button className={'kr-pill' + (tool === 'select' ? ' on' : '')} title="Select tool (V). Drag a box to select. Alt-click adds or removes one part." aria-label="Select tool" aria-pressed={tool === 'select'} onClick={() => useKairo.setState({ tool: tool === 'select' ? 'orbit' : 'select' })}><MousePointer2 size={14} /></button>
+        <i className="kr-sep" />
+        <button className="kr-pill" onClick={() => snap(Math.PI / 4, 0.6155)}>Iso</button>
+        <button className="kr-pill" onClick={() => snap(st.current ? st.current.az : 0, 1.5)}>Top</button>
+        <button className="kr-pill" aria-label="Rotate left" onClick={() => snap(st.current.az + Math.PI / 2, st.current.el)}><RotateCcw size={14} /></button>
+        <button className="kr-pill" aria-label="Rotate right" onClick={() => snap(st.current.az - Math.PI / 2, st.current.el)}><RotateCw size={14} /></button>
+        <i className="kr-sep" />
+        <button className="kr-pill" aria-label="Delete selection" onClick={() => useKairo.getState().remove()}><Trash2 size={14} /></button>
       </div>
     </section>
   )

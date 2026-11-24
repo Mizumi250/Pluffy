@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — BookingController
 // Tatemono: a2ui-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-23T13:03:44.795820Z
+// Generated: 2026-11-24T02:03:28.739566Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\A2uiLab;
