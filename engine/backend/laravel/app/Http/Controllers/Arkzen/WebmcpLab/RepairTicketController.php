@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — RepairTicketController
 // Tatemono: webmcp-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T07:20:07.374804Z
+// Generated: 2026-11-24T11:53:58.470248Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\WebmcpLab;

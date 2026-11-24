@@ -13,6 +13,7 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 builder.Services.AddSingleton<BackgroundTaskQueue>();
 builder.Services.AddHostedService(services => services.GetRequiredService<BackgroundTaskQueue>());
 builder.Services.AddSingleton<BackendEngine>();
+builder.Services.AddHostedService<CommandScheduler>();
 
 var app = builder.Build();
 app.UseCors();

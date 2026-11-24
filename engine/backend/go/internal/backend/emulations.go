@@ -257,7 +257,7 @@ func (h *Handler) sendBroadcastMessage(w http.ResponseWriter, r *http.Request, m
 func (h *Handler) pollBroadcastMessages(w http.ResponseWriter, r *http.Request, registration Registration, api APIBlock, path string) {
 	channel, matched := matchRoute("/api/"+registration.Name+"/sse-poll/{channelType}", path)
 	if !matched || (channel != "public" && channel != "private" && channel != "presence") {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"message": "Unknown broadcast channel type."})
+		writeJSON(w, http.StatusNotFound, map[string]string{"message": "Not Found"})
 		return
 	}
 	if api.Table == "" {
@@ -308,15 +308,18 @@ func (h *Handler) pollBroadcastMessages(w http.ResponseWriter, r *http.Request, 
 
 	afterID := int64(0)
 	if raw := r.URL.Query().Get("after_id"); raw != "" {
-		parsed, parseErr := strconv.ParseInt(raw, 10, 64)
-		if parseErr != nil || parsed < 0 {
-			writeJSON(w, http.StatusBadRequest, map[string]string{"message": "after_id must be a non-negative integer"})
-			return
+		// Laravel/PHP (int) cast semantics: junk or negative becomes 0.
+		if parsed, parseErr := strconv.ParseInt(raw, 10, 64); parseErr == nil && parsed > 0 {
+			afterID = parsed
 		}
-		afterID = parsed
+	}
+	// Public also returns rows whose channel_type is NULL, like Laravel's LynxSseBridgeController::poll().
+	channelFilter := quoteIdentifier("channel_type") + " = ?"
+	if channel == "public" {
+		channelFilter = "(" + quoteIdentifier("channel_type") + " = ? OR " + quoteIdentifier("channel_type") + " IS NULL)"
 	}
 	query := "SELECT * FROM " + quoteIdentifier(api.Table) +
-		" WHERE " + quoteIdentifier("channel_type") + " = ? AND " + quoteIdentifier(primary) + " > ?"
+		" WHERE " + channelFilter + " AND " + quoteIdentifier(primary) + " > ?"
 	args := []any{channel, afterID}
 	if channel == "private" {
 		query += " AND " + quoteIdentifier("user_id") + " = ?"

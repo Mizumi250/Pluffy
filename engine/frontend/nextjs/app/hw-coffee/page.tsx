@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — hw-coffee/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T07:19:37.066Z
+// Generated: 2026-11-24T11:53:40.269Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -1,0 +1,25 @@
+using Pluff.AspNet.Runtime;
+int bad = 0;
+void Check(string expr, string when, bool expected) {
+    var t = DateTimeOffset.Parse(when);
+    var got = CronSchedule.Matches(expr, t);
+    if (got != expected) { bad++; Console.WriteLine($"MISMATCH '{expr}' @ {when}: got {got}, want {expected}"); }
+}
+Check("* * * * *", "2026-11-24T10:17:00+00:00", true);
+Check("0 * * * *", "2026-11-24T10:00:00+00:00", true);
+Check("0 * * * *", "2026-11-24T10:01:00+00:00", false);
+Check("0-59/5 * * * *", "2026-11-24T10:15:00+00:00", true);
+Check("0-59/5 * * * *", "2026-11-24T10:16:00+00:00", false);
+Check("0-59/15 * * * *", "2026-11-24T10:45:00+00:00", true);
+Check("0-59/15 * * * *", "2026-11-24T10:50:00+00:00", false);
+Check("0 8 * * *", "2026-11-24T08:00:00+00:00", true);
+Check("0 8 * * *", "2026-11-24T09:00:00+00:00", false);
+Check("*/10 * * * *", "2026-11-24T10:20:00+00:00", true);
+Check("0,30 * * * *", "2026-11-24T10:30:00+00:00", true);
+Check("0 0 * * 2", "2026-11-24T00:00:00+00:00", true);   // Tuesday
+Check("0 0 * * 3", "2026-11-24T00:00:00+00:00", false);
+Check("* * * *", "2026-11-24T00:00:00+00:00", false);    // 4 fields
+Check("61 * * * *", "2026-11-24T00:00:00+00:00", false); // out of range
+Check("*/0 * * * *", "2026-11-24T00:00:00+00:00", false);
+Console.WriteLine(bad == 0 ? "cron: all cases agree with Go semantics" : $"cron: {bad} mismatches");
+Environment.Exit(bad);

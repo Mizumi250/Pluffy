@@ -1160,7 +1160,7 @@ public sealed class BackendEngine
                 {
                     "events" => "ASP.NET queues event listeners in-process; queued work is not durable across restarts.",
                     "jobs" => "ASP.NET supports queued retries in-process; queue persistence and queue isolation are not implemented.",
-                    "consoles" => "ASP.NET runs console bodies only when manually requested; cron scheduling is not implemented.",
+                    "consoles" => "ASP.NET runs console bodies on a cron `schedule:` in-process (once a minute); runs are not durable across restarts.",
                     _ => $"ASP.NET does not yet execute the {feature} DSL sections."
                 };
                 warnings.Add(message);
@@ -1625,6 +1625,32 @@ public sealed class BackendEngine
             await Results.Json(new { message = $"C# {type} execution failed.", error = exception.Message },
                 statusCode: StatusCodes.Status500InternalServerError).ExecuteAsync(context);
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Enqueues every console command whose cron `schedule:` matches the given minute. Called once a
+    /// minute by CommandScheduler; the body runs through the same executor as manual command runs.
+    /// </summary>
+    public void RunScheduledConsoles(DateTimeOffset now)
+    {
+        foreach (var (slug, module) in Modules.ToArray())
+        {
+            foreach (var section in DslSections.ReadSections(module["consoles"]))
+            {
+                var schedule = DslSections.ReadValue(section, "schedule");
+                if (string.IsNullOrWhiteSpace(schedule) || !CronSchedule.Matches(schedule, now)) continue;
+                var source = DecodeBody(JsonValue.Create(DslSections.ReadValue(section, "body")));
+                if (string.IsNullOrWhiteSpace(source)) continue;
+                var moduleSnapshot = (JsonObject)module.DeepClone();
+                var scheduledSlug = slug;
+                _backgroundTasks.Enqueue(
+                    cancellationToken => RunDslBodyAsync(
+                        source, scheduledSlug, moduleSnapshot, new JsonObject(),
+                        new Dictionary<string, string>(), null, cancellationToken),
+                    1,
+                    TimeSpan.FromMinutes(10));
+            }
         }
     }
 

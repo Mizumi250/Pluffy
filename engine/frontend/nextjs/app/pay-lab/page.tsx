@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — pay-lab/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T07:19:54.631Z
+// Generated: 2026-11-24T11:53:50.831Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

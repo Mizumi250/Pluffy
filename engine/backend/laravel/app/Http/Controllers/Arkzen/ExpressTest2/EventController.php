@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — EventController
 // Tatemono: express-test-2
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T07:19:32.708836Z
+// Generated: 2026-11-24T11:53:36.382860Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\ExpressTest2;

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — ChipArkzenSeeder
 // Tatemono: kairo  |  Connection: kairo
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T07:37:03.191843Z
+// Generated: 2026-11-24T11:53:42.626896Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\Kairo;

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — RepairTicket
 // Tatemono: a2ui-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T07:19:16.548970Z
+// Generated: 2026-11-24T11:53:24.667218Z
 // ============================================================
 
 namespace App\Models\Arkzen\A2uiLab;

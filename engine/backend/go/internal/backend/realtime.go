@@ -386,9 +386,7 @@ func (h *Handler) authorizeBroadcastChannel(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	channelName := strings.TrimPrefix(channel, channelType+"-")
-	allowed := registration.Name == "notification-test" &&
-		channelType == "private" &&
-		channelName == "notification-test."+strconv.FormatInt(user.ID, 10)
+	allowed := notificationChannelAuthorized(registration, channelType, channelName, user.ID)
 	for _, section := range parseRealtimeSections(registration.Realtimes) {
 		if section.values["type"] != channelType || section.values["channel"] != "" {
 			continue
@@ -510,4 +508,25 @@ func nullableString(value string, ok bool) any {
 		return nil
 	}
 	return value
+}
+
+// notificationChannelAuthorized lets a user subscribe to their own notification channel
+// ({slug}.{userId}) when the module declares a notification delivered on that channel type.
+// channel_type defaults to private, like Laravel's NotificationBuilder.
+func notificationChannelAuthorized(registration Registration, channelType, channelName string, userID int64) bool {
+	if !registration.Auth || (channelType != "private" && channelType != "presence") {
+		return false
+	}
+	declared := false
+	for _, section := range parseRealtimeSections(registration.Notifications) {
+		sectionType := section.values["channel_type"]
+		if sectionType == "" {
+			sectionType = "private"
+		}
+		if sectionType == channelType {
+			declared = true
+			break
+		}
+	}
+	return declared && channelName == registration.Name+"."+strconv.FormatInt(userID, 10)
 }

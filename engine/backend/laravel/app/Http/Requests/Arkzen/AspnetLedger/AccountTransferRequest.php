@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — AccountTransferRequest
 // Tatemono: aspnet-ledger
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T07:19:19.698605Z
+// Generated: 2026-11-24T11:53:26.890854Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\AspnetLedger;

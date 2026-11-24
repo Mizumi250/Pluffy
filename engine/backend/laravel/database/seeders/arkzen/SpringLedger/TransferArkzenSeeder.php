@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — TransferArkzenSeeder
 // Tatemono: spring-ledger  |  Connection: spring_ledger
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T07:20:01.745610Z
+// Generated: 2026-11-24T11:53:55.275134Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\SpringLedger;

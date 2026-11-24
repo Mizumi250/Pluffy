@@ -525,7 +525,7 @@ fn trigger_notification(
         .unwrap_or_else(|| name.to_owned());
     let class = class_name_for(name, "Notification");
     let data = json!({
-        "type": format!("NotificationTest\\{class}"),
+        "type": format!("{}\\{class}", pascal_case(module["name"].as_str().unwrap_or(slug))),
         "message": message,
         "tatemono": module["name"].as_str().unwrap_or(slug)
     });
@@ -570,20 +570,18 @@ fn trigger_notification(
                 }
             }
             "broadcast" => {
+                let module_name = module["name"].as_str().unwrap_or(slug);
                 let channel_type = definition
                     .get("channel_type")
                     .map(String::as_str)
                     .unwrap_or("private");
-                let channel = match channel_type {
-                    "public" => "notification-test.notifications".to_owned(),
-                    "private" | "presence" => {
-                        format!("{channel_type}-notification-test.{}", user.id)
-                    }
-                    _ => return validation_error("notification channel_type is unsupported"),
+                let Some(channel) = notification_broadcast_channel(module_name, channel_type, user.id)
+                else {
+                    return validation_error("notification channel_type is unsupported");
                 };
                 realtime_hub.broadcast_to(
                     &channel,
-                    "notification-test.notification",
+                    &format!("{module_name}.notification"),
                     &json!({"message": message, "data": {}}),
                 );
             }
@@ -594,6 +592,15 @@ fn trigger_notification(
         StatusCode::CREATED,
         json!({"message": "Notification triggered successfully", "type": name}),
     )
+}
+
+/// Laravel NotificationBuilder naming: public -> {slug}.notifications, private/presence -> {type}-{slug}.{userId}.
+fn notification_broadcast_channel(slug: &str, channel_type: &str, user_id: i64) -> Option<String> {
+    match channel_type {
+        "public" => Some(format!("{slug}.notifications")),
+        "private" | "presence" => Some(format!("{channel_type}-{slug}.{user_id}")),
+        _ => None,
+    }
 }
 
 fn notification_definitions(module: &Value) -> Vec<(String, HashMap<String, String>)> {
@@ -802,4 +809,23 @@ fn internal_error(message: String) -> (StatusCode, Value) {
         StatusCode::INTERNAL_SERVER_ERROR,
         json!({"message": message}),
     )
+}
+
+#[cfg(test)]
+mod notification_naming_tests {
+    use super::*;
+
+    #[test]
+    fn broadcast_channels_follow_the_module_slug() {
+        assert_eq!(
+            notification_broadcast_channel("fastapi-test", "public", 7).as_deref(),
+            Some("fastapi-test.notifications")
+        );
+        assert_eq!(
+            notification_broadcast_channel("fastapi-test", "private", 7).as_deref(),
+            Some("private-fastapi-test.7")
+        );
+        assert_eq!(notification_broadcast_channel("x", "weird", 1), None);
+        assert_eq!(pascal_case("fastapi-test"), "FastapiTest");
+    }
 }

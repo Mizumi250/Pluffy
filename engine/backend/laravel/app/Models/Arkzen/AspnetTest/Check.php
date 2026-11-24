@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Check
 // Tatemono: aspnet-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T07:19:20.487806Z
+// Generated: 2026-11-24T11:53:27.506913Z
 // ============================================================
 
 namespace App\Models\Arkzen\AspnetTest;

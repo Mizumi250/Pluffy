@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — SidePanel
 // Source: @arkzen:components (kairo)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T07:36:54.154Z
+// Generated: 2026-11-24T11:53:42.438Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'

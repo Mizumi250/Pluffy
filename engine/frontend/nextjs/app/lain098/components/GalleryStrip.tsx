@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GalleryStrip
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T07:19:45.731Z
+// Generated: 2026-11-24T11:53:46.216Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

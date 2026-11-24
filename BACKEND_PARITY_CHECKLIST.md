@@ -1,4 +1,4 @@
-# Pluffy Backend Parity Checklist (updated, pass 2)
+# Pluffy Backend Parity Checklist (updated, pass 4, final for this session)
 
 Reference: Laravel. "Verified" = executed here (cargo, go, pytest, tsx/node, javac+java, dotnet standalone).
 Spring and ASP.NET full projects were NOT built (Maven/NuGet unreachable). Only the files named below were compiled.
@@ -46,3 +46,25 @@ Generated modules already in the repo (e.g. `fastapi/pluff/generated/*`, `expres
 | Streaming `/sse/{type}` | 0 | Lynx uses `sse-poll` (done on all backends); not needed |
 
 Suggested next order: Go/Rust notification fallback, ASP.NET cron, then durable queues.
+
+## Pass 3 additions
+- [x] **Go + Rust notifications are now generic for declarative blocks.** They hard-coded `notification-test` in the type prefix, broadcast channel, event name and (Go) channel authorization, so any other tatemono got the wrong channel. Now Laravel naming from the module slug: public `{slug}.notifications`, private/presence `{type}-{slug}.{userId}`, event `{slug}.notification`, type `{Slug}\{Class}`; Go's channel_type default is private like Laravel. Verified by unit tests (Go `TestNotificationChannels...`, Rust `notification_naming_tests`). Custom notification *bodies* (arbitrary code) are still not executed on Go/Rust.
+- [x] **ASP.NET cron** (`schedule:` on console blocks): `CronSchedule.cs` (port of Go's matcher; 16 cases verified), `CommandScheduler.cs` (hosted service, compiled; not run, ASP.NET runtime pack unavailable here), `RunScheduledConsoles` in `BackendEngine.cs` and registration in `Program.cs` (NOT compiled: the full project cannot be built here). In-process, once per minute, not durable.
+
+## Pass 4 additions
+- [x] **Spring durable queue.** `JobDispatcher` now persists jobs in a Laravel-style `jobs` table (main DB), deletes them on success, moves exhausted jobs to `failed_jobs`, and re-runs leftovers once per tatemono ~3s after the module registers (after a restart). Falls back to the old in-memory behavior if the DB is unavailable. `QUEUE_CONNECTION=sync` still runs inline. Compile-checked with `javac` (0 errors in the file); NOT run, there is no JDBC driver here.
+- [x] **Go `sse-poll` aligned to Laravel:** unknown channel type is 404 (was 400), public includes NULL `channel_type`, junk/negative `after_id` becomes 0 (was 400). Kept on purpose: private polling filters by `user_id` (stricter than Laravel, which returns every private row to any authenticated user). Go builds and its non-DB tests pass; its DB-backed poll tests could not run here (sqlite driver unreachable).
+
+## Still open (final)
+| Gap | Why it is not done |
+|---|---|
+| ASP.NET durable queue + `failed_jobs` | Jobs are queued as in-memory closures; persisting them means restructuring dispatch in `BackendEngine.cs`, which cannot be compiled or run here. Not shipping blind persistence |
+| Go/Rust custom notification *bodies*; Rust general middleware/policy bodies | Per-language body execution (Go interpreted, Rust compiled); needs a design decision on what the Rust runtime may execute |
+| `resource:` outside Express | Cosmetic (drops `deleted_at` only) |
+| `factory:` on Go/Rust | Handler-body API, per-language by design |
+| Streaming `/sse/{type}`; `date_format`/`after*`/`before*`/`digits_between` | Unused by your tatemonos (0 uses) |
+
+## Not verified by running (read before shipping)
+- ASP.NET: `BackendEngine.RunScheduledConsoles`, `Program.cs` registration, and the whole project build
+- Spring: full project build; durable queue and `sse-poll` at runtime
+- Go: DB-backed tests

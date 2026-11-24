@@ -55,7 +55,7 @@ func (h *Handler) triggerNotification(w http.ResponseWriter, r *http.Request, db
 		subject = key
 	}
 	data := map[string]any{
-		"type":     "NotificationTest\\" + goClassName(key) + "Notification",
+		"type":     goClassName(registration.Name) + "\\" + goClassName(key) + "Notification",
 		"message":  message,
 		"tatemono": registration.Name,
 	}
@@ -86,13 +86,15 @@ func (h *Handler) triggerNotification(w http.ResponseWriter, r *http.Request, db
 				return
 			}
 		case "broadcast":
+			// Same naming as Laravel's NotificationBuilder: public -> {slug}.notifications,
+			// private/presence -> {type}-{slug}.{userId}; channel_type defaults to private.
 			channelType := definition.values["channel_type"]
-			channelName := "notification-test.notifications"
-			if channelType == "private" || channelType == "presence" {
-				channelName = channelType + "-notification-test." + strconv.FormatInt(user.ID, 10)
+			if channelType == "" {
+				channelType = "private"
 			}
+			channelName := notificationBroadcastChannel(registration.Name, channelType, user.ID)
 			eventData := map[string]any{"message": message, "data": map[string]any{}}
-			h.realtime.BroadcastTo(channelName, "notification-test.notification", eventData)
+			h.realtime.BroadcastTo(channelName, registration.Name+".notification", eventData)
 		}
 	}
 	writeJSON(w, http.StatusCreated, map[string]string{
@@ -147,4 +149,13 @@ func htmlEscape(value string) string {
 		}
 	}
 	return escaped.String()
+}
+
+// notificationBroadcastChannel follows Laravel's NotificationBuilder naming:
+// public -> {slug}.notifications, private/presence -> {type}-{slug}.{userId}.
+func notificationBroadcastChannel(slug, channelType string, userID int64) string {
+	if channelType == "private" || channelType == "presence" {
+		return channelType + "-" + slug + "." + strconv.FormatInt(userID, 10)
+	}
+	return slug + ".notifications"
 }
