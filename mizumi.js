@@ -550,7 +550,10 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg, open
 
   // Step 1 — pick tatemono
   if (!tatName) {
-    const modules = [...new Set([...(config.modules ?? []).map(m => m.name), ...listGodotTatemonoNames(), ...listUnityTatemonoNames()])]
+    // Scan tatemonos/ (like the openapi command does) instead of trusting only arkzen.json: the registry gets an
+    // entry only after the engine has built a tatemono, so a new one (or one added while the engine was off)
+    // would otherwise be missing from this list.
+    const modules = [...new Set([...discoverTatemonos(config).map(m => m.name), ...listGodotTatemonoNames(), ...listUnityTatemonoNames()])]
     if (modules.length === 0) { warn('タテモノなし — No tatemonos registered yet.'); return }
     divider()
     const chosen = await picker('どのタテモノ？ Which tatemono to export?', modules.map(m => ({ label: m, value: m })))
