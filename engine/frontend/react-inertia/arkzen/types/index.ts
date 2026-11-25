@@ -67,6 +67,46 @@ export interface ArkzenFrame {
 
 export type ArkzenFrames = Partial<Record<ArkzenFrameTarget, ArkzenFrame>>
 
+// v17.0 - browser extension blocks (@arkzen:ext:*). See parser parseExt.
+// A code block keeps its YAML header and its body apart. A YAML block keeps the
+// parsed value: a mapping for project, rules, locale and export, a list for
+// commands and menus (the validator checks the shape).
+export interface ArkzenExtCodeBlock {
+  header: Record<string, unknown>   // YAML in the opening comment ({} when the opener closes with */ on the same line)
+  raw:    string                    // the code body, verbatim and trimmed
+  start:  number
+  end:    number
+}
+
+export interface ArkzenExtNamedCodeBlock extends ArkzenExtCodeBlock {
+  name: string
+}
+
+export interface ArkzenExtYamlBlock {
+  data:  unknown
+  start: number
+  end:   number
+}
+
+export interface ArkzenExtNamedYamlBlock extends ArkzenExtYamlBlock {
+  name: string
+}
+
+export interface ArkzenExt {
+  project?:    ArkzenExtYamlBlock         // @arkzen:ext:project
+  popup?:      ArkzenExtCodeBlock         // @arkzen:ext:popup
+  sidepanel?:  ArkzenExtCodeBlock         // @arkzen:ext:sidepanel
+  background?: ArkzenExtCodeBlock         // @arkzen:ext:background
+  pages:       ArkzenExtNamedCodeBlock[]  // @arkzen:ext:page:<name>
+  contents:    ArkzenExtNamedCodeBlock[]  // @arkzen:ext:content:<name>
+  scripts:     ArkzenExtNamedCodeBlock[]  // @arkzen:ext:script:<name>
+  commands?:   ArkzenExtYamlBlock         // @arkzen:ext:commands
+  menus?:      ArkzenExtYamlBlock         // @arkzen:ext:menus
+  rules?:      ArkzenExtYamlBlock         // @arkzen:ext:rules
+  locales:     ArkzenExtNamedYamlBlock[]  // @arkzen:ext:locale:<code>
+  export?:     ArkzenExtYamlBlock         // @arkzen:ext:export
+}
+
 export interface ArkzenMeta {
   name: string
   version: string
@@ -308,6 +348,7 @@ export interface ParsedTatemono {
   config?: ArkzenConfigOverride
   desktopConfig?: ArkzenDesktopConfig
   frames?:        ArkzenFrames        // v15.0: @arkzen:native:frame:* / @arkzen:desktop:frame:*
+  ext?:           ArkzenExt           // v17.0: @arkzen:ext:* browser extension blocks
 
   databases:          ArkzenDatabase[]
   apis:               ArkzenApi[]

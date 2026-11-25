@@ -580,6 +580,45 @@ add({ key: 'file', group: 'Free files', sub: 'write any text file to a path', na
   tag: n => `file:${n}`,
   build: ({ name, flags }) => shapeB(`file:${name}`, `path: ${flags.path ?? 'index.html'}`, `<!doctype html>\n<html lang="en">\n  <head><meta charset="utf-8"><title>${name}</title></head>\n  <body><h1>${name}</h1></body>\n</html>`) })
 
+// ---- Browser extension ----
+const EXT = g => ({ group: 'Browser extension', ...g })
+add(EXT({ key: 'ext:project', sub: 'extension name, permissions, targets, api (required)', name: null, once: true,
+  tag: () => 'ext:project',
+  build: ({ slug }) => shapeA('ext:project', `name: ${pascal(slug)}\npermissions: [storage]\ntargets: [chrome, firefox]`) }))
+add(EXT({ key: 'ext:popup', sub: 'toolbar popup (React)', name: null, once: true,
+  tag: () => 'ext:popup',
+  build: ({ slug }) => shapeB('ext:popup', `width: 360\nheight: 480`, `export default function Popup() {\n  return <main>${pascal(slug)}</main>\n}`) }))
+add(EXT({ key: 'ext:sidepanel', sub: 'side panel (React)', name: null, once: true,
+  tag: () => 'ext:sidepanel',
+  build: ({ slug }) => shapeB('ext:sidepanel', `title: ${pascal(slug)}`, `export default function Panel() {\n  return <main>${pascal(slug)}</main>\n}`) }))
+add(EXT({ key: 'ext:page', sub: 'full-tab page: options, newtab, history, bookmarks, devtools, sandbox, offscreen, standalone', name: { prompt: 'Page name', def: 'options' },
+  tag: n => `ext:page:${n}`,
+  build: ({ name }) => shapeB(`ext:page:${name}`, `role: standalone\ntitle: ${pascal(name)}`, `export default function Page() {\n  return <main>${pascal(name)}</main>\n}`) }))
+add(EXT({ key: 'ext:content', sub: 'content script that runs on matching pages (ui or script)', name: { prompt: 'Content script name', def: 'overlay' },
+  tag: n => `ext:content:${n}`,
+  build: ({ name }) => shapeB(`ext:content:${name}`, `matches: ["https://example.com/*"]\nrun_at: document_idle\nmode: script`, `console.log('${name} content script loaded')`) }))
+add(EXT({ key: 'ext:background', sub: 'service worker code (TypeScript)', name: null, once: true,
+  tag: () => 'ext:background',
+  build: () => shapeB('ext:background', `type: module`, `console.log('background ready')`) }))
+add(EXT({ key: 'ext:script', sub: 'shared TypeScript module for background, content and pages', name: { prompt: 'Script name', def: 'helpers' },
+  tag: n => `ext:script:${n}`,
+  build: ({ name }) => shapeC(`ext:script:${name}`, `export const example = 1`) }))
+add(EXT({ key: 'ext:commands', sub: 'keyboard shortcuts', name: null, once: true,
+  tag: () => 'ext:commands',
+  build: () => shapeA('ext:commands', `- id: _execute_action\n  key: Ctrl+Shift+Y`) }))
+add(EXT({ key: 'ext:menus', sub: 'context menu items', name: null, once: true,
+  tag: () => 'ext:menus',
+  build: () => shapeA('ext:menus', `- id: save-selection\n  title: Save selection\n  contexts: [selection]`) }))
+add(EXT({ key: 'ext:rules', sub: 'declarativeNetRequest rulesets', name: null, once: true,
+  tag: () => 'ext:rules',
+  build: () => shapeA('ext:rules', `rulesets:\n  - id: main\n    enabled: true\n    rules: []`) }))
+add(EXT({ key: 'ext:locale', sub: 'i18n messages for one locale (needs default_locale in ext:project)', name: { prompt: 'Locale code', def: 'en' },
+  tag: n => `ext:locale:${n}`,
+  build: ({ slug, name }) => shapeA(`ext:locale:${name}`, `messages:\n  appName:\n    message: ${pascal(slug)}\n    description: Name of the extension`) }))
+add(EXT({ key: 'ext:export', sub: 'browser targets and zip options', name: null, once: true,
+  tag: () => 'ext:export',
+  build: () => shapeA('ext:export', `browsers: [chrome, firefox]\nzip: true`) }))
+
 // ---- Godot 4 ----
 const GODOT = g => ({ group: 'Godot 4', game: 'godot', ...g })
 add(GODOT({ key: 'godot:project', sub: 'project identity, renderer, display', name: null, once: true,
@@ -684,6 +723,8 @@ const TEMPLATES = {
     make: ({ slug }) => [metaBlock(slug, 'Unity scene tatemono'), make('unity:project', null, { slug, flags: { mode: 'scene' } }), make('unity:environment'), make('unity:scene', 'main', { slug }), make('unity:export')] },
   unreal: { label: 'Unreal Engine scene', sub: 'scene project + environment + scene + export',
     make: ({ slug }) => [metaBlock(slug, 'Unreal Engine scene tatemono'), make('unreal:project', null, { slug }), make('unreal:environment'), make('unreal:scene', 'main', { slug }), make('unreal:export')] },
+  extension: { label: 'Browser extension', sub: 'meta + ext project + popup + export',
+    make: ({ slug }) => [metaBlock(slug, 'Browser extension tatemono'), make('ext:project', null, { slug }), make('ext:popup', null, { slug }), make('ext:export')] },
 }
 
 
@@ -695,6 +736,10 @@ const BACKEND_CODE = new Set(['endpoint', 'handler', 'policy', 'middleware', 'li
 const BACKEND_MIXED = new Set(['jobs', 'console', 'notifications', 'mail'])
 const SHAPE_A_TAGS = new Set(['meta', 'meta:web', 'meta:native', 'web:config', 'native:config', 'desktop:config', 'oauth', 'routes'])
 const DECL_RE = /^(web:page:layout|native:page:layout|native:page:lynx:layout):(.+)$/
+// Browser extension blocks (@arkzen:ext:*). Named blocks carry a name after the family.
+const EXT_YAML_FAMILIES = new Set(['ext:project', 'ext:commands', 'ext:menus', 'ext:rules', 'ext:locale', 'ext:export'])
+const EXT_CODE_FAMILIES = new Set(['ext:popup', 'ext:sidepanel', 'ext:page', 'ext:content', 'ext:background', 'ext:script'])
+const EXT_NAMED_FAMILIES = new Set(['ext:page', 'ext:content', 'ext:script', 'ext:locale'])
 
 function parseTag(tag) {
   const decl = tag.match(DECL_RE)
@@ -709,6 +754,7 @@ function parseTag(tag) {
   if (head === 'meta') return { family: parts[1] ? `meta:${parts[1]}` : 'meta', name: '' }
   if (head === 'web') return { family: `web:${parts[1]}`, name: parts.slice(2).join(':') }
   if (head === 'desktop') return { family: `desktop:${parts[1]}`, name: parts.slice(2).join(':') }
+  if (head === 'ext') return { family: `ext:${parts[1]}`, name: parts.slice(2).join(':') }
   if (head === 'godot' || head === 'unity' || head === 'unreal') return { family: `${head}:${parts[1]}`, name: parts.slice(2).join(':') }
   if (head === 'native') {
     if (parts[2] === 'lynx' && (parts[1] === 'page' || parts[1] === 'layout' || parts[1] === 'components'))
@@ -762,7 +808,7 @@ export function scanSource(source) {
   const model = {
     src, openers: [], meta: null, metaLine: 0, apis: [], tables: [], routes: [], events: [],
     webPages: [], webLayouts: [], nativePages: [], nativeLayouts: [], lynxPages: [], lynxLayouts: [],
-    code: [], mixed: [], frames: [], fileBlocks: [], game: null, ends: new Set(), oauth: null,
+    code: [], mixed: [], frames: [], fileBlocks: [], game: null, ends: new Set(), oauth: null, exts: [],
   }
   const lineOf = idx => src.slice(0, idx).split('\n').length
   let lastWeb = null, lastNative = null, lastLynx = null
@@ -782,6 +828,7 @@ export function scanSource(source) {
     const nextLine = (src.slice(afterOpen + 1).split('\n')[0] ?? '').trim()
     const o = { tag, ...parseTag(tag), line: lineOf(m.index), sameLineClose, closed, yaml, nextLine }
     model.openers.push(o)
+    if (o.family.startsWith('ext:')) model.exts.push({ ...o, name: o.name, fields: yamlTop(yaml) })
 
     switch (o.family) {
       case 'meta': model.meta = { ...yamlTop(yaml), _raw: yaml }; model.metaLine = o.line; break
@@ -867,10 +914,15 @@ export function lintSource(source, opts = {}) {
     if (seen.has(o.tag)) E(`Duplicate block @arkzen:${o.tag} (first at line ${seen.get(o.tag)})`, o.line)
     else seen.set(o.tag, o.line)
 
+    if (o.family.startsWith('ext:')) {
+      if (!EXT_YAML_FAMILIES.has(o.family) && !EXT_CODE_FAMILIES.has(o.family)) E(`Unknown extension block @arkzen:${o.tag}. Known: ${[...EXT_YAML_FAMILIES, ...EXT_CODE_FAMILIES].map(f => '@arkzen:' + f).join(', ')}.${didYouMean(o.family, [...EXT_YAML_FAMILIES, ...EXT_CODE_FAMILIES])}`, o.line)
+      else if (EXT_NAMED_FAMILIES.has(o.family) && !o.name) E(`@arkzen:${o.tag} needs a name: write @arkzen:${o.family}:<name>`, o.line)
+      else if (!EXT_NAMED_FAMILIES.has(o.family) && o.name) E(`@arkzen:${o.family} takes no name (found "${o.name}")`, o.line)
+    }
     const head = o.tag.split(':')[0]
-    const isA = SHAPE_A_TAGS.has(o.tag) || head === 'database' || head === 'api'
+    const isA = SHAPE_A_TAGS.has(o.tag) || head === 'database' || head === 'api' || EXT_YAML_FAMILIES.has(o.family)
     const isD = BACKEND_CODE.has(head) || o.family === 'module:rs'
-    const isC = (SHAPE_C_HEADS.has(head) && !SHAPE_A_TAGS.has(o.tag) && o.family !== 'native:meta') || o.family === 'desktop:frame'
+    const isC = (SHAPE_C_HEADS.has(head) && !SHAPE_A_TAGS.has(o.tag) && o.family !== 'native:meta') || o.family === 'desktop:frame' || EXT_CODE_FAMILIES.has(o.family)
     const needsEnd = () => { if (!m.ends.has(o.tag)) E(`@arkzen:${o.tag} is missing its closing /* @arkzen:${o.tag}:end */`, o.line) }
     if (isA) {
       if (o.sameLineClose) E(`@arkzen:${o.tag} is a YAML-only block: do not put */ on the opening line, close it with a bare */ line`, o.line)
@@ -880,7 +932,8 @@ export function lintSource(source, opts = {}) {
       if (!o.sameLineClose && o.nextLine !== '*/') E(`@arkzen:${o.tag}: the line after the opening tag must be exactly */`, o.line)
       needsEnd()
     } else if (isC) {
-      const layoutWithYaml = (o.family === 'web:layout' || o.family === 'native:layout' || o.family === 'native:layout:lynx') && !o.sameLineClose && o.closed
+      // Layouts and ext blocks may open with a multi-line YAML header (Shape B).
+      const layoutWithYaml = (o.family === 'web:layout' || o.family === 'native:layout' || o.family === 'native:layout:lynx' || EXT_CODE_FAMILIES.has(o.family)) && !o.sameLineClose && o.closed
       if (!o.sameLineClose && !layoutWithYaml) E(`@arkzen:${o.tag} is a code block: put */ on the SAME line as the opening tag`, o.line)
       needsEnd()
     } else if (o.family === 'file') {
@@ -896,7 +949,7 @@ export function lintSource(source, opts = {}) {
   const hasFiles = m.fileBlocks.length > 0
 
   // pages
-  if (!isGame && !hasFiles && !m.webPages.length && !m.nativePages.length && !m.lynxPages.length)
+  if (!isGame && !hasFiles && !m.exts.length && !m.webPages.length && !m.nativePages.length && !m.lynxPages.length)
     E('At least one @arkzen:web:page:<name>, @arkzen:native:page:<name> or @arkzen:native:page:lynx:<name> is required')
   for (const [list, label] of [[m.webPages, 'web'], [m.nativePages, 'native'], [m.lynxPages, 'Lynx']]) {
     const names = new Set()
@@ -972,6 +1025,22 @@ export function lintSource(source, opts = {}) {
     }
   }
 
+  // extension blocks (engine contract, the main parts; the engine validator checks every key)
+  if (m.exts.length) {
+    const project = m.exts.find(x => x.family === 'ext:project')
+    if (!project) E('@arkzen:ext:project is required when a tatemono has extension blocks')
+    else if (!project.fields.name) E('@arkzen:ext:project needs a name:', project.line)
+    if (!m.exts.some(x => ['ext:popup', 'ext:sidepanel', 'ext:page', 'ext:content', 'ext:background'].includes(x.family)))
+      E('An extension needs at least one of @arkzen:ext:popup, ext:sidepanel, ext:page:<name>, ext:content:<name> or ext:background')
+    for (const x of m.exts.filter(x => x.family === 'ext:content')) {
+      const o = m.openers.find(op => op.line === x.line)
+      if (!/^matches:/m.test(o?.yaml ?? '')) E(`@arkzen:${x.tag} needs matches: (the pages it runs on)`, x.line)
+      if (!x.fields.mode) E(`@arkzen:${x.tag} needs mode: ui or mode: script`, x.line)
+    }
+    const locales = m.exts.filter(x => x.family === 'ext:locale')
+    if (locales.length && !project?.fields.default_locale) E('@arkzen:ext:project needs default_locale: when @arkzen:ext:locale blocks exist', project?.line)
+  }
+
   // frames (engine contract)
   for (const f of m.frames) {
     const o = m.openers.find(x => x.line === f.line)
@@ -1025,7 +1094,7 @@ const NAME_KIND = {
   listener: 'pascal', 'web:style:name': 'pascal',
   endpoint: 'ident', handler: 'ident', policy: 'ident', middleware: 'ident',
   realtime: 'free', 'realtime:event': 'free', 'native:style:name': 'free', 'lynx:style:name': 'free',
-  'native:script': 'free', 'lynx:script': 'free',
+  'native:script': 'free', 'lynx:script': 'free', 'ext:locale': 'free',
 }
 
 function normalizeName(block, raw, flags) {

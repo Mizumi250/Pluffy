@@ -10,6 +10,12 @@
 //        desktop window host). @arkzen:native:frame:expo|rn|lynx and
 //        @arkzen:desktop:frame:electron|tauri. New parser: parseFrames().
 //        Opt-in: Tatemonos without a frame block parse exactly as before.
+// v17.0: Browser extension blocks. The `ext` family (@arkzen:ext:project, popup,
+//        sidepanel, page:<name>, content:<name>, background, script:<name>,
+//        commands, menus, rules, locale:<code>, export). New parser: parseExt().
+//        ParsedTatemono.ext is set only when the file has at least one ext block.
+//        A Tatemono with ext blocks needs no web, native or Lynx page.
+//        Opt-in: Tatemonos without an ext block parse exactly as before.
 // v12.0: Shared desktop window config from @arkzen:desktop:config.
 // v10.6: Global (unnamed) native style block for Expo + Bare RN.
 //        New parser: parseGlobalNativeStyle() — @arkzen:native:style
@@ -132,6 +138,9 @@ import type {
   ArkzenDesktopConfig,
   ArkzenFrames,
   ArkzenFrameTarget,
+  ArkzenExt,
+  ArkzenExtCodeBlock,
+  ArkzenExtYamlBlock,
   ArkzenConfigOverride,
   ArkzenDatabase,
   ArkzenApi,
@@ -379,6 +388,76 @@ function extractAllNamedSections(content: string, marker: string): ArkzenSection
 // YAML SECTION PARSERS
 // ─────────────────────────────────────────────
 
+// ─────────────────────────────────────────────
+// PARSE OAUTH — v16.0
+// Extracts the optional @arkzen:oauth block. Social sign-in is an opt-in
+// layer on top of `auth: true`; it never replaces email + password.
+//
+//   /* @arkzen:oauth
+//   providers: [google, github, discord]
+//   redirect: /dashboard            # frontend path after a successful sign-in
+//   error_redirect: /login          # frontend path after a failed sign-in
+//   link_verified_email: true       # auto-link to an existing account only when the provider verifies the email
+//   */
+//
+// Client IDs and secrets are NEVER read from the tatemono. They come from the
+// backend's .env (OAUTH_<PROVIDER>_CLIENT_ID / OAUTH_<PROVIDER>_CLIENT_SECRET).
+// ─────────────────────────────────────────────
+
+export const OAUTH_PROVIDERS = [
+  'google', 'github', 'twitter', 'apple', 'microsoft', 'facebook', 'instagram', 'discord',
+] as const
+
+export interface ArkzenOAuthConfig {
+  providers:         string[]
+  redirect:          string
+  errorRedirect:     string
+  linkVerifiedEmail: boolean
+}
+
+function parseOAuth(content: string, name: string, authEnabled: boolean): ArkzenOAuthConfig | undefined {
+  const raw = extractSection(content, 'oauth')
+  if (raw === null) return undefined
+
+  if (!authEnabled) {
+    throw new Error(`[Arkzen Parser] "${name}": @arkzen:oauth requires auth: true in @arkzen:meta`)
+  }
+
+  const parsed = (yaml.load(raw) ?? {}) as Record<string, unknown>
+  const list   = Array.isArray(parsed.providers) ? parsed.providers : []
+  const seen   = new Set<string>()
+  const providers: string[] = []
+
+  for (const entry of list) {
+    // Accept "google" and the alias "x" for twitter, case-insensitively.
+    let id = String(entry).trim().toLowerCase()
+    if (id === 'x') id = 'twitter'
+    if (!(OAUTH_PROVIDERS as readonly string[]).includes(id)) {
+      throw new Error(
+        `[Arkzen Parser] "${name}": unknown OAuth provider "${entry}". Supported: ${OAUTH_PROVIDERS.join(', ')}`,
+      )
+    }
+    if (!seen.has(id)) { seen.add(id); providers.push(id) }
+  }
+
+  if (providers.length === 0) {
+    throw new Error(`[Arkzen Parser] "${name}": @arkzen:oauth needs a non-empty providers list`)
+  }
+
+  const asPath = (v: unknown, fallback: string): string => {
+    const s = typeof v === 'string' && v.trim() ? v.trim() : fallback
+    // Frontend path only. An absolute URL here would be an open redirect.
+    return s.startsWith('/') && !s.startsWith('//') ? s : fallback
+  }
+
+  return {
+    providers,
+    redirect:          asPath(parsed.redirect, '/'),
+    errorRedirect:     asPath(parsed.error_redirect, '/'),
+    linkVerifiedEmail: parsed.link_verified_email === undefined ? true : Boolean(parsed.link_verified_email),
+  }
+}
+
 function parseMeta(content: string): ArkzenMeta {
   const raw = extractSection(content, 'meta')
   if (!raw) throw new Error('[Arkzen Parser] Missing @arkzen:meta section')
@@ -398,11 +477,14 @@ function parseMeta(content: string): ArkzenMeta {
     console.warn(`[Arkzen Parser] ⚠ "${parsed.name}": pwa in @arkzen:meta is deprecated — move to @arkzen:meta:web`)
   }
 
+  const authEnabled = Boolean(parsed.auth ?? false)
+  const oauth = parseOAuth(content, String(parsed.name), authEnabled)
+
   return {
     name:         String(parsed.name),
     version:      String(parsed.version ?? '1.0.0'),
     description:  String(parsed.description ?? ''),
-    auth:         Boolean(parsed.auth ?? false),
+    auth:         authEnabled,
     dependencies: (parsed.dependencies as string[]) ?? [],
     // deprecated fallbacks
     favicon:      parsed.favicon ? String(parsed.favicon) : undefined,
@@ -428,7 +510,9 @@ function parseMeta(content: string): ArkzenMeta {
           })),
         }
       : undefined,
-  }
+    // v16.0: optional social sign-in. Cast keeps each stack's types/index.ts untouched.
+    ...(oauth ? { oauth } : {}),
+  } as ArkzenMeta
 }
 
 // ─────────────────────────────────────────────
@@ -619,6 +703,158 @@ function parseFrames(content: string): ArkzenFrames | undefined {
     frames[target] = { target, raw: section.raw, start: section.start, end: section.end }
   }
   return Object.keys(frames).length > 0 ? frames : undefined
+}
+
+// ─────────────────────────────────────────────
+// EXTENSION BLOCKS - v17.0
+//
+// A tatemono can describe a browser extension with the `ext` family:
+//
+//   YAML-only (Shape A: bare */ closes the comment, no :end)
+//     @arkzen:ext:project            once   manifest identity, permissions, targets, api
+//     @arkzen:ext:commands           once   keyboard shortcuts (YAML list)
+//     @arkzen:ext:menus              once   context menu items (YAML list)
+//     @arkzen:ext:rules              once   declarativeNetRequest rulesets
+//     @arkzen:ext:locale:<code>      many   i18n messages
+//     @arkzen:ext:export             once   browser targets and zip options
+//
+//   Code blocks (:end required). Shape B when a YAML header is needed (the header
+//   sits in the opening comment, */ on its own line), Shape C when it is not
+//   (*/ on the opening line).
+//     @arkzen:ext:popup              once   toolbar popup (TSX)
+//     @arkzen:ext:sidepanel          once   side panel (TSX)
+//     @arkzen:ext:page:<name>        many   full-tab page, `role` in the header (TSX)
+//     @arkzen:ext:content:<name>     many   content script, `matches` in the header
+//     @arkzen:ext:background         once   service worker (TS)
+//     @arkzen:ext:script:<name>      many   shared TS module
+//
+// Opt-in: a Tatemono with no ext block gets no `ext` field. This parser reads the
+// structure only (tags, names, YAML, bodies). The contracts live in validator.ts.
+// ─────────────────────────────────────────────
+
+interface ExtBlockSpec {
+  kind:  'code' | 'yaml'
+  named: boolean
+}
+
+const EXT_BLOCK_SPECS: Readonly<Record<string, ExtBlockSpec>> = {
+  project:    { kind: 'yaml', named: false },
+  popup:      { kind: 'code', named: false },
+  sidepanel:  { kind: 'code', named: false },
+  page:       { kind: 'code', named: true  },
+  content:    { kind: 'code', named: true  },
+  background: { kind: 'code', named: false },
+  script:     { kind: 'code', named: true  },
+  commands:   { kind: 'yaml', named: false },
+  menus:      { kind: 'yaml', named: false },
+  rules:      { kind: 'yaml', named: false },
+  locale:     { kind: 'yaml', named: true  },
+  export:     { kind: 'yaml', named: false },
+}
+
+const EXT_CODE_TAGS = Object.keys(EXT_BLOCK_SPECS).filter(k => EXT_BLOCK_SPECS[k].kind === 'code').map(k => `ext:${k}`)
+const EXT_YAML_TAGS = Object.keys(EXT_BLOCK_SPECS).filter(k => EXT_BLOCK_SPECS[k].kind === 'yaml').map(k => `ext:${k}`)
+
+function parseExt(content: string): ArkzenExt | undefined {
+  // Marker searches run on a copy with template literal text blanked out (same length),
+  // so a marker inside a demo string is not read as a block. Slices use the original.
+  const safe = stripTemplateLiterals(content)
+
+  // Opening tags only. A closer such as "ext:popup:end" matches with name "end" and is skipped;
+  // a named closer such as "ext:page:home:end" does not match at all (":" follows the name).
+  const openerRe = /^[ \t]*\/\*[ \t]*@arkzen:ext:([A-Za-z0-9_-]+)(?::([A-Za-z0-9_-]+))?(?=\s|\*\/)/gm
+
+  const ext: ArkzenExt = { pages: [], contents: [], scripts: [], locales: [] }
+  const seenOnce = new Set<string>()
+  let found = false
+
+  const loadYaml = (marker: string, text: string): unknown => {
+    if (!text.trim()) return undefined
+    try {
+      return yaml.load(text)
+    } catch (e) {
+      const why = e instanceof Error ? e.message.split('\n')[0] : String(e)
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} has invalid YAML: ${why}`)
+    }
+  }
+
+  for (const m of safe.matchAll(openerRe)) {
+    const base = m[1]
+    const name = m[2]
+    if (name === 'end') continue
+
+    if (!Object.prototype.hasOwnProperty.call(EXT_BLOCK_SPECS, base)) {
+      throw new Error(
+        `[Arkzen Parser] Unknown extension block @arkzen:ext:${base}. ` +
+        `Known blocks: ${Object.keys(EXT_BLOCK_SPECS).map(k => `ext:${k}`).join(', ')}`
+      )
+    }
+    const spec = EXT_BLOCK_SPECS[base]
+    if (spec.named && !name) {
+      throw new Error(`[Arkzen Parser] @arkzen:ext:${base} needs a name: write @arkzen:ext:${base}:<name>`)
+    }
+    if (!spec.named && name) {
+      throw new Error(`[Arkzen Parser] @arkzen:ext:${base} takes no name (found "${name}")`)
+    }
+    if (!spec.named) {
+      if (seenOnce.has(base)) {
+        throw new Error(`[Arkzen Parser] Only one @arkzen:ext:${base} block is allowed per Tatemono`)
+      }
+      seenOnce.add(base)
+    }
+    found = true
+
+    const marker  = name ? `ext:${base}:${name}` : `ext:${base}`
+    const openIdx = (m.index ?? 0) + m[0].indexOf('/*')
+    const openEnd = findOpeningCommentEnd(safe, openIdx, openIdx + 2)
+    if (openEnd === -1) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} opening comment is never closed with */`)
+    }
+
+    // The YAML header is everything between the opener line and the closing */.
+    const firstBreak = safe.indexOf('\n', openIdx)
+    const inline     = firstBreak === -1 || openEnd < firstBreak
+    const headerText = inline ? '' : content.slice(firstBreak + 1, openEnd)
+
+    if (spec.kind === 'yaml') {
+      const block: ArkzenExtYamlBlock = {
+        data:  loadYaml(marker, headerText) ?? {},
+        start: openIdx,
+        end:   openEnd + 2,
+      }
+      if (base === 'project')  ext.project  = block
+      if (base === 'commands') ext.commands = block
+      if (base === 'menus')    ext.menus    = block
+      if (base === 'rules')    ext.rules    = block
+      if (base === 'export')   ext.export   = block
+      if (base === 'locale')   ext.locales.push({ ...block, name: name as string })
+      continue
+    }
+
+    const header = loadYaml(marker, headerText) ?? {}
+    if (typeof header !== 'object' || header === null || Array.isArray(header)) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} header must be a YAML mapping`)
+    }
+    const closeMarker = `/* @arkzen:${marker}:end */`
+    const closeIdx    = safe.indexOf(closeMarker, openEnd)
+    if (closeIdx === -1) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} is missing its closing ${closeMarker}`)
+    }
+    const block: ArkzenExtCodeBlock = {
+      header: header as Record<string, unknown>,
+      raw:    content.slice(openEnd + 2, closeIdx).trim(),
+      start:  openIdx,
+      end:    closeIdx + closeMarker.length,
+    }
+    if (base === 'popup')      ext.popup      = block
+    if (base === 'sidepanel')  ext.sidepanel  = block
+    if (base === 'background') ext.background = block
+    if (base === 'page')       ext.pages.push({ ...block, name: name as string })
+    if (base === 'content')    ext.contents.push({ ...block, name: name as string })
+    if (base === 'script')     ext.scripts.push({ ...block, name: name as string })
+  }
+
+  return found ? ext : undefined
 }
 
 // ─────────────────────────────────────────────
@@ -2056,12 +2292,17 @@ const CODE_BLOCK_TAGS = [
   'native:page:lynx', 'native:layout:lynx', 'native:components:lynx', 'native:style:lynx', 'native:error:lynx',
   // frame blocks — v15.0 (new; checked for a same-line "*/" like the other code blocks)
   'native:frame', 'desktop:frame',
+  // extension blocks - v17.0 (same-line */ for Shape C, a multi-line YAML opener for Shape B)
+  ...EXT_CODE_TAGS,
 ]
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
 const YAML_ONLY_TAGS  = [
   'meta', 'meta:web', 'meta:native',
   'web:config', 'native:config', 'desktop:config',
   'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail',
+  'oauth',
+  // extension YAML-only blocks - v17.0
+  ...EXT_YAML_TAGS,
 ]
 
 function validateDslTags(content: string, filePath: string): void {
@@ -2082,9 +2323,20 @@ function validateDslTags(content: string, filePath: string): void {
     if (trimmed.match(/^\/\* @arkzen:native:page:layout:/)) continue
 
     // v7.0: capture full type including web: prefix e.g. "web:page", "web:style", "script"
-    const tagMatch = trimmed.match(/^\/\* @arkzen:((?:web|native|desktop):)?([a-zA-Z]+)/)
+    const tagMatch = trimmed.match(/^\/\* @arkzen:((?:web|native|desktop|ext):)?([a-zA-Z]+)/)
     if (!tagMatch) continue
     const tagType = tagMatch[1] ? `${tagMatch[1]}${tagMatch[2]}` : tagMatch[2]
+
+    // v17.0: a typo in an ext block name gets a clear message instead of "Missing closing tag"
+    if (tagType.startsWith('ext:') && ![...EXT_CODE_TAGS, ...EXT_YAML_TAGS].includes(tagType)) {
+      errors.push({
+        line:    lineNum,
+        tag:     trimmed.replace('/* ', '').trim(),
+        problem: `Unknown extension block "@arkzen:${tagType}"`,
+        fix:     `Use one of: ${[...EXT_CODE_TAGS, ...EXT_YAML_TAGS].map(x => `@arkzen:${x}`).join(', ')}`,
+      })
+      continue
+    }
 
     const hasInlineClose = trimmed.endsWith('*/')
 
@@ -2092,9 +2344,11 @@ function validateDslTags(content: string, filePath: string): void {
     // for YAML metadata (e.g. parent: shell). The parser handles these via
     // findOpeningCommentEnd — skip the inline-close requirement for them.
     const isLayoutTag = tagType === 'web:layout' || tagType === 'native:layout'
+    // v17.0: ext code blocks may also open with a multi-line YAML header (Shape B)
+    const isExtCodeTag = EXT_CODE_TAGS.includes(tagType)
 
     // Code blocks must have */ on same line (except layout tags with YAML metadata)
-    if (CODE_BLOCK_TAGS.includes(tagType) && !hasInlineClose && !isLayoutTag) {
+    if (CODE_BLOCK_TAGS.includes(tagType) && !hasInlineClose && !isLayoutTag && !isExtCodeTag) {
       const fullTag = trimmed.replace('/* ', '').trim()
       errors.push({
         line:    lineNum,
@@ -2106,9 +2360,10 @@ function validateDslTags(content: string, filePath: string): void {
 
     // v11.0: layout tags with multi-line comments must still close with */
     // Scan ahead to ensure the opening comment is properly terminated
-    if (isLayoutTag && !hasInlineClose) {
+    if ((isLayoutTag || isExtCodeTag) && !hasInlineClose) {
       let closed = false
-      for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
+      const lookAhead = isExtCodeTag ? 120 : 10
+      for (let j = i + 1; j < Math.min(i + lookAhead, lines.length); j++) {
         if (lines[j].trim() === '*/') { closed = true; break }
       }
       if (!closed) {
@@ -2116,7 +2371,7 @@ function validateDslTags(content: string, filePath: string): void {
         errors.push({
           line:    lineNum,
           tag:     fullTag,
-          problem: `Multi-line layout opening comment is missing closing \`*/\``,
+          problem: `Multi-line ${isExtCodeTag ? 'extension block' : 'layout'} opening comment is missing closing \`*/\``,
           fix:     `Add \`*/\` on its own line after the YAML metadata`,
         })
       }
@@ -2232,13 +2487,15 @@ function validatePages(
   errorHandlers:   ArkzenErrorHandler[],
   nativePages:     ArkzenPage[],
   nativeLynxPages: ArkzenPage[],
-  hasFreeFiles:    boolean = false
+  hasFreeFiles:    boolean = false,
+  hasExt:          boolean = false
 ): void {
   // v14.1: a tatemono made only of @arkzen:file blocks needs no pages
   // v10.0: valid if has web pages, native pages, or error handlers
   // v10.3: nativeLynxPages also counts as valid
   // A native-only tatemono has zero web pages — that's fine
-  if (!hasFreeFiles && pages.length === 0 && errorHandlers.length === 0 && nativePages.length === 0 && nativeLynxPages.length === 0) {
+  // v17.0: a tatemono with @arkzen:ext blocks needs no page either (the validator checks the ext contracts)
+  if (!hasFreeFiles && !hasExt && pages.length === 0 && errorHandlers.length === 0 && nativePages.length === 0 && nativeLynxPages.length === 0) {
     throw new Error('[Arkzen Parser] At least one @arkzen:web:page:name, @arkzen:native:page:name, or @arkzen:native:page:lynx:name section is required')
   }
   const seen = new Set<string>()
@@ -2366,6 +2623,9 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   // v15.0: frame blocks (opt-in; undefined when the Tatemono declares none)
   const frames = parseFrames(content)
 
+  // v17.0: extension blocks (opt-in; undefined when the Tatemono declares none)
+  const ext = parseExt(content)
+
   // Clear any existing DSL error file for this tatemono on successful parse
   try {
     const tatemono  = path.basename(path.dirname(filePath))
@@ -2377,7 +2637,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   validateTableNames(databases)
   validateNoDuplicateTables(databases)
   validateNoDuplicateControllers(apis)
-  validatePages(pages, errorHandlers, nativePages, nativeLynxPages, content.includes('/* @arkzen:file:'))
+  validatePages(pages, errorHandlers, nativePages, nativeLynxPages, content.includes('/* @arkzen:file:'), ext !== undefined)
 
   const hasBackend =
     databases.length     > 0 ||
@@ -2444,6 +2704,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     nativeLynxStyles,
     nativeLynxErrorHandlers,
     ...(frames ? { frames } : {}),   // v15.0
+    ...(ext ? { ext } : {}),         // v17.0
   }
 
   console.log(`[Arkzen Parser] ✓ Parsed: ${meta.name} v${meta.version}`)
@@ -2494,6 +2755,23 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     if (nativeScriptsRN.length)          console.log(`[Arkzen Parser]   Native scripts rn (${nativeScriptsRN.length}): named blocks`)
   }
   if (frames) console.log(`[Arkzen Parser]   Frames: ${Object.keys(frames).join(', ')}`)
+  if (ext) {
+    const extParts = [
+      ext.project    && 'project',
+      ext.popup      && 'popup',
+      ext.sidepanel  && 'sidepanel',
+      ext.background && 'background',
+      ext.pages.length    > 0 && `pages (${ext.pages.map(x => x.name).join(', ')})`,
+      ext.contents.length > 0 && `content (${ext.contents.map(x => x.name).join(', ')})`,
+      ext.scripts.length  > 0 && `scripts (${ext.scripts.map(x => x.name).join(', ')})`,
+      ext.commands   && 'commands',
+      ext.menus      && 'menus',
+      ext.rules      && 'rules',
+      ext.locales.length  > 0 && `locales (${ext.locales.map(x => x.name).join(', ')})`,
+      ext.export     && 'export',
+    ].filter(Boolean)
+    console.log(`[Arkzen Parser]   Extension: ${extParts.join(', ')}`)
+  }
   if (nativeLynxPages.length > 0 || nativeLynxLayouts.length > 0 || nativeLynxComponents.length > 0 || nativeLynxStyleGlobal || nativeLynxStyles.length > 0 || nativeLynxErrorHandlers.length > 0 || nativeAnimationLynx || nativeScriptLynx || nativeScriptsLynx.length > 0) {
     console.log(`[Arkzen Parser]   ── Native (Lynx) ──`)
     if (nativeLynxPages.length)         console.log(`[Arkzen Parser]   Lynx pages (${nativeLynxPages.length}): ${nativeLynxPages.map(p => p.name).join(', ')}`)
@@ -2547,5 +2825,7 @@ export function hasSections(filePath: string) {
     nativeLynxErrorHandler:  content.includes('/* @arkzen:native:error:') && content.includes(':lynx */'),
     nativeAnimationLynx:     content.includes('/* @arkzen:native:animation:lynx'),
     nativeScriptLynx:        content.includes('/* @arkzen:native:script:lynx'),
+    // extension - v17.0
+    ext:                     content.includes('/* @arkzen:ext:'),
   }
 }
