@@ -128,6 +128,10 @@ Game blocks are separate export targets; they are not web or native UI blocks.
 | `@arkzen:unity:environment` | Configures optional Unity scene lighting and fog. |
 | `@arkzen:unity:assets` | Declares source assets used by Unity runner or scene mode. |
 | `@arkzen:unity:export` | Declares supported Unity scene-mode build targets. |
+| `@arkzen:unreal:project` | Configures an Unreal Engine 5 scene-mode project (version, name, main scene, window size). |
+| `@arkzen:unreal:scene:name` | Declares an Unreal scene and its object/component hierarchy (closes with `:end`). |
+| `@arkzen:unreal:environment` | Configures optional Unreal ambient light and fog. |
+| `@arkzen:unreal:export` | Declares Unreal packaging targets (Windows, Linux, macOS). |
 
 ## Free files (any stack, or none)
 

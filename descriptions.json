@@ -1976,6 +1976,45 @@
     "lines": 82,
     "estimated_tokens": 641
   },
+  "unreal-physics-playground": {
+    "description": "An Unreal Engine 5 physics playground with falling crates and balls, a tilted ramp, a point light, and a third-person player.",
+    "meta_description": "An Unreal Engine 5 physics playground with falling crates and balls, a tilted ramp, a point light, and a third-person player.",
+    "blocks": [
+      "meta",
+      "unreal:project",
+      "unreal:environment",
+      "unreal:scene:arena",
+      "unreal:export"
+    ],
+    "lines": 123,
+    "estimated_tokens": 931
+  },
+  "unreal-scene-starter": {
+    "description": "An Unreal Engine 5 scene starter showing 3D objects, lighting, fog, a third-person player, and a camera that follows it.",
+    "meta_description": "An Unreal Engine 5 scene starter showing 3D objects, lighting, fog, a third-person player, and a camera that follows it.",
+    "blocks": [
+      "meta",
+      "unreal:project",
+      "unreal:environment",
+      "unreal:scene:main",
+      "unreal:export"
+    ],
+    "lines": 79,
+    "estimated_tokens": 622
+  },
+  "unreal-sky-garden": {
+    "description": "An Unreal Engine 5 top-down garden using an orthographic camera, grouped objects with children, a spinning pinwheel, spot lights, and fog.",
+    "meta_description": "An Unreal Engine 5 top-down garden using an orthographic camera, grouped objects with children, a spinning pinwheel, spot lights, and fog.",
+    "blocks": [
+      "meta",
+      "unreal:project",
+      "unreal:environment",
+      "unreal:scene:garden",
+      "unreal:export"
+    ],
+    "lines": 103,
+    "estimated_tokens": 828
+  },
   "upload-test": {
     "description": "Create a file-upload dashboard that supports single and multiple uploads, previews images, lists stored files, and lets users download or delete them.",
     "meta_description": "Tests file uploads — single file, multiple files, image preview, download, delete. Backend stores in storage/app/public/arkzen/upload-test/.",

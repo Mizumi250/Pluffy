@@ -43,7 +43,7 @@
   | Desktop window (Electron / Tauri) | [1D](#section-1d--desktop-window-configuration) |
   | Navigator, header, tab bar, status bar, desktop menu / tray (frames) | [19C](#section-19c--frames-native-and-desktop) |
   | Plain files written anywhere (HTML, config, scripts) | [30](#section-30--free-files-arkzenfile) |
-  | Game (Godot / Unity) | [Godot](#appendix--godot-4-game-dsl), [Unity](#appendix--unity-game-dsl) |
+  | Game (Godot / Unity / Unreal) | [Godot](#appendix--godot-4-game-dsl), [Unity](#appendix--unity-game-dsl), [Unreal](#appendix--unreal-engine-game-dsl) |
   | Checking your work, real examples | [29](#section-29--ai-generation-checklist), [28B](#️-section-28b--known-engine-quirks-verify-after-building), [28](#section-28--examples--fixture-references), [27](#section-27--active-tatemonos-50), [31](#section-31--online-tatemono-index-fetch-real-examples) |
 
   ### Table of contents
@@ -123,9 +123,10 @@
     - [SECTION 28 - EXAMPLES & FIXTURE REFERENCES](#section-28--examples--fixture-references)
     - [⚠️ SECTION 28B - KNOWN ENGINE QUIRKS (verify after building)](#️-section-28b--known-engine-quirks-verify-after-building)
     - [SECTION 27 - ACTIVE TATEMONOS (50)](#section-27--active-tatemonos-50)
-  - **[PART G - GAMES - GODOT 4 & UNITY DSL](#part-g--games--godot-4--unity-dsl)**
+  - **[PART G - GAMES - GODOT 4, UNITY & UNREAL DSL](#part-g--games--godot-4-unity--unreal-dsl)**
     - [APPENDIX - GODOT 4 GAME DSL](#appendix--godot-4-game-dsl)
     - [APPENDIX - UNITY GAME DSL](#appendix--unity-game-dsl)
+    - [APPENDIX - UNREAL ENGINE GAME DSL](#appendix--unreal-engine-game-dsl)
   - **[PART H - ONLINE TATEMONO INDEX (GENERATED)](#part-h--online-tatemono-index-generated)**
     - [SECTION 31 - ONLINE TATEMONO INDEX (FETCH REAL EXAMPLES)](#section-31--online-tatemono-index-fetch-real-examples)
 
@@ -334,7 +335,7 @@
 
   **Shortcuts.** `page layout components style script animation 404 500 db table route ep job event notif cmd email channel screen resource`, or any unique prefix of a block key.
 
-  **Templates for `new`:** `web`, `crud`, `routes`, `auth`, `native`, `multi` (web + Expo/RN + Lynx), `lynx`, `files`, `godot`, `unity`.
+  **Templates for `new`:** `web`, `crud`, `routes`, `auth`, `native`, `multi` (web + Expo/RN + Lynx), `lynx`, `files`, `godot`, `unity`, `unreal`.
 
   **Block keys**
 
@@ -350,6 +351,7 @@
   | Free files | `file` (with `--path=...`) |
   | Godot | `godot:project`, `godot:input`, `godot:assets`, `godot:world`, `godot:scene`, `godot:behavior:player`, `godot:behavior:camera`, `godot:multiplayer`, `godot:export` |
   | Unity | `unity:project`, `unity:game`, `unity:visuals`, `unity:controls`, `unity:scene`, `unity:environment`, `unity:assets`, `unity:export` |
+  | Unreal | `unreal:project`, `unreal:scene`, `unreal:environment`, `unreal:export` |
 
   A Lynx key writes the real tag, for example `lynx:page` writes `@arkzen:native:page:lynx:<n>`.
 
@@ -359,7 +361,7 @@
   - `endpoint`, `handler` and `listener` names must exist in the file's `api`, `routes` and `events` blocks, and `policy` needs `policy: true`. Missing names are listed; `--force` overrides.
   - Layouts named by `--layout` and `--parent` must exist.
   - A block is only written if it adds no new error (the `check` rules below). `--force` writes it anyway.
-  - It refuses a block whose tag already exists, `oauth` without `auth: true`, and a block of the wrong kind (godot / unity tatemonos only take their own blocks).
+  - It refuses a block whose tag already exists, `oauth` without `auth: true`, and a block of the wrong kind (godot / unity / unreal tatemonos only take their own blocks).
   - It preserves the file's line endings. `@arkzen:meta` stays first (created by `new`).
 
   **What `mizumi check` covers.** Tag shapes (Section 3D), missing `:end`, duplicate blocks, table, column and foreign-key rules, api rules, layouts and parents, frame contracts, oauth, and the validator's missing-backend-variant rule (reported as a warning). It has no dependencies and agrees with the engine validator on the fixtures. It does not replace the engine validator or a build.
@@ -914,7 +916,7 @@
   5. Lynx uses separate :lynx blocks. Imports may be declared in a Lynx page or component; the Lynx generator also adds imports for referenced shared components.
   6. Source-block import placement and generated-file imports are not the same: generators may collect, strip, or inject imports while producing platform files. Use the block-specific guidance below.
   7. Web, Expo/RN and Lynx sections can all coexist in one core.tsx (a "dual/triple" tatemono)
-  8. A web/app Tatemono needs at least ONE page: web page, native page, or Lynx page. Godot and Unity game Tatemono use their own project blocks and separate `godot` or `unity` export targets.
+  8. A web/app Tatemono needs at least ONE page: web page, native page, or Lynx page. Godot, Unity and Unreal game Tatemono use their own project blocks and separate `godot`, `unity` or `unreal` export targets.
   9. Tatemono asset files go in tatemonos/<name>/assets/ (auto-copied to public)
   ```
 
@@ -982,6 +984,11 @@
   @arkzen:unity:environment         (optional scene lighting/fog settings)
   @arkzen:unity:assets              (optional declared resources for scene mode; required for runner art)
   @arkzen:unity:export              (optional scene-mode build targets)
+  --- Unreal Engine game (separate export target; not a web/native stack) ---
+  @arkzen:unreal:project            (once)
+  @arkzen:unreal:scene:<name>       (REPEAT; scene graph, must close with :end)
+  @arkzen:unreal:environment        (optional ambient light/fog settings)
+  @arkzen:unreal:export             (optional packaging targets)
   ```
 
   * * *
@@ -1592,13 +1599,13 @@
 
   **What running it looks like.** `free-demo` has no pages and no backend, so the dev server shows nothing for it and there is nothing to open at the web URL. It only writes its files when the watcher builds it. To see the result, open `custom/free-demo/index.html` directly in a browser.
 
-  **In Godot and Unity tatemonos**
+  **In Godot, Unity and Unreal tatemonos**
 
-  `@arkzen:file` also works next to `@arkzen:godot:*` and `@arkzen:unity:*` blocks. The game
+  `@arkzen:file` also works next to `@arkzen:godot:*`, `@arkzen:unity:*` and `@arkzen:unreal:*` blocks. The game
   generators handle it (`engine/game/free-files.js`), not the web parser.
 
   - `path` is relative to the generated game project, for example `scripts/enemy.gd` or
-    `Assets/Scripts/Enemy.cs`. A leading `/` means the same root. `{frontend}`, `{app}`,
+    `Assets/Scripts/Enemy.cs` (Unity) or `Source/<Module>/Enemy.cpp` (Unreal). A leading `/` means the same root. `{frontend}`, `{app}`,
     `{desktop}` and `{backend}` are rejected.
   - Free files are written after everything else is generated, so a free file with the same path
     as a generated file replaces it. `node export.js` lists those as "replaced generated files".
@@ -3599,7 +3606,7 @@
 
   * * *
 
-## PART G - GAMES - GODOT 4 & UNITY DSL
+## PART G - GAMES - GODOT 4, UNITY & UNREAL DSL
 
   _Game DSL appendices. Not needed for web, app or backend work._
 
@@ -4093,6 +4100,128 @@
   The generated project includes `.github/workflows/unity-build.yml` for a GameCI Windows build. Before running it, add a valid Unity license to repository Actions secrets as `UNITY_LICENSE` and review GameCI's current license activation instructions. The workflow belongs to the exported Unity project, not the Pluffy source repository. This machine cannot run Unity Editor; generated assets and C# therefore require validation with Unity Editor or CI.
 
   Reference implementation: `tatemonos/dino-runner/core.tsx`, `engine/game/unity/generator.js`.
+
+  * * *
+
+## APPENDIX - UNREAL ENGINE GAME DSL
+
+  Unreal Engine support is a standalone, **generate-only** export target. An Unreal game Tatemono lives in `tatemonos/<name>/core.tsx` and needs no web/native pages or backend. Export with:
+
+  ```sh
+  node mizumi.js export unreal-scene-starter unreal
+  # or
+  node export.js unreal-scene-starter --stack=unreal
+  ```
+
+  The generator writes an Unreal Engine 5 C++ project to `projects/unreal/<name>/`. Unreal Editor and a C++ toolchain are not needed to generate files, but are required to open, compile, play and package the project. Pluff has not run Unreal on the output: if the generated C++ module fails to compile on your engine version, the compiler error points at a line under `Source/<Module>/`.
+
+  Unreal has one game mode, **scene mode** (`mode: scene`, which is also the default). It does not translate the Godot or Unity DSL; the three engines have separate blocks.
+
+  Closing rule: every Unreal block ends with a bare `*/`. `unreal:scene:<name>` must also be followed by `/* @arkzen:unreal:scene:<name>:end */` (required, unlike Unity where the `:end` is optional). Do not mix `godot:*`, `unity:*` and `unreal:*` blocks in one Tatemono.
+
+  ```
+  --- Unreal Engine game (separate export target; not a web/native stack) ---
+  @arkzen:unreal:project            (once; required)
+  @arkzen:unreal:scene:<name>       (REPEAT; one scene graph per block, closed with :end)
+  @arkzen:unreal:environment        (optional ambient light and fog)
+  @arkzen:unreal:export             (optional packaging targets)
+  ```
+
+  ### Example
+
+  ```
+  /* @arkzen:unreal:project
+  mode: scene
+  unreal_version: "5.6"
+  name: My Unreal Game
+  main_scene: main
+  width: 1280
+  height: 720
+  */
+
+  /* @arkzen:unreal:environment
+  ambient_color: "#a9c7d7"
+  ambient_intensity: 0.8
+  fog_enabled: true
+  fog_color: "#c5e0dc"
+  fog_density: 0.008
+  */
+
+  /* @arkzen:unreal:scene:main
+  nodes:
+    - name: Ground
+      type: cube
+      position: [0, -0.5, 0]
+      scale: [20, 1, 20]
+      color: "#456b46"
+    - name: Player
+      type: cylinder
+      position: [0, 1, 0]
+      scale: [1, 2, 1]
+      components:
+        - type: character_controller
+          speed: 5
+          jump_height: 1.6
+          camera_relative: true
+    - name: Sun
+      type: light
+      light_type: directional
+      rotation: [45, -30, 0]
+    - name: MainCamera
+      type: camera
+      main: true
+      position: [0, 4, -7]
+      components:
+        - type: camera_follow
+          target: Player
+          offset: [0, 4, -7]
+  */
+  /* @arkzen:unreal:scene:main:end */
+
+  /* @arkzen:unreal:export
+  targets: [windows, linux]
+  */
+  ```
+
+  ### Rules
+
+  - `unreal_version` must be a **quoted** string such as `"5.6"` (an unquoted `5.10` would be read as the number 5.1). Only Unreal Engine 5 versions are accepted.
+  - `main_scene` names a declared scene; it defaults to the first scene. `width`/`height` default to 1280x720 (used for the window and for orthographic cameras). `default_map` (optional) is the map the project starts in; it defaults to the engine's empty `/Engine/Maps/Entry`. Set it to `/Game/Maps/<name>` only if you save your own empty map in the editor.
+  - The Tatemono name becomes the C++ module name in PascalCase (`unreal-scene-starter` becomes `UnrealSceneStarter`; a leading digit gets a `Pluff` prefix). Names that clash with engine modules (for example `engine` or `core`) are rejected.
+  - **Axes and units** are the same as the Unity scene DSL: `position`, `scale` and `axis` are `[x, y, z]` with x right, **y up**, z forward, in **meters**. `rotation` is `[x, y, z]` Euler degrees (x pitches down, y turns right, z rolls). The generator converts to Unreal's Z-up centimeters and to quaternions; the C++ runtime never sees DSL units.
+  - Object names must be unique within a scene. Each scene needs exactly one camera with `main: true`.
+  - Object types: `empty`, `cube`, `sphere`, `cylinder`, `cone`, `plane`, `camera`, `light`. Every mesh primitive is 1 m across at scale 1 (a cylinder or cone is 1 m tall). There is no `capsule`: use a `cylinder`. All objects accept `position`, `rotation`, `scale` and nested `children`; mesh objects accept `color` and `emission` (`#RRGGBB`).
+  - `color` tints the engine's `BasicShapeMaterial`. `emission` adds a small point light of that color at the object (an approximation, not an emissive material).
+  - Cameras: `main`, `projection: perspective|orthographic`, `field_of_view` (5 to 170, default 60), `orthographic_size` (half the visible height in meters, default 5).
+  - Lights: `light_type: directional|point|spot` (default directional), `intensity` (a multiplier on Unreal's default for that light type; default 1), `range` (meters, point and spot), `spot_angle` (full cone in degrees, up to 160), `shadows`, `color`.
+  - Components (`components:` list; each type at most once per object):
+    - `physics` (mesh objects only, top-level only): `mass` (kg), `use_gravity`. The object simulates physics and collides.
+    - `character_controller` (one per scene; mesh or empty object; top-level): the player. `speed` (m/s), `jump_height` (m), `gravity` (negative, default -20), `camera_relative`, `keys` (`forward`, `backward`, `left`, `right`, `jump`). Key names are Unreal key names: `W A S D SpaceBar Up Down Left Right LeftShift Enter`. The object's mesh is the visible body and `scale` sizes the collision capsule (a `cylinder` with `scale: [1, 2, 1]` gives a 1 m wide, 2 m tall capsule).
+    - `rotate`: `axis` (default `[0, 1, 0]`), `speed` (degrees per second). Cannot be combined with `physics` or `character_controller`.
+    - `camera_follow` (camera objects only): `target` (another object's name in the same scene), `offset` (world-space meters, default `[0, 4, -7]`), `smooth_speed`.
+  - `@arkzen:unreal:environment`: `ambient_color`, `ambient_intensity` (adds a sky light), `fog_enabled`, `fog_color`, `fog_density` (Unreal's exponential height fog density; default 0.02).
+  - `@arkzen:unreal:export`: `targets` from `windows`, `linux`, `macos` (default `[windows]`) and `configuration: development|shipping`. Each target gets a script in `Scripts/` that runs Unreal Automation Tool; set `UE_ROOT` to the engine folder first. No CI workflow is generated.
+  - `@arkzen:file` blocks work as in the other game targets. Paths are relative to the generated project, for example `Source/<Module>/MyActor.cpp` or `Config/DefaultInput.ini`.
+
+  ### How the generated project works
+
+  Unreal levels (`.umap`) and Blueprints are binary, so Pluff does not generate them. The project starts in the engine's empty map and a small C++ game mode (`PluffGameMode`) reads `Content/PluffScenes/<scene>.json` and spawns the meshes, lights, camera, player and fog at startup. Start another declared scene with `-PluffScene=<name>` on the command line.
+
+  ### Not supported yet
+
+  Imported models, textures and audio (no `assets` block), UI, animation, post-processing, multiplayer, Blueprint output and CI. Scene mode is a validated base, not an arbitrary Unreal API escape hatch.
+
+  ### Unreal scene checklist
+
+  - [ ] `@arkzen:unreal:project` has a quoted `unreal_version`, a `name`, and (optionally) a `main_scene` that matches a declared scene.
+  - [ ] Every scene block closes with `*/` and then `/* @arkzen:unreal:scene:<name>:end */`.
+  - [ ] Each scene has unique object names, exactly one `main: true` camera, and at most one `character_controller`.
+  - [ ] Positions are meters with y up; sizes use primitives that are 1 m at scale 1.
+  - [ ] `physics` and `character_controller` objects are top-level; `rotate` is not combined with them; `camera_follow` is on a camera and targets an existing object.
+  - [ ] Key names are Unreal names (`SpaceBar`, not `Space`).
+  - [ ] Export targets are from `windows`, `linux`, `macos`.
+
+  Reference projects: `tatemonos/unreal-scene-starter/core.tsx`, `tatemonos/unreal-physics-playground/core.tsx`, `tatemonos/unreal-sky-garden/core.tsx`. Generator: `engine/game/unreal/generator.js`; shared helpers: `engine/game/common/`.
 
   * * *
 

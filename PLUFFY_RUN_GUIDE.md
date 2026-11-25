@@ -9,7 +9,7 @@ Pluffy has four kinds of targets plus a backend and a database:
 | Web | nextjs, react-vite, react-inertia, astro, tanstack-start |
 | App (mobile) | expo, react-native, lynx |
 | Desktop | tauri, electron |
-| Game | godot, unity |
+| Game | godot, unity, unreal |
 | Backend | laravel, express, fastapi, spring-boot, aspnet, go, rust |
 | Database | sqlite, postgresql |
 
@@ -383,6 +383,19 @@ Games are isolated exports. They do not use the active web, app or backend stack
 4. Add the folder in Unity Hub and open it.
 5. Open the configured main scene and press **Play**.
 6. Platform builds need the matching Unity platform modules installed.
+
+### 6.3 Unreal Engine
+
+1. Install **Unreal Engine 5** from the Epic Games Launcher, plus the C++ toolchain it asks for (Visual Studio with "Game development with C++" on Windows, Xcode on macOS).
+2. Generate a project:
+   ```bash
+   node mizumi.js export unreal-scene-starter unreal
+   node mizumi.js export unreal-physics-playground unreal
+   ```
+3. The output goes to `projects/unreal/<n>/`.
+4. Open the `.uproject` file. Unreal offers to build the C++ module; accept, then press **Play**.
+5. To package a build, set `UE_ROOT` to your engine folder and run a script from the project's `Scripts/` folder.
+6. Generation does not need Unreal installed. Pluff has not compiled the generated C++ against your engine version, so report any compile error with the file and line it names.
 
 ---
 

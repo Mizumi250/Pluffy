@@ -642,6 +642,20 @@ add(UNITY({ key: 'unity:assets', sub: 'declared source assets', name: null, once
 add(UNITY({ key: 'unity:export', sub: 'scene-mode build targets', name: null, once: true,
   tag: () => 'unity:export', build: () => shapeA('unity:export', `targets: [windows, linux, webgl]`) }))
 
+// ---- Unreal Engine ----
+const UNREAL = g => ({ group: 'Unreal Engine', game: 'unreal', ...g })
+add(UNREAL({ key: 'unreal:project', sub: 'Unreal Engine 5 scene project (generate-only)', name: null, once: true,
+  tag: () => 'unreal:project',
+  build: ({ slug }) => shapeA('unreal:project', `mode: scene\nunreal_version: "5.6"\nname: ${pascal(slug)}\nmain_scene: main\nwidth: 1280\nheight: 720`) }))
+add(UNREAL({ key: 'unreal:scene', sub: 'scene object hierarchy (meters, Y-up)', name: { prompt: 'Scene name', def: 'main' },
+  tag: n => `unreal:scene:${n}`,
+  build: ({ name }) => shapeB(`unreal:scene:${name}`, `nodes:\n  - name: Ground\n    type: cube\n    position: [0, -0.5, 0]\n    scale: [20, 1, 20]\n    color: "#456b46"\n  - name: Sun\n    type: light\n    light_type: directional\n    rotation: [45, -30, 0]\n  - name: MainCamera\n    type: camera\n    main: true\n    position: [0, 4, -7]\n    rotation: [20, 0, 0]`) }))
+add(UNREAL({ key: 'unreal:environment', sub: 'scene ambient light and fog', name: null, once: true,
+  tag: () => 'unreal:environment',
+  build: () => shapeA('unreal:environment', `ambient_color: "#a9c7d7"\nambient_intensity: 0.8\nfog_enabled: true\nfog_color: "#c5e0dc"\nfog_density: 0.008`) }))
+add(UNREAL({ key: 'unreal:export', sub: 'packaging targets (Unreal Automation Tool scripts)', name: null, once: true,
+  tag: () => 'unreal:export', build: () => shapeA('unreal:export', `targets: [windows, linux]`) }))
+
 // ─── TEMPLATES FOR `new` ──────────────────────────────────────
 const blockByKey = key => BLOCKS.find(b => b.key === key)
 const make = (key, name, o = {}) => blockByKey(key).build({ name, slug: o.slug ?? '', variant: o.variant ?? null, flags: o.flags ?? {} })
@@ -668,6 +682,8 @@ const TEMPLATES = {
     make: ({ slug }) => [metaBlock(slug, 'Godot game tatemono'), make('godot:project', null, { slug }), make('godot:input'), make('godot:scene', 'main', { slug }), make('godot:scene', 'player', { slug }), make('godot:behavior:player'), make('godot:behavior:camera'), make('godot:export')] },
   unity:  { label: 'Unity scene', sub: 'scene-mode project + environment + scene + export',
     make: ({ slug }) => [metaBlock(slug, 'Unity scene tatemono'), make('unity:project', null, { slug, flags: { mode: 'scene' } }), make('unity:environment'), make('unity:scene', 'main', { slug }), make('unity:export')] },
+  unreal: { label: 'Unreal Engine scene', sub: 'scene project + environment + scene + export',
+    make: ({ slug }) => [metaBlock(slug, 'Unreal Engine scene tatemono'), make('unreal:project', null, { slug }), make('unreal:environment'), make('unreal:scene', 'main', { slug }), make('unreal:export')] },
 }
 
 
@@ -693,7 +709,7 @@ function parseTag(tag) {
   if (head === 'meta') return { family: parts[1] ? `meta:${parts[1]}` : 'meta', name: '' }
   if (head === 'web') return { family: `web:${parts[1]}`, name: parts.slice(2).join(':') }
   if (head === 'desktop') return { family: `desktop:${parts[1]}`, name: parts.slice(2).join(':') }
-  if (head === 'godot' || head === 'unity') return { family: `${head}:${parts[1]}`, name: parts.slice(2).join(':') }
+  if (head === 'godot' || head === 'unity' || head === 'unreal') return { family: `${head}:${parts[1]}`, name: parts.slice(2).join(':') }
   if (head === 'native') {
     if (parts[2] === 'lynx' && (parts[1] === 'page' || parts[1] === 'layout' || parts[1] === 'components'))
       return { family: `native:${parts[1]}:lynx`, name: parts.slice(3).join(':') }
@@ -797,6 +813,7 @@ export function scanSource(source) {
       case 'file': model.fileBlocks.push({ name: o.name, line: o.line, path: yamlTop(yaml).path }); break
       case 'godot:project': model.game = 'godot'; break
       case 'unity:project': model.game = 'unity'; break
+      case 'unreal:project': model.game = 'unreal'; break
       default:
         if (BACKEND_CODE.has(o.family)) model.code.push(o)
         else if (BACKEND_MIXED.has(o.family)) model.mixed.push(o)
@@ -843,7 +860,7 @@ export function lintSource(source, opts = {}) {
   // tag shapes (guideline Section 3D)
   const seen = new Map()
   for (const o of m.openers) {
-    if (o.family.startsWith('godot:') || o.family.startsWith('unity:') || o.tag.startsWith('import:') || o.tag.startsWith('resolved:')) continue
+    if (o.family.startsWith('godot:') || o.family.startsWith('unity:') || o.family.startsWith('unreal:') || o.tag.startsWith('import:') || o.tag.startsWith('resolved:')) continue
     if (o.decl !== undefined) continue
     // Expo and bare RN may each declare the same native block (the engine checks per target).
     if (seen.has(o.tag) && o.tag.startsWith('native:') && !o.tag.includes('lynx')) continue
@@ -1181,7 +1198,7 @@ function printBlockHelp() {
     --layout=<decl> page layout: +auth, +guest, +auth:shell, shell, none
     --parent=<name> parent layout for web:layout / native:layout / lynx:layout
     --path=<file>   output path for file blocks
-    --mode=scene    unity:project mode
+    --mode=scene    unity:project mode (Unreal is always scene mode)
     --exact         keep the name as typed (no snake_case / kebab-case conversion)
     --force         write even if the result has new errors
     --dry           print the block, write nothing
@@ -1264,7 +1281,7 @@ export async function cmdBlock(ctx, args) {
   }
   const file = path.join(ctx.TATEMONOS_DIR, slug, 'core.tsx')
   const source = fs.readFileSync(file, 'utf8')
-  const gameKind = /@arkzen:godot:project/.test(source) ? 'godot' : /@arkzen:unity:project/.test(source) ? 'unity' : null
+  const gameKind = /@arkzen:godot:project/.test(source) ? 'godot' : /@arkzen:unity:project/.test(source) ? 'unity' : /@arkzen:unreal:project/.test(source) ? 'unreal' : null
 
   // 2. which block (key, shortcut, unique prefix, or the picker)
   let block = null

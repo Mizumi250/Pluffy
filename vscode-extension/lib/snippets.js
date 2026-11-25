@@ -232,6 +232,10 @@ function gameItems() {
     gameYamlSnippet('Unity', 'unity:environment', 'unity:environment', 'ambient_color: "#a9c7d7"\nambient_intensity: 0.8\nfog_enabled: true\nfog_color: "#c5e0dc"\nfog_density: 0.008'),
     gameYamlSnippet('Unity', 'unity:assets', 'unity:assets', 'dino:\n  source: assets/dino.svg\ncactus:\n  source: assets/cactus.svg'),
     gameYamlSnippet('Unity', 'unity:export', 'unity:export', 'targets: [windows, linux, webgl]'),
+    gameYamlSnippet('Unreal', 'unreal:project', 'unreal:project', 'mode: scene\nunreal_version: "5.6"\nname: \${1:My Unreal Game}\nmain_scene: main\nwidth: 1280\nheight: 720'),
+    gameYamlSnippet('Unreal', 'unreal:scene:<name>', 'unreal:scene:\${1:main}', 'nodes:\n  - name: Ground\n    type: cube\n    position: [0, -0.5, 0]\n    scale: [20, 1, 20]\n  - name: Sun\n    type: light\n    light_type: directional\n    rotation: [45, -30, 0]\n  - name: MainCamera\n    type: camera\n    main: true\n    position: [0, 4, -7]\n    rotation: [20, 0, 0]'),
+    gameYamlSnippet('Unreal', 'unreal:environment', 'unreal:environment', 'ambient_color: "#a9c7d7"\nambient_intensity: 0.8\nfog_enabled: true\nfog_color: "#c5e0dc"\nfog_density: 0.008'),
+    gameYamlSnippet('Unreal', 'unreal:export', 'unreal:export', 'targets: [windows, linux]'),
   ]
 }
 

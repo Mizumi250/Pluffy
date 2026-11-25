@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { assertOutputIsSeparate, stageAndReplace } from '../common/index.js'
 import { validateGameFreeFiles, writeGameFreeFiles } from '../free-files.js'
 import { parseUnitySceneTatemono, writeUnitySceneProject } from './scene-generator.js'
 
@@ -594,19 +595,13 @@ jobs:
 `
 }
 
-function isWithin(parent, target) {
-  const relative = path.relative(parent, target)
-  return relative !== '' && !relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative)
-}
-
 export function generateUnityProject({ tatemonoPath, outputDir }) {
   const absoluteTatemonoPath = path.resolve(tatemonoPath)
   const absoluteOutputPath = path.resolve(outputDir)
   assert(fs.existsSync(absoluteTatemonoPath) && fs.statSync(absoluteTatemonoPath).isFile(), `Tatemono file does not exist: ${absoluteTatemonoPath}`)
   assert(path.basename(absoluteTatemonoPath) === 'core.tsx', 'Unity generation expects a Tatemono core.tsx file')
   const tatemonoDir = path.dirname(absoluteTatemonoPath)
-  assert(absoluteOutputPath !== tatemonoDir && !isWithin(tatemonoDir, absoluteOutputPath), 'Unity output directory cannot be inside the source Tatemono folder')
-  assert(!isWithin(absoluteOutputPath, absoluteTatemonoPath), 'Unity output directory cannot contain the source Tatemono file')
+  assertOutputIsSeparate(assert, tatemonoDir, absoluteTatemonoPath, absoluteOutputPath, 'Unity')
 
   const source = fs.readFileSync(absoluteTatemonoPath, 'utf8')
   const sceneMode = /^\s*\/\* @arkzen:unity:scene:/m.test(source)
@@ -614,33 +609,17 @@ export function generateUnityProject({ tatemonoPath, outputDir }) {
     ? parseUnitySceneTatemono(source, absoluteTatemonoPath)
     : parseUnityTatemono(source, absoluteTatemonoPath)
   validateGameFreeFiles(source, 'Unity generator')
-  fs.mkdirSync(path.dirname(absoluteOutputPath), { recursive: true })
-  const stagingDir = fs.mkdtempSync(path.join(path.dirname(absoluteOutputPath), `.${path.basename(absoluteOutputPath)}-staging-`))
-  let generated
-  let freeFiles
-  try {
-    generated = sceneMode
+  const { generated, freeFiles } = stageAndReplace(absoluteOutputPath, stagingDir => {
+    const generated = sceneMode
       ? writeUnitySceneProject(model, tatemonoDir, stagingDir)
       : (writeUnityProject(model, tatemonoDir, stagingDir), {
         scene: 'Assets/Scenes/Main.unity',
         copiedAssetCount: model.assets.size,
       })
     // @arkzen:file blocks go last so they can add to or replace anything generated above.
-    freeFiles = writeGameFreeFiles(source, stagingDir, 'Unity generator')
-    const backupDir = `${absoluteOutputPath}.previous-${process.pid}`
-    if (fs.existsSync(backupDir)) fs.rmSync(backupDir, { recursive: true, force: true })
-    if (fs.existsSync(absoluteOutputPath)) fs.renameSync(absoluteOutputPath, backupDir)
-    try {
-      fs.renameSync(stagingDir, absoluteOutputPath)
-    } catch (error) {
-      if (fs.existsSync(backupDir)) fs.renameSync(backupDir, absoluteOutputPath)
-      throw error
-    }
-    if (fs.existsSync(backupDir)) fs.rmSync(backupDir, { recursive: true, force: true })
-  } catch (error) {
-    if (fs.existsSync(stagingDir)) fs.rmSync(stagingDir, { recursive: true, force: true })
-    throw error
-  }
+    const freeFiles = writeGameFreeFiles(source, stagingDir, 'Unity generator')
+    return { generated, freeFiles }
+  })
 
   return {
     outputDir: absoluteOutputPath,

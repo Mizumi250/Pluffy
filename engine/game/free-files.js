@@ -1,7 +1,7 @@
 // ============================================================
 // PLUFF GAME FREE FILES v1.0
 //
-// @arkzen:file support for the Godot and Unity generators.
+// @arkzen:file support for the Godot, Unity and Unreal generators.
 //
 // Same block shape as engine/shared/arkzen/engine-core/file-writer.ts:
 //
@@ -20,7 +20,7 @@
 //
 // Where `path` lands (game projects only):
 //   Always relative to the generated game project root, for example
-//   scripts/enemy.gd (Godot) or Assets/Scripts/Enemy.cs (Unity).
+//   scripts/enemy.gd (Godot), Assets/Scripts/Enemy.cs (Unity) or Source/<Module>/Enemy.cpp (Unreal).
 //   A leading "/" is accepted and means the same root.
 //   {frontend} {app} {desktop} {backend} are not supported (no web stack here).
 //

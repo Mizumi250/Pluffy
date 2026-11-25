@@ -178,7 +178,7 @@ function symbolKind(tag) {
     case 'listener': case 'events': case 'realtime': return k.Event
     case 'jobs': case 'console': case 'notifications': case 'mail': return k.Function
     case 'file': return k.File
-    case 'godot': case 'unity': return k.Object
+    case 'godot': case 'unity': case 'unreal': return k.Object
     default: return k.Variable
   }
 }
@@ -404,7 +404,7 @@ async function addBlock() {
 
   const source = doc.getText()
   const slug = slugFor(doc) || path.basename(path.dirname(doc.uri.fsPath))
-  const gameKind = /@arkzen:godot:project/.test(source) ? 'godot' : /@arkzen:unity:project/.test(source) ? 'unity' : null
+  const gameKind = /@arkzen:godot:project/.test(source) ? 'godot' : /@arkzen:unity:project/.test(source) ? 'unity' : /@arkzen:unreal:project/.test(source) ? 'unreal' : null
   const visible = api.BLOCKS.filter(b => (gameKind ? b.game === gameKind : !b.game))
 
   // 1. which block

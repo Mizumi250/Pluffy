@@ -1,12 +1,13 @@
-import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
-import { createRequire } from 'node:module'
-import { fileURLToPath } from 'node:url'
-
-const ENGINE_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
-const requireFromNext = createRequire(path.join(ENGINE_DIR, 'frontend', 'nextjs', 'package.json'))
-const { load: parseYaml } = requireFromNext('js-yaml')
+import {
+  createAssert,
+  createValidators,
+  hashHex,
+  readNamedYamlBlocks,
+  readYamlBlock,
+  resolveAssetFile,
+} from '../common/index.js'
 
 const SCENE_TYPES = new Set([
   'empty', 'cube', 'sphere', 'capsule', 'cylinder', 'plane', 'quad',
@@ -31,86 +32,22 @@ const ASSET_EXTENSIONS = new Set([
 ])
 const SCRIPT_GUID = '88a93e9b5b9743e7ad6efab895b7d199'
 
-function assert(condition, message) {
-  if (!condition) throw new Error(`[Unity scene generator] ${message}`)
-}
+const assert = createAssert('Unity scene generator')
+const {
+  validateVector,
+  validatePositiveVector,
+  validateVector2,
+  validatePositiveVector2,
+  validateNumber,
+  validateNegativeNumber,
+} = createValidators(assert)
 
 function yamlBlock(source, marker, required = false) {
-  const escaped = marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const matches = [...source.matchAll(new RegExp(`^\\s*\\/\\* @arkzen:${escaped}\\r?\\n([\\s\\S]*?)^\\s*\\*\\/\\s*$`, 'gm'))]
-  assert(matches.length <= 1, `Duplicate @arkzen:${marker} block`)
-  if (required) assert(matches.length === 1, `A @arkzen:${marker} block is required`)
-  if (!matches.length) return null
-  try {
-    const value = parseYaml(matches[0][1])
-    assert(value && typeof value === 'object' && !Array.isArray(value), `@arkzen:${marker} must contain a YAML mapping`)
-    return value
-  } catch (error) {
-    if (error instanceof Error && error.message.startsWith('[Unity scene generator]')) throw error
-    throw new Error(`[Unity scene generator] Invalid YAML in @arkzen:${marker}: ${error.message}`)
-  }
+  return readYamlBlock(source, marker, { assert, required })
 }
 
 function sceneBlocks(source) {
-  const lines = source.split(/\r?\n/)
-  const scenes = []
-  for (let index = 0; index < lines.length; index += 1) {
-    const opening = lines[index].match(/^\s*\/\* @arkzen:unity:scene:([a-z][a-z0-9_-]*)\s*$/)
-    if (!opening) continue
-    const [, name] = opening
-    let closing = index + 1
-    while (closing < lines.length && lines[closing].trim() !== '*/') closing += 1
-    assert(closing < lines.length, `@arkzen:unity:scene:${name} is missing its comment terminator`)
-    assert(lines[closing + 1]?.trim() === `/* @arkzen:unity:scene:${name}:end */`, `@arkzen:unity:scene:${name} must close with /* @arkzen:unity:scene:${name}:end */`)
-    let value
-    try {
-      value = parseYaml(lines.slice(index + 1, closing).join('\n'))
-    } catch (error) {
-      throw new Error(`[Unity scene generator] Invalid YAML in @arkzen:unity:scene:${name}: ${error.message}`)
-    }
-    assert(value && typeof value === 'object' && !Array.isArray(value), `@arkzen:unity:scene:${name} must contain a YAML mapping`)
-    scenes.push({ name, ...value })
-    index = closing + 1
-  }
-  return scenes
-}
-
-function validateVector(value, label, fallback, allowZero = true) {
-  if (value === undefined) return fallback
-  assert(Array.isArray(value) && value.length === 3 && value.every(Number.isFinite), `${label} must be a three-number array`)
-  if (!allowZero) assert(value.some(number => number !== 0), `${label} cannot be [0, 0, 0]`)
-  return value
-}
-
-function validatePositiveVector(value, label, fallback) {
-  const vector = validateVector(value, label, fallback)
-  assert(vector.every(number => number > 0), `${label} values must be positive`)
-  return vector
-}
-
-function validateVector2(value, label, fallback, allowZero = true) {
-  if (value === undefined) return fallback
-  assert(Array.isArray(value) && value.length === 2 && value.every(Number.isFinite), `${label} must be a two-number array`)
-  if (!allowZero) assert(value.some(number => number !== 0), `${label} cannot be [0, 0]`)
-  return value
-}
-
-function validatePositiveVector2(value, label, fallback) {
-  const vector = validateVector2(value, label, fallback)
-  assert(vector.every(number => number > 0), `${label} values must be positive`)
-  return vector
-}
-
-function validateNumber(value, label, fallback, minimum = 0) {
-  if (value === undefined) return fallback
-  assert(Number.isFinite(value) && value >= minimum, `${label} must be a number greater than or equal to ${minimum}`)
-  return value
-}
-
-function validateNegativeNumber(value, label, fallback) {
-  if (value === undefined) return fallback
-  assert(Number.isFinite(value) && value < 0, `${label} must be a negative number`)
-  return value
+  return readNamedYamlBlocks(source, 'unity:scene', { assert })
 }
 
 function validateAssetName(value, assets, label, extensions) {
@@ -355,7 +292,7 @@ function parseSceneTatemono(source, tatemonoPath) {
 }
 
 function hashGuid(value) {
-  return crypto.createHash('md5').update(value).digest('hex')
+  return hashHex(value)
 }
 
 function unitySceneFile() {
@@ -413,20 +350,7 @@ function scriptMeta(guid) {
 }
 
 function resolveSceneAsset(tatemonoDir, source, name) {
-  const assetsRoot = path.join(tatemonoDir, 'assets')
-  assert(fs.existsSync(assetsRoot) && fs.lstatSync(assetsRoot).isDirectory() && !fs.lstatSync(assetsRoot).isSymbolicLink(), 'Tatemono assets/ must be a regular directory')
-  const relative = source.slice('assets/'.length)
-  const segments = relative.split('/')
-  let current = assetsRoot
-  for (let index = 0; index < segments.length; index += 1) {
-    current = path.join(current, segments[index])
-    assert(fs.existsSync(current), `Required Unity asset "${name}" does not exist: ${source}`)
-    const stat = fs.lstatSync(current)
-    assert(!stat.isSymbolicLink(), `Unity asset "${name}" cannot use symbolic links: ${source}`)
-    if (index < segments.length - 1) assert(stat.isDirectory(), `Invalid Unity asset directory in "${source}"`)
-    else assert(stat.isFile(), `Required Unity asset "${name}" must be a regular file: ${source}`)
-  }
-  return current
+  return resolveAssetFile(assert, tatemonoDir, source, name, 'Unity asset')
 }
 
 function runtimeScript() {

@@ -504,7 +504,7 @@
       "patterns": [{ "include": "source.yaml" }]
     },
     "game-yaml-block": {
-      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:godot:(?:project|world|input|assets|scene:[A-Za-z0-9_-]+|behavior:(?:player|camera)|multiplayer|export)|unity:(?:project|game|visuals|controls|scene:[A-Za-z0-9_-]+|environment|assets|export)))[ \\t]*$",
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:godot:(?:project|world|input|assets|scene:[A-Za-z0-9_-]+|behavior:(?:player|camera)|multiplayer|export)|unity:(?:project|game|visuals|controls|scene:[A-Za-z0-9_-]+|environment|assets|export)|unreal:(?:project|scene:[A-Za-z0-9_-]+|environment|export)))[ \\t]*$",
       "beginCaptures": {
         "0": { "name": "comment.block.tatemono" },
         "1": { "name": "entity.name.tag.tatemono.game" }
@@ -563,7 +563,7 @@
     "dsl-tags": {
       "patterns": [
         {
-          "match": "(@arkzen:)(godot|unity):([A-Za-z0-9:_-]+)",
+          "match": "(@arkzen:)(godot|unity|unreal):([A-Za-z0-9:_-]+)",
           "captures": {
             "1": { "name": "punctuation.definition.tag.tatemono" },
             "2": { "name": "storage.type.tatemono.game" },

@@ -155,6 +155,7 @@ if (!tatName) {
   console.log('         node export.js <tatemono-name> --backend=none   (frontend only, no backend)')
   console.log('         node export.js <godot-tatemono> --stack=godot')
   console.log('         node export.js <unity-tatemono> --stack=unity')
+  console.log('         node export.js <unreal-tatemono> --stack=unreal')
   console.log('  Example: node export.js inventory-management\n')
   console.log('  Available tatemonos:')
   if (fs.existsSync(TATEMONOS_DIR)) {
@@ -221,6 +222,32 @@ if (activeStack === 'unity') {
     if (result.freeFiles.written.length) log(`Free files written: ${result.freeFiles.written.join(', ')}`)
     if (result.freeFiles.overridden.length) warn(`Free files replaced generated files: ${result.freeFiles.overridden.join(', ')}`)
     log('Open this folder in Unity Hub or build it with the included GameCI workflow.')
+    divider()
+  } catch (error) {
+    console.error(`\n  ✗ ${error instanceof Error ? error.message : String(error)}\n`)
+    process.exit(1)
+  }
+  process.exit(0)
+}
+
+if (activeStack === 'unreal') {
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(tatName)) {
+    console.error('\n  ✗ Unreal Tatemono names may contain only lowercase letters, digits, and hyphens.\n')
+    process.exit(1)
+  }
+  try {
+    const { generateUnrealProject } = await import('./engine/game/unreal/generator.js')
+    const result = generateUnrealProject({
+      tatemonoPath: tatPath,
+      outputDir: path.join(PROJECTS_DIR, 'unreal', tatName),
+    })
+    divider()
+    success(`Unreal project generated: ${path.relative(ROOT_DIR, result.outputDir)}`)
+    log(`Unreal Engine: ${result.unrealVersion} (module ${result.moduleName})`)
+    log(`Scenes: ${result.scenes.join(', ')} (starts in ${result.scene})`)
+    if (result.freeFiles.written.length) log(`Free files written: ${result.freeFiles.written.join(', ')}`)
+    if (result.freeFiles.overridden.length) warn(`Free files replaced generated files: ${result.freeFiles.overridden.join(', ')}`)
+    log(`Open ${result.moduleName}.uproject in Unreal Engine ${result.unrealVersion}; it offers to build the C++ module. Packaging scripts are in Scripts/.`)
     divider()
   } catch (error) {
     console.error(`\n  ✗ ${error instanceof Error ? error.message : String(error)}\n`)

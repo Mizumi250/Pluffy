@@ -12,6 +12,11 @@ Phase 1 — Expand Game Development
 - Expand Tatemono's game development capabilities.
 - Establish Unreal Engine as part of Pluffy's supported development ecosystem.
 
+Status: the first slice is in. Unreal scene mode (`@arkzen:unreal:*`) generates a UE5 C++ project, with
+shared game helpers in `engine/game/common/` and three example tatemonos. It is generate-only: the
+generated C++ has not yet been compiled in Unreal Editor. Still open: imported assets, UI, animation,
+a CI workflow, and the wider "expand game development" work.
+
 Phase 2 — Pluffy Desktop Application
 
 - Create a dedicated application for Pluffy.

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- New: Unreal Engine blocks (`unreal:project`, `unreal:scene:<name>`, `unreal:environment`, `unreal:export`): snippets, grammar, outline and Add Block. Bundled `scaffold.mjs` re-synced.
+
 ## 0.3.0
 
 - New: live diagnostics from the bundled `scaffold.js` linter (same rules as `mizumi check`, including the favicon-exists check), status bar item, Check This/All commands.

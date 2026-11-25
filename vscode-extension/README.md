@@ -8,7 +8,7 @@ VS Code support for [Pluffy](https://github.com/Mizumi250/Pluffy) Tatemono files
 | Feature | How it works |
 |---|---|
 | **Highlighting** | Block markers, inline layout lines, and embedded YAML / TSX / PHP / Python / Java / C# / Go / Rust / CSS bodies. |
-| **Snippets** | Every block: backend variants, shared YAML-only forms (`jobs`, `console`, `notifications`, `mail`), `oauth`, `realtime` channel and event, frames, Godot and Unity. Type `/* @arkzen:`. |
+| **Snippets** | Every block: backend variants, shared YAML-only forms (`jobs`, `console`, `notifications`, `mail`), `oauth`, `realtime` channel and event, frames, Godot, Unity and Unreal. Type `/* @arkzen:`. |
 | **Smart completion** | Closing `:end` tags, layout lines (`+auth`, `+guest`, `+auth:<layout>`, layouts declared in the file), OAuth provider names. |
 | **Live linting** | The same rules as `node mizumi.js check`, shown as you type, in Problems and the status bar. |
 | **Quick fixes** | Add a missing `:end`, set `auth: true` for `oauth`, rename a block to the "Did you mean" suggestion (opener and closer together). |

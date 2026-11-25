@@ -57,10 +57,11 @@ function isYamlOnlyTag(tag) {
   )
 }
 
-// Unity blocks are YAML closed by a bare */ line. Only unity:scene:<name> also writes an
-// optional :end marker after it, which belongs to the block when present.
+// Unity and Unreal blocks are YAML closed by a bare */ line. Only the scene:<name> blocks also
+// write an :end marker after it (optional for Unity, required for Unreal); it belongs to the
+// block when present.
 function isBareClosedTag(tag) {
-  return tag.startsWith('unity:')
+  return tag.startsWith('unity:') || tag.startsWith('unreal:')
 }
 
 function isInline(tag) {
@@ -280,27 +281,33 @@ function validateWithEngine(validateTatemono, filePath, validationDir) {
   }
 }
 
-// Godot and Unity tatemonos have no web or native pages, so the web/native validator cannot judge
-// them. Their generators are the real validator: generating into a temp folder throws on any invalid
-// block. Returns null for tatemonos that are not games.
+// Godot, Unity and Unreal tatemonos have no web or native pages, so the web/native validator cannot
+// judge them. Their generators are the real validator: generating into a temp folder throws on any
+// invalid block. Returns null for tatemonos that are not games.
 async function validateGameTatemono(src, filePath) {
   const godot = /^[ \t]*\/\*\s*@arkzen:godot:/m.test(src)
   const unity = /^[ \t]*\/\*\s*@arkzen:unity:/m.test(src)
-  if (!godot && !unity) return null
+  const unreal = /^[ \t]*\/\*\s*@arkzen:unreal:/m.test(src)
+  if (!godot && !unity && !unreal) return null
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'pluffy-scan-game-'))
   const originalLog = console.log
   console.log = () => {}
+  const label = godot ? 'Godot' : unity ? 'Unity' : 'Unreal'
   try {
+    const loadGenerator = file => import(pathToFileURL(path.join(SCRIPT_DIR, 'engine', 'game', ...file)).href)
     if (godot) {
-      const { generateGodotProject } = await import(pathToFileURL(path.join(SCRIPT_DIR, 'engine', 'game', 'godot', 'generator.js')).href)
+      const { generateGodotProject } = await loadGenerator(['godot', 'generator.js'])
       generateGodotProject({ tatemonoPath: filePath, outputDir: out })
-    } else {
-      const { generateUnityProject } = await import(pathToFileURL(path.join(SCRIPT_DIR, 'engine', 'game', 'unity', 'generator.js')).href)
+    } else if (unity) {
+      const { generateUnityProject } = await loadGenerator(['unity', 'generator.js'])
       generateUnityProject({ tatemonoPath: filePath, outputDir: out })
+    } else {
+      const { generateUnrealProject } = await loadGenerator(['unreal', 'generator.js'])
+      generateUnrealProject({ tatemonoPath: filePath, outputDir: out })
     }
     return { valid: true, errors: [], warnings: [] }
   } catch (error) {
-    return { valid: false, errors: [`${godot ? 'Godot' : 'Unity'} generator: ${error instanceof Error ? error.message : String(error)}`], warnings: [] }
+    return { valid: false, errors: [`${label} generator: ${error instanceof Error ? error.message : String(error)}`], warnings: [] }
   } finally {
     console.log = originalLog
     fs.rmSync(out, { recursive: true, force: true })

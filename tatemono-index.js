@@ -138,6 +138,7 @@ const FEATURE_LABELS = {
   file: 'Free files (@arkzen:file)',
   godot: 'Godot game',
   unity: 'Unity game',
+  unreal: 'Unreal Engine game',
 }
 
 function featureTable(items) {
