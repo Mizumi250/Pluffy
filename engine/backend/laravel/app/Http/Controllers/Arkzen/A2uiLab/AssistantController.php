@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — AssistantController
 // Tatemono: a2ui-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:06.277517Z
+// Generated: 2026-11-25T01:29:04.804096Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\A2uiLab;

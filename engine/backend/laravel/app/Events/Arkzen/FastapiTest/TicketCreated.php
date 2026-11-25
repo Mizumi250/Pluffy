@@ -4,7 +4,7 @@
 // ARKZEN GENERATED EVENT — TicketCreated
 // Tatemono: fastapi-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:18.754433Z
+// Generated: 2026-11-25T01:29:19.529946Z
 // ============================================================
 
 namespace App\Events\Arkzen\FastapiTest;

@@ -5,7 +5,7 @@
 // Tatemono: fastapi-test
 // Listens to: App\Events\Arkzen\FastapiTest\TicketCreated
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:18.757350Z
+// Generated: 2026-11-25T01:29:19.533730Z
 // ============================================================
 
 namespace App\Listeners\Arkzen\FastapiTest;

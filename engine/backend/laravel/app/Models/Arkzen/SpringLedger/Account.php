@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Account
 // Tatemono: spring-ledger
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:36.824367Z
+// Generated: 2026-11-25T01:29:39.580690Z
 // ============================================================
 
 namespace App\Models\Arkzen\SpringLedger;

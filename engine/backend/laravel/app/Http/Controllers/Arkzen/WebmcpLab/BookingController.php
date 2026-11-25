@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — BookingController
 // Tatemono: webmcp-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:40.206336Z
+// Generated: 2026-11-25T01:29:44.010257Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\WebmcpLab;

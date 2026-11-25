@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — PostCard
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:24.884Z
+// Generated: 2026-11-25T01:29:26.126Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

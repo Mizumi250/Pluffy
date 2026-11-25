@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — a2ui-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:06.318133Z
+// Generated: 2026-11-25T01:29:04.886871Z
 // Resources: Service, RepairTicket, Booking, UnmetRequest
 // Custom controllers: 
 // ============================================================

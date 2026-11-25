@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — aspnet-ledger
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:08.392124Z
+// Generated: 2026-11-25T01:29:07.267376Z
 // Resources: Account
 // Custom controllers: 
 // ============================================================

@@ -10,6 +10,14 @@ A GUI skin over the Pluffy CLI. The CLI is still the engine: every card builds a
 - **Engine**: bundled Pluffy snapshot, unpacked to Documents/Pluffy; one-click update from GitHub
 - **Top bar**: VS Code, CMD and Chat buttons
 
+## Design
+
+Built against PLUFF_GUIDELINES Section 2C (Design Rule #3, a named product is the brief) and 2D:
+Qoder's structure (collapsible sidebar with New + searchable list + account menu, sparse centre, status bar),
+one flat sakura accent (#c93d6e), no gradients, glass, glow, emoji or decorative shadows, one icon set
+(Lucide, `node scripts/gen-icons.js` to add icons), Zen Maru Gothic for headings, system UI face for chrome,
+mono for commands, one 6px radius. Copy says what each command does. No em dashes.
+
 ## Run it (put this folder in the repo as `gui/`)
 
     cd gui

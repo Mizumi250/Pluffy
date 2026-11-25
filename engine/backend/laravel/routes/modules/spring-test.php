@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — spring-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:37.487944Z
+// Generated: 2026-11-25T01:29:40.247635Z
 // Resources: Note
 // Custom controllers: 
 // ============================================================

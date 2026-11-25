@@ -5,7 +5,7 @@
 // Tatemono: fastapi-test
 // v6.0: Methods may include injected logic from @arkzen:policy:methodName blocks
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:18.509927Z
+// Generated: 2026-11-25T01:29:19.270544Z
 // ============================================================
 
 namespace App\Policies\Arkzen\FastapiTest;

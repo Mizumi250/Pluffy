@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ComposeBox
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:24.882Z
+// Generated: 2026-11-25T01:29:26.124Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

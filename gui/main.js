@@ -47,9 +47,9 @@ function startStudio() {
     const mac = process.platform === 'darwin'
     win = new BrowserWindow({
       width: 1280, height: 820, minWidth: 980, minHeight: 640,
-      title: 'Pluffy Studio', backgroundColor: '#fff7f9', show: false,
+      title: 'Pluffy Studio', backgroundColor: '#fdfcfd', show: false,
       titleBarStyle: 'hidden',
-      ...(mac ? { trafficLightPosition: { x: 16, y: 14 } } : { titleBarOverlay: { color: '#fff1f4', symbolColor: '#5b3a44', height: 44 } }),
+      ...(mac ? { trafficLightPosition: { x: 16, y: 14 } } : { titleBarOverlay: { color: '#f6f1f3', symbolColor: '#2a2226', height: 40 } }),
       webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true },
     })
     win.once('ready-to-show', () => win.show())

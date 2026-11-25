@@ -11,74 +11,84 @@
 <body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <path id="petal" d="M0 -2 C -7 -8, -5 -15, 0 -15 C 5 -15, 7 -8, 0 -2 Z"/>
-    <symbol id="sakura" viewBox="-16 -16 32 32">
-      <g fill="#ff8fb0"><use href="#petal"/><use href="#petal" transform="rotate(72)"/><use href="#petal" transform="rotate(144)"/><use href="#petal" transform="rotate(216)"/><use href="#petal" transform="rotate(288)"/></g>
-      <circle r="2.6" fill="#fff3c4"/>
-    </symbol>
-  </defs>
+  <symbol id="mark" viewBox="-16 -16 32 32">
+    <g fill="currentColor">
+      <path id="petal" d="M0 -2.5 C -6.5 -7 -6.5 -13 -3 -14.5 L 0 -12 L 3 -14.5 C 6.5 -13 6.5 -7 0 -2.5 Z"/>
+      <use href="#petal" transform="rotate(72)"/><use href="#petal" transform="rotate(144)"/>
+      <use href="#petal" transform="rotate(216)"/><use href="#petal" transform="rotate(288)"/>
+    </g>
+    <circle r="2.2" fill="var(--paper)"/>
+  </symbol>
 </svg>
 
 <div id="boot" class="boot">
-  <svg class="boot-logo"><use href="#sakura"/></svg>
+  <svg class="boot-mark"><use href="#mark"/></svg>
   <div class="boot-title">Pluffy Studio</div>
-  <div class="boot-msg" id="bootMsg">Getting things ready ...</div>
+  <div class="boot-msg" id="bootMsg">Preparing the engine</div>
 </div>
 
-<header class="topbar">
-  <div class="brand"><svg><use href="#sakura"/></svg><b>Pluffy</b><span>Studio</span></div>
-  <label class="search"><span>&#x2315;</span><input id="search" placeholder="Search commands   (Ctrl+K)" autocomplete="off" spellcheck="false"></label>
-  <div class="actions">
-    <button class="pill" id="btnCode" title="Open the Pluffy folder in VS Code">&#x1F4DD; VS Code</button>
-    <button class="pill" id="btnCmd" title="Open a CMD / terminal window in the Pluffy folder">&#x2328; CMD</button>
-    <button class="pill primary" id="btnChat" title="Open the Pluffy chat">&#x1F4AC; Chat</button>
-  </div>
-</header>
-
-<aside class="sidebar">
-  <nav id="nav">
-    <button data-view="home" class="active"><i>&#x1F338;</i>Home</button>
-    <button data-view="editor"><i>&#x1F4DD;</i>Editor</button>
-    <button data-view="extensions"><i>&#x1F9E9;</i>Extensions</button>
-    <button data-view="engine"><i>&#x2699;&#xFE0F;</i>Engine</button>
-  </nav>
-  <div class="side-foot">
-    <div class="tag">The CLI is still the engine.<br>This app is the skin.</div>
-  </div>
-</aside>
-
-<main class="main">
-  <div class="views">
-    <section id="view-home" class="view"></section>
-
-    <section id="view-editor" class="view hidden full">
-      <div id="editorState" class="center-card"></div>
-      <iframe id="editorFrame" class="hidden" allow="clipboard-read; clipboard-write"></iframe>
-    </section>
-
-    <section id="view-extensions" class="view hidden"></section>
-    <section id="view-engine" class="view hidden"></section>
-  </div>
-
-  <div id="dockResize" class="dock-resize" title="Drag to resize"></div>
-  <section id="dock" class="dock">
-    <div class="dock-head">
-      <div id="termTabs" class="term-tabs"></div>
-      <div class="dock-tools">
-        <button id="termNew" title="New terminal">+</button>
-        <button id="termToggle" title="Hide / show terminal">&#x25BE;</button>
-      </div>
+<div class="app" id="app">
+  <header class="titlebar">
+    <button class="icon-btn" id="btnSide" title="Show or hide the sidebar" aria-label="Toggle sidebar"><i data-icon="panel-left"></i></button>
+    <div class="brand"><svg><use href="#mark"/></svg>Pluffy Studio</div>
+    <div class="title-actions">
+      <button class="ghost" id="btnCode" title="Open the Pluffy folder in VS Code"><i data-icon="code-xml"></i>VS Code</button>
+      <button class="ghost" id="btnCmd" title="Open a CMD window in the Pluffy folder"><i data-icon="terminal"></i>CMD</button>
+      <button class="ghost" id="btnChat" title="Open the Pluffy chat"><i data-icon="message-square"></i>Chat</button>
     </div>
-    <div id="termBody" class="term-body"></div>
-  </section>
-</main>
+  </header>
 
-<div id="modal" class="modal hidden"></div>
-<div id="toasts" class="toasts"></div>
+  <aside class="sidebar" id="sidebar">
+    <button class="new" id="btnNew"><i data-icon="plus"></i>New tatemono</button>
+    <nav id="nav">
+      <button data-view="home" class="active"><i data-icon="house"></i>Home</button>
+      <button data-view="editor"><i data-icon="code-xml"></i>Editor</button>
+      <button data-view="extensions"><i data-icon="puzzle"></i>Extensions</button>
+      <button data-view="engine"><i data-icon="settings"></i>Engine</button>
+    </nav>
+    <div class="side-head">Tatemonos <span id="tCount"></span></div>
+    <label class="side-search"><i data-icon="search"></i><input id="tsearch" placeholder="Search tatemonos" autocomplete="off" spellcheck="false"></label>
+    <ul id="recent" class="recent"></ul>
+    <div class="side-foot">
+      <div id="account" class="popover hidden"></div>
+      <button class="account" id="btnAccount"><span class="dot" id="engineDot"></span><span class="grow" id="engineLabel">Engine</span><i data-icon="ellipsis"></i></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="views">
+      <section id="view-home" class="view"></section>
+      <section id="view-editor" class="view hidden full">
+        <div id="editorState" class="empty-state"></div>
+        <iframe id="editorFrame" class="hidden" title="VS Code" allow="clipboard-read; clipboard-write"></iframe>
+      </section>
+      <section id="view-extensions" class="view hidden"></section>
+      <section id="view-engine" class="view hidden"></section>
+    </div>
+
+    <div id="dockResize" class="dock-resize" title="Drag to resize"></div>
+    <section id="dock" class="dock" aria-label="Terminal">
+      <div class="dock-head">
+        <div id="termTabs" class="term-tabs" role="tablist"></div>
+        <div class="dock-tools">
+          <button class="icon-btn" id="termNew" title="New terminal" aria-label="New terminal"><i data-icon="plus"></i></button>
+          <button class="icon-btn" id="termToggle" title="Hide or show the terminal" aria-label="Toggle terminal"><i data-icon="chevron-down"></i></button>
+        </div>
+      </div>
+      <div id="termBody" class="term-body"></div>
+    </section>
+  </main>
+
+  <footer class="status" id="status"></footer>
+</div>
+
+<div id="modal" class="overlay hidden"></div>
+<div id="palette" class="overlay top hidden"></div>
+<div id="toasts" class="toasts" aria-live="polite"></div>
 
 <script src="../node_modules/@xterm/xterm/lib/xterm.js"></script>
 <script src="../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
+<script src="icons.js"></script>
 <script src="menu.js"></script>
 <script src="app.js"></script>
 </body>

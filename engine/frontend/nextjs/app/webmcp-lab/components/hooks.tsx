@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — webmcp-lab
 // Source: @arkzen:components (webmcp-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:39.994Z
+// Generated: 2026-11-25T01:29:43.820Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

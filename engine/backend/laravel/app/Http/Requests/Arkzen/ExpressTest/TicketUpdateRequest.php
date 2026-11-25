@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — TicketUpdateRequest
 // Tatemono: express-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:16.825151Z
+// Generated: 2026-11-25T01:29:17.512873Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\ExpressTest;

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — RepairTicket
 // Tatemono: webmcp-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:40.186426Z
+// Generated: 2026-11-25T01:29:43.992174Z
 // ============================================================
 
 namespace App\Models\Arkzen\WebmcpLab;

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — AuditLog
 // Tatemono: aspnet-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:09.041029Z
+// Generated: 2026-11-25T01:29:08.053616Z
 // ============================================================
 
 namespace App\Models\Arkzen\AspnetTest;

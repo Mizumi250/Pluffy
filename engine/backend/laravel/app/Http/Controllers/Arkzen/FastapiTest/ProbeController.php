@@ -5,7 +5,7 @@
 // Tatemono: fastapi-test
 // Type: Custom Route Controller (no model/resource)
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:routes block in the tatemono instead.
-// Generated: 2026-11-24T12:30:18.518719Z
+// Generated: 2026-11-25T01:29:19.278807Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\FastapiTest;

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — ollama-studio
 // Source: @arkzen:components (ollama-studio)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:32.057Z
+// Generated: 2026-11-25T01:29:34.028Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

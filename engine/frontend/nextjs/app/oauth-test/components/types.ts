@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — oauth-test
 // Source: @arkzen:components (oauth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-24T12:30:31.018Z
+// Generated: 2026-11-25T01:29:32.928Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
