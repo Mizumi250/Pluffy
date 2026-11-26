@@ -1,5 +1,5 @@
-import { browser } from 'wxt/browser'
 import { defineBackground } from 'wxt/utils/define-background'
+import { browser } from 'wxt/browser'
 import { storage } from 'wxt/utils/storage'
 
 export default defineBackground({

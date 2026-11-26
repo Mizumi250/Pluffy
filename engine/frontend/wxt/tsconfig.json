@@ -3,6 +3,8 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "strict": true,
+    // WXT's generated config turns this on. The shared parser/validator copied into arkzen/core are not written for it.
+    "noUncheckedIndexedAccess": false,
     "skipLibCheck": true
   },
   "include": [

@@ -18,16 +18,24 @@ const base      = reference ? `reference/${reference}` : null
 const entrypointsDir = base ? `${base}/entrypoints` : 'entrypoints'
 const manifestFile   = base ? `${base}/manifest.json` : 'arkzen/generated/manifest.json'
 
-function readManifestData(): Record<string, unknown> {
-  const file = resolve(import.meta.dirname, manifestFile)
-  if (!existsSync(file)) return {}
-  return JSON.parse(readFileSync(file, 'utf8'))
+function readJson(file: string): Record<string, unknown> {
+  const full = resolve(import.meta.dirname, file)
+  if (!existsSync(full)) return {}
+  return JSON.parse(readFileSync(full, 'utf8'))
 }
+
+// arkzen/generated/ext.json is written by the emitter (build settings of the tatemono)
+const settings = reference ? {} : readJson('arkzen/generated/ext.json')
 
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   entrypointsDir,
-  manifest: () => readManifestData(),
+  manifest: () => readJson(manifestFile),
+  // The zip is named <zipName>-<version>-<browser>.zip with the tatemono's name and version. WXT would otherwise
+  // fill {{version}} from this stack's package.json, so the version is written into the template here.
+  ...(typeof settings.zipName === 'string' && typeof settings.version === 'string'
+    ? { zip: { name: settings.zipName, artifactTemplate: `{{name}}-${settings.version}-{{browser}}.zip` } }
+    : {}),
   vite: () => ({
     plugins: [tailwindcss()],
   }),

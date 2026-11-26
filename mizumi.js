@@ -12,6 +12,7 @@
 //    node mizumi.js export <name>
 //    node mizumi.js export dino-runner unity
 //    node mizumi.js export unreal-scene-starter unreal
+//    node mizumi.js export ext-tab-notes extension   ← Chrome extension (.zip + unpacked folder)
 //    node mizumi.js export <name> --backend=none   ← frontend only, no backend
 //    node mizumi.js export <name> <stack> --openapi ← also write openapi.json + Swagger UI page
 //    node mizumi.js openapi <name>  ← generate OpenAPI docs only → projects/openapi/<name>/
@@ -176,6 +177,16 @@ function listUnrealTatemonoNames() {
     .filter(entry => {
       const corePath = path.join(TATEMONOS_DIR, entry.name, 'core.tsx')
       return fs.existsSync(corePath) && fs.readFileSync(corePath, 'utf8').includes('/* @arkzen:unreal:project')
+    })
+    .map(entry => entry.name)
+}
+function listExtensionTatemonoNames() {
+  if (!fs.existsSync(TATEMONOS_DIR)) return []
+  return fs.readdirSync(TATEMONOS_DIR, { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .filter(entry => {
+      const corePath = path.join(TATEMONOS_DIR, entry.name, 'core.tsx')
+      return fs.existsSync(corePath) && fs.readFileSync(corePath, 'utf8').includes('/* @arkzen:ext:project')
     })
     .map(entry => entry.name)
 }
@@ -552,6 +563,7 @@ function cmdSetup() {
 
 async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg, openapiFlag = false, apiUrlArg) {
   const config = readConfig()
+  if (stackArg === 'extension') stackArg = 'wxt'   // `export <tat> extension` builds with the wxt stack
 
   // --docker is for web stacks only. Reject early when the stack is already known.
   if (dockerFlag && stackArg && !supportsDocker(stackArg)) {
@@ -564,7 +576,7 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg, open
     // Scan tatemonos/ (like the openapi command does) instead of trusting only arkzen.json: the registry gets an
     // entry only after the engine has built a tatemono, so a new one (or one added while the engine was off)
     // would otherwise be missing from this list.
-    const modules = [...new Set([...discoverTatemonos(config).map(m => m.name), ...listGodotTatemonoNames(), ...listUnityTatemonoNames(), ...listUnrealTatemonoNames()])]
+    const modules = [...new Set([...discoverTatemonos(config).map(m => m.name), ...listGodotTatemonoNames(), ...listUnityTatemonoNames(), ...listUnrealTatemonoNames(), ...listExtensionTatemonoNames()])]
     if (modules.length === 0) { warn('タテモノなし — No tatemonos registered yet.'); return }
     divider()
     const chosen = await picker('どのタテモノ？ Which tatemono to export?', modules.map(m => ({ label: m, value: m })))
@@ -592,10 +604,15 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg, open
     if (listUnrealTatemonoNames().includes(tatName)) {
       platforms.push({ label: 'Unreal Engine game', sub: 'generate an isolated Unreal Engine 5 C++ project', value: 'unreal' })
     }
+    if (listExtensionTatemonoNames().includes(tatName)) {
+      platforms.push({ label: 'Browser extension', sub: 'build a Chrome extension (.zip + unpacked folder)', value: 'extension' })
+    }
     const platform = await picker('どのプラットフォーム？ Export for which platform?', platforms)
 
     if (platform.value === 'godot' || platform.value === 'unity' || platform.value === 'unreal') {
       stack = platform.value
+    } else if (platform.value === 'extension') {
+      stack = 'wxt'
     } else {
       const STACKS = platform.value === 'web' ? WEB_STACKS : (platform.value === 'app' ? APP_STACKS : DESKTOP_STACKS)
       const LABELS = platform.value === 'web' ? WEB_LABELS : (platform.value === 'app' ? APP_LABELS : DESKTOP_LABELS)
@@ -636,7 +653,8 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg, open
 
   let backend = backendArg
   const gameStack = stack === 'godot' || stack === 'unity' || stack === 'unreal'
-  const backendEligible = stack && !gameStack && !APP_STACKS[stack] && stack !== 'expo' && stack !== 'react-native' && stack !== 'lynx' && stack !== 'native'
+  const extensionStack = stack === 'wxt'   // no backend, docker or openapi (an extension is built on its own)
+  const backendEligible = stack && !gameStack && !extensionStack && !APP_STACKS[stack] && stack !== 'expo' && stack !== 'react-native' && stack !== 'lynx' && stack !== 'native'
   if (backendEligible && stack !== 'react-inertia') {
     if (!backend) {
       divider()
@@ -672,10 +690,10 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg, open
     'export.js',
     tatName,
     `--stack=${stack}`,
-    ...(backend && !gameStack ? [`--backend=${backend}`] : []),
+    ...(backend && !gameStack && !extensionStack ? [`--backend=${backend}`] : []),
     ...(dockerFlag ? ['--docker'] : []),
-    ...(openapiFlag && !gameStack ? ['--openapi'] : []),
-    ...(openapiFlag && !gameStack && apiUrlArg ? [`--api-url=${apiUrlArg}`] : []),
+    ...(openapiFlag && !gameStack && !extensionStack ? ['--openapi'] : []),
+    ...(openapiFlag && !gameStack && !extensionStack && apiUrlArg ? [`--api-url=${apiUrlArg}`] : []),
   ]
   const child = spawn(process.execPath, exportArgs, { cwd: ROOT_DIR, stdio: 'inherit' })
   child.on('exit', async code => {
@@ -689,6 +707,9 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg, open
       } else if (stack === 'unreal') {
         success(`Generated → projects/unreal/${tatName}/  ${paint(c.gray, '(Unreal Engine 5)')}`)
         info(`Open the .uproject in projects/unreal/${tatName}/ with Unreal Engine (it builds the C++ module on first open)`)
+      } else if (stack === 'wxt') {
+        success(`Built → projects/extension/${tatName}/  ${paint(c.gray, '(Chrome extension)')}`)
+        info(`Load projects/extension/${tatName}/chrome-mv3 in chrome://extensions (Developer mode > Load unpacked). The .zip next to it is for the Chrome Web Store.`)
       } else {
         success(`Exported → projects/${tatName}/  ${paint(c.gray, `(${stack})`)}`)
         info(`Deploy steps: projects/${tatName}/DEPLOY.md${dockerFlag ? '   Docker: docker compose --env-file deploy.env up -d --build' : ''}`)
@@ -1316,7 +1337,7 @@ async function interactiveMenu() {
     { label: 'Database切替     Switch database',         sub: 'sqlite / postgresql',          value: 'db'         },
     { label: 'パッケージ管理    Install / uninstall deps', sub: 'frontend node_modules + backend vendor', value: 'deps' },
     { label: 'スタック情報     Stack info',              sub: 'web + app + desktop active stacks',    value: 'stacks'     },
-    { label: '新規タテモノ     New tatemono',            sub: 'start from a template (web, crud, routes, auth, native, multi, lynx, files, godot, unity, unreal)', value: 'new' },
+    { label: '新規タテモノ     New tatemono',            sub: 'start from a template (web, crud, routes, auth, native, multi, lynx, files, godot, unity, unreal, extension)', value: 'new' },
     { label: 'ブロック追加     Add DSL block',           sub: 'insert a block + backend variant into a tatemono', value: 'block' },
     { label: 'タテモノ一覧     List modules',            sub: 'registered tatemonos',       value: 'modules'    },
     { label: 'AI生成           Pluffy AI',               sub: 'generate a tatemono with your model (toggle options)', value: 'ai' },
@@ -1378,6 +1399,7 @@ function printHelp() {
     ['mizumi export <godot-tatemono> godot', '→ Generate isolated Godot 4 project'],
     ['mizumi export <unity-tatemono> unity', '→ Generate isolated Unity project'],
     ['mizumi export <unreal-tatemono> unreal', '→ Generate isolated Unreal Engine 5 C++ project'],
+    ['mizumi export <ext-tatemono> extension', '→ Build a Chrome extension (.zip + unpacked folder)'],
     ['mizumi export <name> <stack> --docker', '→ Also write Dockerfile + docker-compose (web stacks only)'],
     ['mizumi export <name> <stack> --openapi', '→ Also write openapi.json + Swagger UI page (openapi/)'],
     ['mizumi openapi',          '→ OpenAPI docs for one tatemono (openapi.json + api-docs.html)'],
@@ -1398,7 +1420,7 @@ function printHelp() {
     ['mizumi stack',             '→ Show active web + app + desktop stacks'],
     ['mizumi stacks',            '→ List all stacks'],
     ['mizumi modules',           '→ List tatemonos'],
-    ['mizumi new <name>',        '→ Create a tatemono (--template=web|crud|routes|auth|native|multi|lynx|files|godot|unity|unreal)'],
+    ['mizumi new <name>',        '→ Create a tatemono (--template=web|crud|routes|auth|native|multi|lynx|files|godot|unity|unreal|extension)'],
     ['mizumi block',             '→ Add a DSL block to a tatemono (pick tatemono, DSL, block, backend)'],
     ['mizumi block [t] <block> [names..] --ts', '→ Same, no prompts; t is optional (latest edited), several names add several blocks (--list, --dry, --help)'],
     ['mizumi check [t ...]',      '→ Lint tatemonos without the engine: tag shapes, names, layouts, endpoint/handler cross-references'],

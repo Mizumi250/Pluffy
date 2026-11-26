@@ -4,4 +4,11 @@ node_modules
 # written by the emitter (anchored on purpose: an unanchored "entrypoints" also matches reference/*/entrypoints,
 # and Tailwind skips gitignored paths, which leaves the popup without any utility classes)
 /entrypoints
+/public
 /arkzen/generated
+# copied from engine/shared by arkzen/sync.ts
+/arkzen/core/parser.ts
+/arkzen/core/validator.ts
+/arkzen/core/backends.ts
+/arkzen/core/file-writer.ts
+/arkzen/types

@@ -156,6 +156,7 @@ if (!tatName) {
   console.log('         node export.js <godot-tatemono> --stack=godot')
   console.log('         node export.js <unity-tatemono> --stack=unity')
   console.log('         node export.js <unreal-tatemono> --stack=unreal')
+  console.log('         node export.js <extension-tatemono> --stack=wxt     (Chrome extension: .zip + unpacked folder)')
   console.log('  Example: node export.js inventory-management\n')
   console.log('  Available tatemonos:')
   if (fs.existsSync(TATEMONOS_DIR)) {
@@ -248,6 +249,77 @@ if (activeStack === 'unreal') {
     if (result.freeFiles.written.length) log(`Free files written: ${result.freeFiles.written.join(', ')}`)
     if (result.freeFiles.overridden.length) warn(`Free files replaced generated files: ${result.freeFiles.overridden.join(', ')}`)
     log(`Open ${result.moduleName}.uproject in Unreal Engine ${result.unrealVersion}; it offers to build the C++ module. Packaging scripts are in Scripts/.`)
+    divider()
+  } catch (error) {
+    console.error(`\n  ✗ ${error instanceof Error ? error.message : String(error)}\n`)
+    process.exit(1)
+  }
+  process.exit(0)
+}
+
+// ─────────────────────────────────────────────
+// BROWSER EXTENSION (wxt)
+//
+// Emits the @arkzen:ext blocks into engine/frontend/wxt, builds them with WXT and copies the result to
+// projects/extension/<tatemono>/. Like the game exports, it does not use the web/backend stack or arkzen.json.
+//   chrome-mv3/        the unpacked extension (chrome://extensions > Developer mode > Load unpacked)
+//   <name>-<version>-chrome.zip   the package for the Chrome Web Store (when zip is not false)
+// ─────────────────────────────────────────────
+if (activeStack === 'wxt' || activeStack === 'extension') {
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(tatName)) {
+    console.error('\n  ✗ Extension Tatemono names may contain only lowercase letters, digits, and hyphens.\n')
+    process.exit(1)
+  }
+  const EXT_STACK_DIR = path.join(ENGINE_DIR, 'frontend', 'wxt')
+  const npmCommand    = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+  const run = (command, args, label) => {
+    const result = spawnSync(command, args, { cwd: EXT_STACK_DIR, stdio: 'inherit', shell: process.platform === 'win32' && command === npmCommand })
+    if (result.error || result.status !== 0) throw new Error(`${label} failed`)
+  }
+  try {
+    if (!fs.existsSync(path.join(EXT_STACK_DIR, 'node_modules', 'wxt', 'package.json'))) {
+      log('Installing the extension stack (first export only)...')
+      run(npmCommand, ['install', '--no-audit', '--no-fund'], 'npm install in engine/frontend/wxt')
+    }
+    const tsxCli = path.join(EXT_STACK_DIR, 'node_modules', 'tsx', 'dist', 'cli.mjs')
+    const wxtCli = path.join(EXT_STACK_DIR, 'node_modules', 'wxt', 'bin', 'wxt.mjs')
+
+    log(`Emitting ${tatName}`)
+    run(process.execPath, [tsxCli, 'arkzen/emit.ts', tatPath], 'The extension emitter')
+    const settings = JSON.parse(fs.readFileSync(path.join(EXT_STACK_DIR, 'arkzen', 'generated', 'ext.json'), 'utf-8'))
+
+    const outDir = path.join(PROJECTS_DIR, 'extension', tatName)
+    fs.rmSync(outDir, { recursive: true, force: true })
+    fs.mkdirSync(outDir, { recursive: true })
+    fs.rmSync(path.join(EXT_STACK_DIR, '.output'), { recursive: true, force: true })
+
+    const built = []
+    for (const browser of settings.browsers) {
+      log(`Building for ${browser}`)
+      run(process.execPath, [wxtCli, 'build', '-b', browser], `WXT build (${browser})`)
+      fs.cpSync(path.join(EXT_STACK_DIR, '.output', `${browser}-mv3`), path.join(outDir, `${browser}-mv3`), { recursive: true })
+      built.push(`${browser}-mv3/`)
+      if (settings.zip) {
+        run(process.execPath, [wxtCli, 'zip', '-b', browser], `WXT zip (${browser})`)
+        const zipFile = `${settings.zipName}-${settings.version}-${browser}.zip`
+        fs.copyFileSync(path.join(EXT_STACK_DIR, '.output', zipFile), path.join(outDir, zipFile))
+        built.push(zipFile)
+      }
+    }
+    fs.writeFileSync(path.join(outDir, 'INSTALL.md'), [
+      `# ${settings.name} ${settings.version}`,
+      '',
+      '## Try it in Chrome',
+      '1. Open chrome://extensions and turn on Developer mode.',
+      '2. Choose "Load unpacked" and select the `chrome-mv3` folder next to this file.',
+      '',
+      ...(settings.zip ? ['## Publish', `Upload \`${settings.zipName}-${settings.version}-chrome.zip\` in the Chrome Web Store Developer Dashboard.`, ''] : []),
+    ].join('\n'))
+
+    divider()
+    success(`Extension built: ${path.relative(ROOT_DIR, outDir)}`)
+    log(`Contains: ${built.join(', ')}`)
+    log('Load the chrome-mv3 folder in chrome://extensions (Developer mode > Load unpacked). The web/backend stack and active Pluff configuration were not used.')
     divider()
   } catch (error) {
     console.error(`\n  ✗ ${error instanceof Error ? error.message : String(error)}\n`)
