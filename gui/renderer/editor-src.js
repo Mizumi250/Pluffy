@@ -128,6 +128,75 @@ const THEME = {
   ],
 }
 
+// The same theme in the pink dark palette (plum surface, rose ink, same coral accent).
+const DARK_INK = '#f3e4e8'
+const DARK_SURFACE = '#2a2025'
+const DARK_RAISED = '#34272d'
+const DARK_SELECTED = '#44292f'
+const DARK_TOKEN = {
+  '#a39793': '#85727a', '#c7b8b3': '#6f5d65', '#c2415b': '#ff8aa3', '#2d7a58': '#7fd4a8', '#b0642f': '#f0a56f',
+  '#6a4fb0': '#b9a6f2', '#1f7a8c': '#7fd0e0', '#a65f00': '#f2b765', '#8a6f68': '#c4a39b', '#b5476a': '#f59ab6',
+  '#3a7d4f': '#8fd8a4', '#b36200': '#f2b765', '#5b4bb0': '#b7a8f5', '#1f6fa8': '#8cc4f2', '#3d5a86': '#a9c0ec',
+  '#8a4a3a': '#e6a38f', '#8a5a00': '#f2c46b', '#7d706c': '#a8949b', '#d04545': '#ff8a8a',
+}
+const DARK = {
+  name: 'pluffy-dark',
+  type: 'dark',
+  colors: {
+    ...THEME.colors,
+    'editor.background': DARK_SURFACE,
+    'editor.foreground': DARK_INK,
+    'editorLineNumber.foreground': '#6f5d65',
+    'editorLineNumber.activeForeground': '#bfaab1',
+    'editor.lineHighlightBackground': '#382b3188',
+    'editor.selectionBackground': '#f99e9e44',
+    'editor.inactiveSelectionBackground': '#f99e9e26',
+    'editor.selectionHighlightBackground': '#f99e9e22',
+    'editor.wordHighlightBackground': '#382b31',
+    'editor.wordHighlightStrongBackground': '#382b31',
+    'editor.findMatchBackground': '#f99e9e77',
+    'editor.findMatchHighlightBackground': '#f99e9e3a',
+    'editorCursor.foreground': '#f99e9e',
+    'editorGutter.background': DARK_SURFACE,
+    'editorIndentGuide.background1': '#372a30',
+    'editorIndentGuide.activeBackground1': '#52414a',
+    'editorWhitespace.foreground': '#3d2f36',
+    'editorBracketMatch.background': '#f99e9e33',
+    'editorError.foreground': '#ff8a8a',
+    'editorWarning.foreground': '#f2b765',
+    'editorInfo.foreground': '#8fb0f2',
+    'editorWidget.background': DARK_RAISED,
+    'editorWidget.foreground': DARK_INK,
+    'editorSuggestWidget.background': DARK_RAISED,
+    'editorSuggestWidget.foreground': DARK_INK,
+    'editorSuggestWidget.selectedBackground': DARK_SELECTED,
+    'editorSuggestWidget.highlightForeground': '#f99e9e',
+    'editorHoverWidget.background': DARK_RAISED,
+    'editorHoverWidget.foreground': DARK_INK,
+    'list.hoverBackground': '#44292f88',
+    'list.activeSelectionBackground': DARK_SELECTED,
+    'list.activeSelectionForeground': DARK_INK,
+    'list.focusBackground': DARK_SELECTED,
+    'input.background': '#382b31',
+    'inputOption.activeBackground': '#f99e9e44',
+    'scrollbarSlider.background': '#85727a44',
+    'scrollbarSlider.hoverBackground': '#85727a88',
+    'scrollbarSlider.activeBackground': '#85727aaa',
+    'minimap.background': DARK_SURFACE,
+    'widget.shadow': '#00000055',
+  },
+  tokenColors: THEME.tokenColors.map((r) => {
+    const f = r.settings.foreground
+    return f ? { ...r, settings: { ...r.settings, foreground: f === INK ? DARK_INK : DARK_TOKEN[f] || f } } : r
+  }),
+}
+
+// which one is on screen (theme.js sets <html data-theme>); PluffEditor.setTheme follows the toggle
+let wantDark = document.documentElement.dataset.theme === 'dark'
+let themesReady = false
+const themeName = () => (wantDark ? 'pluffy-dark' : 'pluffy-light')
+const plainColors = (th) => Object.fromEntries(Object.entries(th.colors).map(([k, v]) => [k, v.length === 9 && v.endsWith('00') ? '#00000000' : v]))
+
 const BUILTIN = { tsx, typescript, javascript, json, css, html, yaml, markdown, php, python, java, csharp, go, rust }
 const LANG_BY_EXT = { '.tsx': 'tsx', '.ts': 'typescript', '.js': 'javascript', '.mjs': 'javascript', '.cjs': 'javascript', '.json': 'json', '.css': 'css', '.html': 'html', '.yaml': 'yaml', '.yml': 'yaml', '.md': 'markdown', '.php': 'php', '.py': 'python', '.java': 'java', '.cs': 'csharp', '.go': 'go', '.rs': 'rust', '.svg': 'html', '.xml': 'html' }
 
@@ -166,7 +235,7 @@ async function boot(assets) {
     if (assets && assets.grammar) {
       try {
         const highlighter = await createHighlighterCore({
-          themes: [THEME],
+          themes: [THEME, DARK],
           langs: [...langs, { ...assets.grammar, name: 'tatemono', scopeName: assets.grammar.scopeName || 'source.tatemono' }],
           engine: createOnigurumaEngine(wasm),
         })
@@ -176,9 +245,11 @@ async function boot(assets) {
     }
     if (!info.ok) {
       // keep the editor usable (and in the same colors) if the grammar could not load
-      monaco.editor.defineTheme('pluffy-light', { base: 'vs', inherit: true, rules: [], colors: Object.fromEntries(Object.entries(THEME.colors).map(([k, v]) => [k, v.length === 9 && v.endsWith('00') ? '#00000000' : v])) })
+      monaco.editor.defineTheme('pluffy-light', { base: 'vs', inherit: true, rules: [], colors: plainColors(THEME) })
+      monaco.editor.defineTheme('pluffy-dark', { base: 'vs-dark', inherit: true, rules: [], colors: plainColors(DARK) })
     }
-    monaco.editor.setTheme('pluffy-light')
+    themesReady = true
+    monaco.editor.setTheme(themeName())
     if (assets && assets.languageConfig) monaco.languages.setLanguageConfiguration('tatemono', languageConfiguration(assets.languageConfig))
     registerProviders()
     return info
@@ -243,7 +314,7 @@ function registerProviders() {
 function createEditor(el, handlers = {}) {
   const editor = monaco.editor.create(el, {
     model: null,
-    theme: 'pluffy-light',
+    theme: themeName(),
     fontFamily: FONT_MONO,
     fontSize: 13,
     lineHeight: 21,
@@ -357,4 +428,9 @@ function createEditor(el, handlers = {}) {
   }
 }
 
-window.PluffEditor = { boot, createEditor, languageFor }
+function setTheme(dark) {
+  wantDark = !!dark
+  if (themesReady) monaco.editor.setTheme(themeName())
+}
+
+window.PluffEditor = { boot, createEditor, languageFor, setTheme }

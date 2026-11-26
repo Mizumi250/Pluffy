@@ -4,6 +4,8 @@
 // If node-pty is missing, commands still run through plain pipes (no interactive shell).
 
 const { spawn } = require('node:child_process')
+const fs = require('node:fs')
+const os = require('node:os')
 const { killTree } = require('./system')
 
 let pty = null
@@ -30,9 +32,12 @@ class Terms {
     return e
   }
 
-  create({ cwd, cols = 100, rows = 24 }) {
+  create({ cwd, cols = 100, rows = 24, log = false }) {
     const id = 't' + ++this.n
-    if (pty) {
+    if (!fs.existsSync(cwd || '')) cwd = os.homedir()          // the engine folder may be gone (after Uninstall)
+    if (log) {
+      this.map.set(id, { kind: 'log', cwd })                   // a tab that only shows text (repo commands)
+    } else if (pty) {
       const shell = win ? 'powershell.exe' : process.env.SHELL || '/bin/bash'
       const p = pty.spawn(shell, win ? ['-NoLogo'] : [], { name: 'xterm-256color', cols, rows, cwd, env: this.env() })
       p.onData((data) => this.emit({ type: 'term:data', id, data }))
@@ -49,6 +54,7 @@ class Terms {
     const t = this.map.get(id)
     if (!t) return
     if (t.kind === 'pty') return t.p.write(data)
+    if (t.kind === 'log') return
     if (data === '\x03') return this.interrupt(t)
     for (const ch of data) {                                   // tiny line editor for pipe mode
       if (ch === '\r') { this.emit({ type: 'term:data', id, data: '\r\n' }); if (t.child) t.child.stdin.write(t.buf + '\n'); t.buf = '' }
@@ -69,6 +75,7 @@ class Terms {
     const t = this.map.get(id)
     if (!t) return
     if (t.kind === 'pty') return t.p.write(lists.map(cliLine).join(' ; ') + '\r')
+    if (t.kind === 'log') return
     this.runPipe(id, t, lists.slice())
   }
 
@@ -91,7 +98,7 @@ class Terms {
     this.map.delete(id)
   }
 
-  killAll() { for (const id of [...this.map.keys()]) this.kill(id) }
+  killAll(except) { for (const id of [...this.map.keys()]) if (id !== except) this.kill(id) }
 }
 
 module.exports = { Terms, cliLine }

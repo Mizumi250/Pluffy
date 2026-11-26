@@ -89,6 +89,7 @@ document.addEventListener('click', (e) => { if (!account.contains(e.target)) acc
 
 // ======================================================= home
 function activate(it) {
+  if (it.repo) return runRepo(it.repo)
   if (it.action === 'chat') return openChat()
   if (it.run) return runCli(it.title, [it.run])
   if (it.form) return openForm(it, ctx ? { t: ctx } : {})
@@ -286,29 +287,36 @@ const pending = new Map()        // output that arrived before its tab existed
 let activeTerm = null
 let termCount = 0
 
-const XTERM_THEME = {
+const XTERM_LIGHT = {
   // a light terminal in the app's palette. mizumi.js paints headings "white", so ANSI white is a dark ink on purpose.
   background: '#f8f3f1', foreground: '#212121', cursor: '#e07a7a', cursorAccent: '#f8f3f1', selectionBackground: '#f99e9e66',
   black: '#212121', red: '#c93c3c', green: '#2d7a58', yellow: '#946000', blue: '#3d62b8', magenta: '#a23f7d', cyan: '#1f7a8c', white: '#3a302d',
   brightBlack: '#6c625f', brightRed: '#de4d4d', brightGreen: '#38916c', brightYellow: '#a86d00', brightBlue: '#5176cc', brightMagenta: '#b85093', brightCyan: '#2a8fa3', brightWhite: '#1a1414',
 }
+const XTERM_DARK = {
+  // the same terminal in the pink dark palette. ANSI white is a light ink here, so mizumi.js headings stay readable.
+  background: '#231a1e', foreground: '#f0dfe4', cursor: '#f99e9e', cursorAccent: '#231a1e', selectionBackground: '#f99e9e55',
+  black: '#3a2c32', red: '#ff8a8a', green: '#7fd4a8', yellow: '#f2c46b', blue: '#8fb0f2', magenta: '#f0a0cf', cyan: '#7fd0e0', white: '#ead9de',
+  brightBlack: '#a8949b', brightRed: '#ffa3a3', brightGreen: '#9be6bf', brightYellow: '#f8d58a', brightBlue: '#a9c2f8', brightMagenta: '#f7b8dc', brightCyan: '#9be0ec', brightWhite: '#fff2f5',
+}
+const xtermTheme = () => (window.theme.get() === 'dark' ? XTERM_DARK : XTERM_LIGHT)
 
 function syncPlaceholder() {
   const ph = $('#termPh')
   if (terms.size) { if (ph) ph.remove() } else if (!ph) $('#termTabs').append(el('button', { id: 'termPh', class: 'active', onclick: toggleDock }, 'Terminal'))
 }
 
-async function newTerminal(title) {
+async function newTerminal(title, opts = {}) {
   openDock()
   const box = el('div', { class: 'term' })
   $('#termBody').append(box)
-  const term = new Terminal({ fontFamily: 'ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace', fontSize: 13, lineHeight: 1.15, cursorBlink: true, theme: XTERM_THEME, scrollback: 5000, allowProposedApi: true })
+  const term = new Terminal({ fontFamily: 'ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace', fontSize: 13, lineHeight: 1.15, cursorBlink: true, theme: xtermTheme(), scrollback: 5000, allowProposedApi: true })
   const fit = new FitAddon.FitAddon()
   term.loadAddon(fit)
   for (const t of terms.values()) t.box.classList.add('hidden')
   term.open(box)
   try { fit.fit() } catch { /* not visible yet */ }
-  const id = await pluffy.termCreate({ cols: term.cols, rows: term.rows })
+  const id = await pluffy.termCreate({ cols: term.cols, rows: term.rows, log: !!opts.log })
   if (fail(id)) { box.remove(); term.dispose(); return null }
 
   const tab = el('button', { role: 'tab', onclick: () => focusTerm(id) }, title || 'Terminal ' + ++termCount,
@@ -351,6 +359,52 @@ function closeTerm(id) {
 async function runCli(title, lists_) {
   const id = await newTerminal(title)
   if (id) { await pluffy.termCli(id, lists_); setTimeout(refreshLists, 4000) }
+}
+
+// ======================================================= repo commands (install, push, pull, uninstall)
+// The work happens in the main process (lib/repo.js); its output shows in a text-only terminal tab.
+const REPO_TEXT = {
+  install: { title: 'Install repo' },
+  push: { title: 'Push repo' },
+  pull: { title: 'Pull repo', word: 'YES', warn: 'This throws away ALL local changes that are not pushed.' },
+  uninstall: { title: 'Uninstall repo', word: 'DELETE', warn: 'This permanently deletes the folder and skips the Recycle Bin. Anything not pushed to GitHub will be lost.' },
+}
+
+function confirmWord(title, where, warn, word) {
+  return new Promise((resolve) => {
+    const done = (v) => { closeModal(); resolve(v) }
+    const input = el('input', { type: 'text', placeholder: word, spellcheck: 'false', autocomplete: 'off' })
+    const go = el('button', { class: 'primary', disabled: true, onclick: () => done(true) }, title)
+    input.addEventListener('input', () => { go.disabled = input.value.trim().toUpperCase() !== word })
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !go.disabled) done(true)
+      else if (e.key === 'Escape') done(false)
+    })
+    $('#modal').replaceChildren(el('div', { class: 'sheet-modal', role: 'dialog', 'aria-label': title },
+      el('h2', {}, title), el('p', {}, warn), el('div', { class: 'preview' }, where),
+      el('div', { class: 'field' }, el('label', { class: 'l' }, `Type ${word} to continue`), input),
+      el('div', { class: 'foot' }, el('button', { class: 'btn', onclick: () => done(false) }, 'Cancel'), go)))
+    $('#modal').classList.remove('hidden')
+    input.focus()
+  })
+}
+
+async function runRepo(op) {
+  const t = REPO_TEXT[op]
+  const info = await pluffy.repoInfo()
+  if (fail(info)) return
+  if (t.word) {
+    if (!(await WS_API.guardDirty())) return                      // unsaved editor tabs would be lost
+    if (!(await confirmWord(t.title, info.dir, t.warn, t.word))) return
+  }
+  const id = await newTerminal(t.title, { log: true })
+  if (!id) return
+  const r = await pluffy.repoRun(op, id)
+  fail(r)
+  if (!r.error && op === 'uninstall') { ctx = null; if (current === 'tatemono') show('home') }
+  await Promise.all([refreshEnv(), refreshLists()])
+  if (current === 'engine') renderEngine()
+  if (!r.error) toast(`${t.title}: done`)
 }
 
 function openDock() { dock.classList.remove('collapsed'); localStorage.setItem('dockOpen', '1'); refit() }
@@ -428,10 +482,12 @@ async function renderEngine() {
   const status = el('p', { class: 'note', id: 'engineStatus' })
   const busy = (b) => root.querySelectorAll('button').forEach((x) => { x.disabled = b })
   const version = [i.commit, i.date && new Date(i.date).toLocaleDateString()].filter(Boolean).join(', ')
+  const g = await pluffy.repoInfo()
+  const gitState = g && !g.error ? `${g.dir}  (${g.installed ? 'git checkout' : g.exists ? 'unpacked copy, not linked to GitHub' : 'not installed'})` : ''
   root.replaceChildren(el('div', { class: 'col' },
     el('h2', {}, 'Engine'),
     el('p', { class: 'lede' }, 'The Pluffy repo that the CLI runs from. The app ships a snapshot and can fetch the latest from GitHub.'),
-    el('div', { class: 'rows' }, row('Location', i.root), row('Version', version), row('Source', i.source)),
+    el('div', { class: 'rows' }, row('Location', i.root), row('Version', version), row('Source', i.source), row('Git copy', gitState)),
     el('div', { class: 'toolbar' },
       el('button', { class: 'primary', onclick: async () => {
         busy(true); const r = await pluffy.engineUpdate(); busy(false)
@@ -440,6 +496,10 @@ async function renderEngine() {
       } }, 'Update from GitHub'),
       el('button', { class: 'btn', onclick: async () => { busy(true); const r = await pluffy.engineResync(); busy(false); if (!fail(r)) toast('Re-synced'); renderEngine() } }, 'Re-sync bundled copy'),
       el('button', { class: 'btn', onclick: () => pluffy.openFolder() }, 'Open folder')),
+    el('div', { class: 'toolbar' }, ['install', 'push', 'pull', 'uninstall'].map((op) => {
+      const it = byId('repo-' + op)
+      return el('button', { class: 'btn', title: it.desc, onclick: () => runRepo(op) }, icon(it.icon, 15), REPO_TEXT[op].title)
+    })),
     status,
     el('p', { class: 'note' }, i.live ? 'This is a git checkout, so the app never overwrites it. Update it with git pull.' : 'Updating keeps your tatemonos, arkzen.json and AI settings. Only engine files are replaced.')))
 }
@@ -465,10 +525,30 @@ pluffy.onEvent((e) => {
   }
 })
 
+// ======================================================= window dots and theme
+document.querySelectorAll('.light').forEach((b) => { b.onclick = () => pluffy.winControl(b.dataset.act) })
+window.addEventListener('blur', () => document.body.classList.add('blur'))
+window.addEventListener('focus', () => document.body.classList.remove('blur'))
+
+function paintTheme() {
+  const dark = window.theme.get() === 'dark'
+  const b = $('#btnTheme')
+  b.replaceChildren(icon(dark ? 'sun' : 'moon', 16))
+  b.title = dark ? 'Switch to light' : 'Switch to dark'
+}
+$('#btnTheme').onclick = () => window.theme.toggle()
+window.theme.onChange((mode) => {
+  paintTheme()
+  for (const t of terms.values()) t.term.options.theme = xtermTheme()
+  if (window.PluffEditor && PluffEditor.setTheme) PluffEditor.setTheme(mode === 'dark')
+  pluffy.setTheme(mode)
+})
+
 // ======================================================= start
 async function start() {
   if (pluffy.platform === 'darwin') document.body.classList.add('mac')
   hydrate()
+  paintTheme()
   renderHome()
   const r = await pluffy.ready()
   $('#boot').classList.add('gone')

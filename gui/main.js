@@ -13,14 +13,16 @@ if (chatAt !== -1) require(path.resolve(process.argv[chatAt + 1]))
 else startStudio()
 
 function startStudio() {
-  const { app, BrowserWindow, Menu, ipcMain, dialog, shell } = require('electron')
+  const { app, BrowserWindow, Menu, ipcMain, dialog, shell, nativeTheme } = require('electron')
   const fs = require('node:fs')
   const { spawn } = require('node:child_process')
   const engine = require('./lib/engine')
   const sys = require('./lib/system')
   const { Terms } = require('./lib/terminals')
   const { Tatemono } = require('./lib/tatemono')
+  const repo = require('./lib/repo')
 
+  if (process.platform === 'win32') app.setAppUserModelId('app.pluffy.studio')   // taskbar and Start menu use the app's own icon, not Electron's
   if (!app.requestSingleInstanceLock()) { app.quit(); return }
   app.on('second-instance', () => {
     const w = BrowserWindow.getAllWindows()[0]
@@ -53,13 +55,19 @@ function startStudio() {
     put()
   }
 
+  const APP_ICON = path.join(__dirname, 'build', 'icon.png')
+  const BG = { light: '#f3ebe9', dark: '#1e171b' }
+
   function createWindow() {
     const mac = process.platform === 'darwin'
+    const dark = settings.theme ? settings.theme === 'dark' : nativeTheme.shouldUseDarkColors
     win = new BrowserWindow({
       width: 1280, height: 820, minWidth: 980, minHeight: 640,
-      title: 'Pluffy Studio', backgroundColor: '#f3ebe9', show: false,
-      titleBarStyle: mac ? 'hiddenInset' : 'hidden',
-      ...(mac ? { trafficLightPosition: { x: 18, y: 18 } } : { titleBarOverlay: { color: '#f3ebe9', symbolColor: '#212121', height: 48 } }),
+      title: 'Pluffy Studio', backgroundColor: dark ? BG.dark : BG.light, show: false,
+      ...(fs.existsSync(APP_ICON) ? { icon: APP_ICON } : {}),
+      // A Mac keeps its own window buttons. Everywhere else the window has no frame and the page draws
+      // the red / yellow / green dots (see .lights in index.html), which call win:ctl below.
+      ...(mac ? { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 18, y: 18 } } : { frame: false }),
       webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true },
     })
     keepTrafficLights(win)
@@ -104,11 +112,30 @@ function startStudio() {
   h('lists:get', () => ({ tatemonos: engine.listTatemonos(ROOT), projects: engine.listProjects(ROOT) }))
 
   h('term:hasPty', () => terms.hasPty)
-  h('term:create', ({ cols, rows } = {}) => terms.create({ cwd: ROOT, cols, rows }))
+  h('term:create', ({ cols, rows, log } = {}) => terms.create({ cwd: ROOT, cols, rows, log }))
   h('term:cli', (id, lists) => terms.cli(id, lists))
   h('term:kill', (id) => terms.kill(id))
   ipcMain.on('term:write', (_e, id, data) => terms.write(id, data))
   ipcMain.on('term:resize', (_e, id, c, r) => terms.resize(id, c, r))
+
+  // window dots (red = close, yellow = minimize, green = maximize / restore)
+  ipcMain.on('win:ctl', (e, action) => {
+    const w = BrowserWindow.fromWebContents(e.sender)
+    if (!w || w.isDestroyed()) return
+    if (action === 'close') w.close()
+    else if (action === 'min') w.minimize()
+    else if (action === 'max') { if (w.isMaximized()) w.unmaximize(); else w.maximize() }
+  })
+  ipcMain.on('theme:set', (_e, mode) => { settings.theme = mode === 'dark' ? 'dark' : 'light'; saveSettings(settings) })
+
+  // the four repo commands (install, push, pull, uninstall), always on Documents/Pluffy like mz.cmd
+  const repoDir = () => path.join(app.getPath('documents'), 'Pluffy')
+  h('repo:info', () => repo.info(repoDir()))
+  h('repo:run', (op, id) => repo.run(op, {
+    dir: repoDir(),
+    say: (data) => emit({ type: 'term:data', id, data }),
+    beforeDelete: () => { terms.killAll(id); tm.stop() },   // folders held open by a shell or a watcher cannot be deleted on Windows
+  }))
 
   h('open:vscode', () => sys.openVSCode(ROOT))
   h('open:cmd', () => sys.openTerminal(ROOT))

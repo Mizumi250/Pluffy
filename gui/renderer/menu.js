@@ -28,6 +28,7 @@
     { id: 'stack', title: 'Stacks', sub: 'Web, app, desktop, backend, database' },
     { id: 'take', title: 'Ship it', sub: 'Export and publish' },
     { id: 'ai', title: 'AI', sub: 'Generate and review' },
+    { id: 'repo', title: 'Repo', sub: 'Git copy in Documents/Pluffy' },
   ]
 
   const items = [
@@ -141,6 +142,12 @@
     { id: 'chat', group: 'ai', icon: 'message-square', title: 'Chat', desc: 'Open the Pluffy chat window.', cli: 'mizumi chat', action: 'chat' },
     { id: 'scan', group: 'ai', icon: 'database', title: 'Scan training data', desc: 'Turn the tatemonos into training data.', cli: 'mizumi scan', run: ['scan'] },
     { id: 'index', group: 'ai', icon: 'list-tree', title: 'Update tatemono index', desc: 'Refresh the examples list in the language reference.', cli: 'mizumi index', run: ['index'] },
+
+    // ---- repo (the same four commands as mz.cmd; handled by the app, see runRepo in app.js)
+    { id: 'repo-install', group: 'repo', icon: 'download', title: 'Install repo', desc: 'Clone Pluffy from GitHub into Documents/Pluffy. An unpacked copy there is linked to GitHub, your work stays.', cli: 'mz install', repo: 'install' },
+    { id: 'repo-push', group: 'repo', icon: 'arrow-up-from-line', title: 'Push repo', desc: 'Commit everything and push it to GitHub.', cli: 'mz push', repo: 'push' },
+    { id: 'repo-pull', group: 'repo', icon: 'arrow-down-to-line', title: 'Pull repo', desc: 'Throw away local changes and match GitHub.', cli: 'mz pull', repo: 'pull' },
+    { id: 'repo-uninstall', group: 'repo', icon: 'trash-2', title: 'Uninstall repo', desc: 'Delete Documents/Pluffy for good. Anything not pushed is lost.', cli: 'mz uninstall', repo: 'uninstall' },
   ]
 
   window.MENU = { groups, items }
