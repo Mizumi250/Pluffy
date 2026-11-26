@@ -129,7 +129,7 @@ function startStudio() {
   ipcMain.on('theme:set', (_e, mode) => { settings.theme = mode === 'dark' ? 'dark' : 'light'; saveSettings(settings) })
 
   // the four repo commands (install, push, pull, uninstall), always on Documents/Pluffy like mz.cmd
-  const repoDir = () => path.join(app.getPath('documents'), 'Pluffy')
+  const repoDir = () => engine.pluffyHome(app)
   h('repo:info', () => repo.info(repoDir()))
   h('repo:run', (op, id) => repo.run(op, {
     dir: repoDir(),
@@ -197,6 +197,12 @@ function startStudio() {
 
   app.whenReady().then(() => {
     if (process.platform !== 'darwin') Menu.setApplicationMenu(null)
+    // make sure the `mz` command exists in %USERPROFILE%\bin (and that folder is on PATH)
+    try {
+      const mz = require('./lib/mz').ensureMz()
+      if (mz.error) console.warn('[mz]', mz.error)
+      else if (mz.pathAdded) setTimeout(() => emit({ type: 'toast', msg: 'mz command installed. Open a NEW terminal to use it.' }), 4000)
+    } catch (e) { console.warn('[mz]', e.message) }
     createWindow()
     readyP = boot().catch((e) => ({ root: ROOT, error: String(e.message || e) }))
   })

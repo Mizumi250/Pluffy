@@ -482,12 +482,10 @@ async function renderEngine() {
   const status = el('p', { class: 'note', id: 'engineStatus' })
   const busy = (b) => root.querySelectorAll('button').forEach((x) => { x.disabled = b })
   const version = [i.commit, i.date && new Date(i.date).toLocaleDateString()].filter(Boolean).join(', ')
-  const g = await pluffy.repoInfo()
-  const gitState = g && !g.error ? `${g.dir}  (${g.installed ? 'git checkout' : g.exists ? 'unpacked copy, not linked to GitHub' : 'not installed'})` : ''
   root.replaceChildren(el('div', { class: 'col' },
     el('h2', {}, 'Engine'),
     el('p', { class: 'lede' }, 'The Pluffy repo that the CLI runs from. The app ships a snapshot and can fetch the latest from GitHub.'),
-    el('div', { class: 'rows' }, row('Location', i.root), row('Version', version), row('Source', i.source), row('Git copy', gitState)),
+    el('div', { class: 'rows' }, row('Location', i.root), row('Version', version), row('Source', i.source)),
     el('div', { class: 'toolbar' },
       el('button', { class: 'primary', onclick: async () => {
         busy(true); const r = await pluffy.engineUpdate(); busy(false)

@@ -21,6 +21,16 @@ const STAMP = '.studio-bundle.json'
 
 const has = (...p) => fs.existsSync(path.join(...p))
 
+// The real C:\Users\<name>\Documents\Pluffy, same folder mz.cmd uses.
+// Electron's app.getPath('documents') follows OneDrive "Known Folder Move" and returns
+// C:\Users\<name>\OneDrive\Documents, which made a second, wrong copy of Pluffy there.
+function pluffyHome(app) {
+  if (process.platform === 'win32' && process.env.USERPROFILE) {
+    return path.join(process.env.USERPROFILE, 'Documents', 'Pluffy')
+  }
+  return path.join(app.getPath('documents'), 'Pluffy')
+}
+
 function resolveRoot(app, settings = {}) {
   if (process.env.PLUFFY_ROOT) return path.resolve(process.env.PLUFFY_ROOT)
   if (settings.root && has(settings.root, 'mizumi.js')) return settings.root
@@ -28,7 +38,7 @@ function resolveRoot(app, settings = {}) {
     const parent = path.resolve(__dirname, '..', '..')
     if (has(parent, 'mizumi.js')) return parent
   }
-  return path.join(app.getPath('documents'), 'Pluffy')
+  return pluffyHome(app)
 }
 
 function bundleDir(app) {
@@ -131,4 +141,4 @@ function listProjects(root) {
   try { return fs.readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort() } catch { return [] }
 }
 
-module.exports = { resolveRoot, bundleDir, ensure, forceSync, updateFromGitHub, info, listTatemonos, listProjects, SKIP_TOP, STAMP }
+module.exports = { pluffyHome, resolveRoot, bundleDir, ensure, forceSync, updateFromGitHub, info, listTatemonos, listProjects, SKIP_TOP, STAMP }
