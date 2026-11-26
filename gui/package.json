@@ -2,16 +2,18 @@
   "name": "pluffy-studio",
   "productName": "Pluffy Studio",
   "version": "0.1.0",
-  "description": "Pluffy Studio: a GUI skin over the Pluffy CLI (menu, terminal, VS Code, chat).",
+  "description": "Pluffy Studio: a GUI skin over the Pluffy CLI (menu, terminal, tatemono editor, chat).",
   "main": "main.js",
   "author": "Mizumi",
   "license": "MIT",
   "private": true,
   "scripts": {
     "start": "electron .",
+    "prestart": "npm run build",
+    "build": "node scripts/build-renderer.js",
     "bundle": "node scripts/bundle-repo.js",
     "bundle:local": "node scripts/bundle-repo.js --local",
-    "dist": "node scripts/bundle-repo.js && electron-builder"
+    "dist": "npm run build && node scripts/bundle-repo.js && electron-builder"
   },
   "dependencies": {
     "@fontsource/zen-maru-gothic": "^5.3.1",
@@ -20,9 +22,13 @@
     "@xterm/xterm": "^6.0.0"
   },
   "devDependencies": {
+    "@shikijs/monaco": "^4.6.0",
     "electron": "^45.0.0",
     "electron-builder": "^26.0.0",
-    "lucide-static": "^1.79.0"
+    "esbuild": "^0.28.2",
+    "lucide-static": "^1.79.0",
+    "monaco-editor": "^0.58.0",
+    "shiki": "^4.6.0"
   },
   "build": {
     "appId": "app.pluffy.studio",

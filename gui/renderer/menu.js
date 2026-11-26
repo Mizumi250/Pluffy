@@ -12,11 +12,11 @@
   const DESKTOP = ['tauri', 'electron']
   const BACKEND = ['laravel', 'express', 'fastapi', 'spring-boot', 'aspnet', 'go', 'rust']
   const DB = ['sqlite', 'postgresql']
-  const TEMPLATES = ['web', 'crud', 'routes', 'auth', 'native', 'multi', 'lynx', 'files', 'godot', 'unity']
+  const TEMPLATES = ['web', 'crud', 'routes', 'auth', 'native', 'multi', 'lynx', 'files', 'godot', 'unity', 'unreal']
   const VARIANTS = [['php', 'Laravel (PHP)'], ['ts', 'Express (TypeScript)'], ['py', 'FastAPI (Python)'], ['java', 'Spring Boot (Java)'], ['cs', 'ASP.NET Core (C#)'], ['go', 'Go'], ['rs', 'Rust']]
   const EXPORT_TARGETS = [
     ...WEB.map((s) => ({ v: s, l: `${s}  (web)` })), ...APP.map((s) => ({ v: s, l: `${s}  (app)` })),
-    ...DESKTOP.map((s) => ({ v: s, l: `${s}  (desktop)` })), { v: 'godot', l: 'godot  (game)' }, { v: 'unity', l: 'unity  (game)' },
+    ...DESKTOP.map((s) => ({ v: s, l: `${s}  (desktop)` })), { v: 'godot', l: 'godot  (game)' }, { v: 'unity', l: 'unity  (game)' }, { v: 'unreal', l: 'unreal  (game)' },
   ]
 
   const keep = { v: '', l: '(keep current)' }
@@ -110,7 +110,7 @@
 
     // ---- take
     {
-      id: 'export', group: 'take', icon: 'upload', title: 'Export project', desc: 'Write a standalone web, app, desktop, Godot or Unity project.', cli: 'mizumi export <name> <stack>',
+      id: 'export', group: 'take', icon: 'upload', title: 'Export project', desc: 'Write a standalone web, app, desktop, Godot, Unity or Unreal project.', cli: 'mizumi export <name> <stack>',
       form: {
         fields: [
           tatemono(), { id: 'target', type: 'select', label: 'Target', required: true, options: EXPORT_TARGETS, value: 'react-vite' },

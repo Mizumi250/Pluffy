@@ -1,5 +1,5 @@
 'use strict'
-/* global Terminal, FitAddon, MENU, pluffy, icon */
+/* global Terminal, FitAddon, MENU, pluffy, icon, WS_API */
 
 const $ = (s, r = document) => r.querySelector(s)
 function el(tag, props = {}, ...kids) {
@@ -27,12 +27,12 @@ const byId = (id) => MENU.items.find((i) => i.id === id)
 // ======================================================= state
 let envInfo = null
 let lists = { tatemonos: [], projects: [] }
-let ctx = null                      // the tatemono picked in the sidebar
+let ctx = null                      // the tatemono open in the workspace (highlighted in the sidebar)
 let current = 'home'
 
 // ======================================================= navigation
-const views = ['home', 'editor', 'extensions', 'engine']
-const onShow = { editor: () => openEditor(), extensions: () => renderExtensions(), engine: () => renderEngine() }
+const views = ['home', 'tatemono', 'extensions', 'engine']
+const onShow = { extensions: () => renderExtensions(), engine: () => renderEngine() }
 
 function show(name) {
   current = name
@@ -57,10 +57,15 @@ function renderRecent() {
 }
 $('#tsearch').addEventListener('input', renderRecent)
 
-function pickTatemono(n) {
-  ctx = ctx === n ? null : n
+// Picking a tatemono opens it in its own editor. Unsaved edits are never dropped silently.
+async function pickTatemono(n) {
+  if (current === 'tatemono' && ctx === n) return
+  const WS = WS_API.WS
+  if (WS.name && WS.name !== n && !(await WS_API.guardDirty())) return
+  ctx = n
   renderRecent()
-  if (current !== 'home') show('home'); else renderHome()
+  show('tatemono')
+  await WS_API.openWorkspace(n)
 }
 
 async function refreshLists() { const r = await pluffy.lists(); if (!fail(r)) { lists = r; renderRecent() } }
@@ -86,7 +91,7 @@ document.addEventListener('click', (e) => { if (!account.contains(e.target)) acc
 function activate(it) {
   if (it.action === 'chat') return openChat()
   if (it.run) return runCli(it.title, [it.run])
-  if (it.form) return openForm(it)
+  if (it.form) return openForm(it, ctx ? { t: ctx } : {})
 }
 
 function itemButton(it, cls = 'item') {
@@ -108,25 +113,20 @@ function renderHome() {
   })
   ask.addEventListener('input', () => { if (ask.value === '/') { ask.value = ''; openPalette('') } })
 
+  const shortcut = (id) => { const it = byId(id); return el('button', { class: 'chip', onclick: () => activate(it) }, icon(it.icon, 15), it.title) }
   col.append(
-    el('h1', {}, 'Pick a tatemono, or describe a new one.'),
-    el('p', { class: 'lede' }, 'Pluffy turns one core.tsx into a web app, a mobile app, a desktop app and a backend.'),
-    el('div', { class: 'cmdbar' }, ask, el('div', { class: 'cmdrow' }, el('span', { class: 'hint' }, 'Enter runs mizumi ai. Shift+Enter for a new line.'), go)))
-
-  if (ctx) {
-    const q = (id, label) => el('button', { onclick: () => openForm(byId(id), { t: ctx }) }, label)
-    col.append(el('div', { class: 'quick' }, el('b', {}, ctx), q('check', 'Check'), q('screenshot', 'Screenshot'), q('block', 'Add block'), q('export', 'Export'), q('openapi', 'OpenAPI')))
-  }
+    el('h1', {}, 'What are we building?'),
+    el('p', { class: 'lede' }, 'Pick a tatemono in the sidebar to edit it, or describe a new one. Pluffy turns one core.tsx into a web app, a mobile app, a desktop app, a game and a backend.'),
+    el('div', { class: 'cmdbar' }, ask, el('div', { class: 'cmdrow' }, el('span', { class: 'hint' }, 'Enter runs mizumi ai. Shift+Enter for a new line.'), go)),
+    el('div', { class: 'quick' }, shortcut('start'), shortcut('new'), shortcut('setup'), shortcut('classic')))
   if (envInfo) {
     const missing = ['node', 'npm', 'git'].filter((k) => !envInfo[k])
     if (missing.length) col.append(el('div', { class: 'warnline' }, icon('circle-alert', 16), `${missing.join(', ')} not found. Pluffy runs on Node, so install ${missing.includes('node') ? 'Node.js from nodejs.org' : missing.join(' and ')} and restart the app.`))
   }
 
   const index = el('div', { class: 'index' })
-  const start = byId('start')
-  index.append(el('button', { class: 'feature', onclick: () => activate(start) }, icon('play', 22), el('div', {}, el('b', {}, start.title), el('span', {}, start.desc))))
   for (const g of MENU.groups) {
-    const items = MENU.items.filter((i) => i.group === g.id && i.id !== 'start')
+    const items = MENU.items.filter((i) => i.group === g.id)
     if (!items.length) continue
     index.append(el('section', { class: 'group' }, el('header', {}, el('h3', {}, g.title), el('p', {}, g.sub)), el('div', { class: 'items' }, items.map((i) => itemButton(i)))))
   }
@@ -287,10 +287,10 @@ let activeTerm = null
 let termCount = 0
 
 const XTERM_THEME = {
-  // a light terminal. mizumi.js paints headings "white", so ANSI white is a dark ink on purpose.
-  background: '#faf7f9', foreground: '#2a2226', cursor: '#c93d6e', cursorAccent: '#faf7f9', selectionBackground: '#f3c6d5',
-  black: '#2a2226', red: '#b3233f', green: '#1b7a4e', yellow: '#8f5a05', blue: '#2f5fc4', magenta: '#a02f7d', cyan: '#0b7285', white: '#3d3238',
-  brightBlack: '#6f6168', brightRed: '#cc2f4f', brightGreen: '#23935f', brightYellow: '#a8680a', brightBlue: '#4574dc', brightMagenta: '#b8408f', brightCyan: '#1387a0', brightWhite: '#1d1619',
+  // a light terminal in the app's palette. mizumi.js paints headings "white", so ANSI white is a dark ink on purpose.
+  background: '#f8f3f1', foreground: '#212121', cursor: '#e07a7a', cursorAccent: '#f8f3f1', selectionBackground: '#f99e9e66',
+  black: '#212121', red: '#c93c3c', green: '#2d7a58', yellow: '#946000', blue: '#3d62b8', magenta: '#a23f7d', cyan: '#1f7a8c', white: '#3a302d',
+  brightBlack: '#6c625f', brightRed: '#de4d4d', brightGreen: '#38916c', brightYellow: '#a86d00', brightBlue: '#5176cc', brightMagenta: '#b85093', brightCyan: '#2a8fa3', brightWhite: '#1a1414',
 }
 
 function syncPlaceholder() {
@@ -376,32 +376,6 @@ new ResizeObserver(refit).observe($('#termBody'))
   })
 }
 
-// ======================================================= editor (real VS Code inside the app)
-let editorState = 'idle'
-const editorBox = $('#editorState')
-const editorFrame = $('#editorFrame')
-
-function setEditor(state, text) {
-  editorState = state
-  editorFrame.classList.toggle('hidden', state !== 'ready')
-  editorBox.classList.toggle('hidden', state === 'ready')
-  if (state === 'loading') {
-    editorBox.replaceChildren(el('h2', {}, 'Starting VS Code'), el('p', {}, 'The first start downloads the VS Code server. This can take a minute.'), el('div', { class: 'bar' }), el('pre', { id: 'editorLog' }, text || ''))
-  } else if (state === 'error') {
-    editorBox.replaceChildren(el('h2', {}, 'VS Code did not start'), el('pre', {}, text),
-      el('div', { class: 'toolbar' }, el('button', { class: 'primary', onclick: () => { setEditor('idle'); openEditor() } }, 'Try again'),
-        el('button', { class: 'btn', onclick: async () => fail(await pluffy.openVSCode()) }, 'Open in the VS Code app')))
-  }
-}
-async function openEditor() {
-  if (editorState === 'ready' || editorState === 'loading') return
-  setEditor('loading', '')
-  const r = await pluffy.editorStart()
-  if (r.error) return setEditor('error', r.error)
-  editorFrame.src = r.url
-  setEditor('ready')
-}
-
 // ======================================================= extensions
 async function renderExtensions() {
   const root = $('#view-extensions')
@@ -420,9 +394,18 @@ async function renderExtensions() {
       el('div', { class: 'grow' }, el('div', {}, el('b', { style: 'font-weight:500' }, x.name), el('span', { class: 'muted' }, '  ' + x.version)), el('div', { class: 'k mono', style: 'font-size:12px' }, x.file)),
       el('span', { class: 'tag' }, x.kind), x.installed ? el('span', { class: 'tag ok' }, 'Installed') : null, btn))
   }
+  const tm = await pluffy.tmAssets()
+  const src = tm && tm.source
+  const editorRow = el('div', { class: 'row' },
+    el('div', { class: 'grow' }, el('div', { class: 'k' }, 'Tatemono editor (built into this app)'),
+      el('div', { class: 'v' }, src ? `${src.name} ${src.version || ''} · ${src.kind === 'vsix' ? 'from the .vsix' : 'from the engine files in vscode-extension/'}` : 'No Pluff Tatemono extension found')),
+    el('span', { class: 'tag' + (tm && tm.ready ? ' ok' : '') }, tm && tm.ready ? 'Ready' : 'Not ready'))
   const col = el('div', { class: 'col' },
     el('h2', {}, 'Extensions'),
     el('p', { class: 'lede' }, 'The Pluff Tatemono extension ships with the engine. Import any other .vsix file; no marketplace is needed.'),
+    el('div', { class: 'rows' }, editorRow),
+    src && src.staleVsix ? el('p', { class: 'note warn' }, `${src.staleVsix} is older than the files in vscode-extension/, so the editor uses the newer engine files. Rebuild the .vsix with "npx @vscode/vsce package" inside vscode-extension/ to bring them back in sync.`) : null,
+    tm && tm.problems && tm.problems.length ? el('p', { class: 'note warn' }, tm.problems.join(' ')) : null,
     r.hasCode ? null : el('p', { class: 'note warn' }, 'VS Code was not found, so extensions cannot be installed yet. Install VS Code and check that the "code" command works in a terminal.'),
     el('div', { class: 'toolbar' },
       el('button', { class: 'primary', onclick: async () => {
@@ -432,7 +415,7 @@ async function renderExtensions() {
       } }, 'Import .vsix'),
       el('button', { class: 'btn', onclick: () => pluffy.extFolder() }, 'Open imported folder')),
     rows,
-    el('p', { class: 'note' }, 'Extensions are installed into your VS Code. Use the Editor tab or the VS Code button to use them.'))
+    el('p', { class: 'note' }, 'Extensions are installed into your VS Code, which is the place for engine work. The tatemono editor in this app reads the Pluff Tatemono extension directly.'))
   root.replaceChildren(col)
 }
 
@@ -476,8 +459,7 @@ pluffy.onEvent((e) => {
       if (t) { t.dead = true; t.tab.classList.add('dead'); t.term.write('\r\n\x1b[90m[shell closed]\x1b[0m\r\n') }
       break
     }
-    case 'editor:log': { const l = $('#editorLog'); if (l) { l.textContent += e.line + '\n'; l.scrollTop = l.scrollHeight } break }
-    case 'editor:exit': if (editorState === 'ready') { editorFrame.src = 'about:blank'; setEditor('idle'); if (current === 'editor') openEditor() } break
+    case 'tm:changed': WS_API.workspaceChanged(e); break
     case 'engine:progress': { const s = $('#engineStatus'); if (s) s.textContent = e.msg; break }
     case 'toast': toast(e.msg); break
   }
@@ -493,7 +475,10 @@ async function start() {
   setTimeout(() => $('#boot').remove(), 400)
   if (r && r.error) toast(r.error, true)
   refreshLists(); refreshEnv()
+  WS_API.initEditor()                       // warm up Monaco and the grammar in the background
   if (localStorage.getItem('dockOpen') === '1') newTerminal('Terminal')
   else { dock.classList.add('collapsed'); syncPlaceholder() }
 }
 start()
+
+window.addEventListener('beforeunload', (e) => { if (WS_API.hasDirty()) { e.preventDefault(); e.returnValue = '' } })

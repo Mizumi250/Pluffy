@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; frame-src http://127.0.0.1:* http://localhost:*">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pluffy Studio</title>
 <link rel="stylesheet" href="../node_modules/@xterm/xterm/css/xterm.css">
+<link rel="stylesheet" href="dist/editor.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,7 +18,7 @@
       <use href="#petal" transform="rotate(72)"/><use href="#petal" transform="rotate(144)"/>
       <use href="#petal" transform="rotate(216)"/><use href="#petal" transform="rotate(288)"/>
     </g>
-    <circle r="2.2" fill="var(--paper)"/>
+    <circle r="2.2" fill="var(--surface)"/>
   </symbol>
 </svg>
 
@@ -32,7 +33,7 @@
     <button class="icon-btn" id="btnSide" title="Show or hide the sidebar" aria-label="Toggle sidebar"><i data-icon="panel-left"></i></button>
     <div class="brand"><svg><use href="#mark"/></svg>Pluffy Studio</div>
     <div class="title-actions">
-      <button class="ghost" id="btnCode" title="Open the Pluffy folder in VS Code"><i data-icon="code-xml"></i>VS Code</button>
+      <button class="ghost" id="btnCode" title="Open the Pluffy folder in VS Code (for engine work)"><i data-icon="code-xml"></i>VS Code</button>
       <button class="ghost" id="btnCmd" title="Open a CMD window in the Pluffy folder"><i data-icon="terminal"></i>CMD</button>
       <button class="ghost" id="btnChat" title="Open the Pluffy chat"><i data-icon="message-square"></i>Chat</button>
     </div>
@@ -42,7 +43,6 @@
     <button class="new" id="btnNew"><i data-icon="plus"></i>New tatemono</button>
     <nav id="nav">
       <button data-view="home" class="active"><i data-icon="house"></i>Home</button>
-      <button data-view="editor"><i data-icon="code-xml"></i>Editor</button>
       <button data-view="extensions"><i data-icon="puzzle"></i>Extensions</button>
       <button data-view="engine"><i data-icon="settings"></i>Engine</button>
     </nav>
@@ -56,27 +56,26 @@
   </aside>
 
   <main class="main">
-    <div class="views">
-      <section id="view-home" class="view"></section>
-      <section id="view-editor" class="view hidden full">
-        <div id="editorState" class="empty-state"></div>
-        <iframe id="editorFrame" class="hidden" title="VS Code" allow="clipboard-read; clipboard-write"></iframe>
-      </section>
-      <section id="view-extensions" class="view hidden"></section>
-      <section id="view-engine" class="view hidden"></section>
-    </div>
-
-    <div id="dockResize" class="dock-resize" title="Drag to resize"></div>
-    <section id="dock" class="dock" aria-label="Terminal">
-      <div class="dock-head">
-        <div id="termTabs" class="term-tabs" role="tablist"></div>
-        <div class="dock-tools">
-          <button class="icon-btn" id="termNew" title="New terminal" aria-label="New terminal"><i data-icon="plus"></i></button>
-          <button class="icon-btn" id="termToggle" title="Hide or show the terminal" aria-label="Toggle terminal"><i data-icon="chevron-down"></i></button>
-        </div>
+    <div class="sheet">
+      <div class="views">
+        <section id="view-home" class="view"></section>
+        <section id="view-tatemono" class="view hidden full"></section>
+        <section id="view-extensions" class="view hidden"></section>
+        <section id="view-engine" class="view hidden"></section>
       </div>
-      <div id="termBody" class="term-body"></div>
-    </section>
+
+      <div id="dockResize" class="dock-resize" title="Drag to resize"></div>
+      <section id="dock" class="dock" aria-label="Terminal">
+        <div class="dock-head">
+          <div id="termTabs" class="term-tabs" role="tablist"></div>
+          <div class="dock-tools">
+            <button class="icon-btn" id="termNew" title="New terminal" aria-label="New terminal"><i data-icon="plus"></i></button>
+            <button class="icon-btn" id="termToggle" title="Hide or show the terminal" aria-label="Toggle terminal"><i data-icon="chevron-down"></i></button>
+          </div>
+        </div>
+        <div id="termBody" class="term-body"></div>
+      </section>
+    </div>
   </main>
 
   <footer class="status" id="status"></footer>
@@ -90,6 +89,8 @@
 <script src="../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
 <script src="icons.js"></script>
 <script src="menu.js"></script>
+<script src="dist/editor.js"></script>
+<script src="workspace.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

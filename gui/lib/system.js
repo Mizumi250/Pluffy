@@ -57,6 +57,13 @@ async function openVSCode(folder) {
   return { ok: false, error: 'VS Code was not found. Install it from https://code.visualstudio.com (and enable the "code" command).' }
 }
 
+async function openVSCodeAt(folder, file) {
+  const code = await findCode()
+  if (!code) return { ok: false, error: 'VS Code was not found. Install it from https://code.visualstudio.com (and enable the "code" command).' }
+  await trySpawn(win ? q(code) : code, [folder, file], { shell: win, windowsHide: true })
+  return { ok: true }
+}
+
 async function openTerminal(folder) {
   if (win) return { ok: await trySpawn('cmd.exe', ['/c', 'start', '', '/D', folder, 'cmd.exe'], { windowsHide: true }) }
   if (mac) return { ok: await trySpawn('open', ['-a', 'Terminal', folder]) }
@@ -113,4 +120,4 @@ async function installVsix(file) {
   return r.ok ? { ok: true } : { ok: false, error: r.err || r.out || 'Install failed.' }
 }
 
-module.exports = { exec, findCode, envCheck, openVSCode, openTerminal, killTree, parseVsix, builtinVsix, installedExtensions, isInstalled, installVsix, win }
+module.exports = { exec, findCode, envCheck, openVSCode, openVSCodeAt, openTerminal, killTree, parseVsix, builtinVsix, installedExtensions, isInstalled, installVsix, win }
