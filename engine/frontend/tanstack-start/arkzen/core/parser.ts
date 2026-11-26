@@ -10,6 +10,11 @@
 //        desktop window host). @arkzen:native:frame:expo|rn|lynx and
 //        @arkzen:desktop:frame:electron|tauri. New parser: parseFrames().
 //        Opt-in: Tatemonos without a frame block parse exactly as before.
+// v18.0: Package blocks. The `pkg` family (@arkzen:pkg:project, target, exports, build, verify,
+//        sdk, types, validators, openapi, backend, assets, template, plugin, source, test, readme).
+//        New parser: parsePkg(). ParsedTatemono.pkg is set only when the file has at least one
+//        pkg block. A Tatemono with pkg blocks needs no web, native or Lynx page.
+//        Opt-in: Tatemonos without a pkg block parse exactly as before.
 // v17.0: Browser extension blocks. The `ext` family (@arkzen:ext:project, popup,
 //        sidepanel, page:<name>, content:<name>, background, script:<name>,
 //        commands, menus, rules, locale:<code>, export). New parser: parseExt().
@@ -141,6 +146,8 @@ import type {
   ArkzenExt,
   ArkzenExtCodeBlock,
   ArkzenExtYamlBlock,
+  ArkzenPkg,
+  ArkzenPkgBlock,
   ArkzenConfigOverride,
   ArkzenDatabase,
   ArkzenApi,
@@ -855,6 +862,165 @@ function parseExt(content: string): ArkzenExt | undefined {
   }
 
   return found ? ext : undefined
+}
+
+// ─────────────────────────────────────────────
+// PACKAGE BLOCKS - v18.0
+//
+// A tatemono can describe a reusable package with the `pkg` family:
+//
+//   YAML-only (Shape A: bare */ closes the comment, no :end)
+//     @arkzen:pkg:project[:id]        identity: name, version, kind, license, targets
+//     @arkzen:pkg:target:<registry>[:id]   registry-specific manifest fields
+//     @arkzen:pkg:exports[:id]        public surface: entries, formats, bin
+//     @arkzen:pkg:build[:id]          build tool and options
+//     @arkzen:pkg:verify[:id]         verification checks
+//     @arkzen:pkg:sdk[:id]            derived API client
+//     @arkzen:pkg:types[:id]          derived type definitions
+//     @arkzen:pkg:validators[:id]     derived validators
+//     @arkzen:pkg:openapi[:id]        OpenAPI spec as a package
+//     @arkzen:pkg:backend[:id]        installable backend module
+//     @arkzen:pkg:assets[:id]         bundled assets
+//     @arkzen:pkg:template[:id]       starter / scaffolder
+//     @arkzen:pkg:plugin[:id]         host-tool plugin settings
+//
+//   Code blocks (:end required; Shape B with a YAML header, Shape C without)
+//     @arkzen:pkg:source:<lang>:<name>   one source file, written verbatim
+//     @arkzen:pkg:test:<lang>:<name>     one test file
+//     @arkzen:pkg:readme[:id]            README markdown body
+//
+// Opt-in: a Tatemono with no pkg block gets no `pkg` field. This parser reads the
+// structure only (tags, names, YAML, bodies). The contracts live in validator.ts.
+// ─────────────────────────────────────────────
+
+type PkgShape = 'id' | 'target' | 'langname'
+
+interface PkgBlockSpec {
+  kind:  'code' | 'yaml'
+  shape: PkgShape          // id: 0 or 1 segment, target: registry + optional id, langname: <lang>:<name>
+}
+
+const PKG_BLOCK_SPECS: Readonly<Record<string, PkgBlockSpec>> = {
+  project:    { kind: 'yaml', shape: 'id' },
+  target:     { kind: 'yaml', shape: 'target' },
+  exports:    { kind: 'yaml', shape: 'id' },
+  build:      { kind: 'yaml', shape: 'id' },
+  verify:     { kind: 'yaml', shape: 'id' },
+  sdk:        { kind: 'yaml', shape: 'id' },
+  types:      { kind: 'yaml', shape: 'id' },
+  validators: { kind: 'yaml', shape: 'id' },
+  openapi:    { kind: 'yaml', shape: 'id' },
+  backend:    { kind: 'yaml', shape: 'id' },
+  assets:     { kind: 'yaml', shape: 'id' },
+  template:   { kind: 'yaml', shape: 'id' },
+  plugin:     { kind: 'yaml', shape: 'id' },
+  source:     { kind: 'code', shape: 'langname' },
+  test:       { kind: 'code', shape: 'langname' },
+  readme:     { kind: 'code', shape: 'id' },
+}
+
+const PKG_CODE_TAGS = Object.keys(PKG_BLOCK_SPECS).filter(k => PKG_BLOCK_SPECS[k].kind === 'code').map(k => `pkg:${k}`)
+const PKG_YAML_TAGS = Object.keys(PKG_BLOCK_SPECS).filter(k => PKG_BLOCK_SPECS[k].kind === 'yaml').map(k => `pkg:${k}`)
+
+function parsePkg(content: string): ArkzenPkg | undefined {
+  // Marker searches run on a copy with template literal text blanked out (same length),
+  // so a marker inside a demo string is not read as a block. Slices use the original.
+  const safe = stripTemplateLiterals(content)
+
+  // Opening tags only. Segments after the block name are captured together; a closer
+  // such as "pkg:source:ts:index:end" ends in an "end" segment and is skipped.
+  const openerRe = /^[ \t]*\/\*[ \t]*@arkzen:pkg:([A-Za-z0-9_-]+)((?::[A-Za-z0-9_-]+)*)(?=\s|\*\/)/gm
+
+  const pkg: ArkzenPkg = { blocks: [] }
+  const seen = new Set<string>()
+
+  const loadYaml = (marker: string, text: string): unknown => {
+    if (!text.trim()) return undefined
+    try {
+      return yaml.load(text)
+    } catch (e) {
+      const why = e instanceof Error ? e.message.split('\n')[0] : String(e)
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} has invalid YAML: ${why}`)
+    }
+  }
+
+  for (const m of safe.matchAll(openerRe)) {
+    const base = m[1]
+    const segs = m[2] ? m[2].slice(1).split(':') : []
+    if (segs[segs.length - 1] === 'end') continue
+
+    if (!Object.prototype.hasOwnProperty.call(PKG_BLOCK_SPECS, base)) {
+      throw new Error(
+        `[Arkzen Parser] Unknown package block @arkzen:pkg:${base}. ` +
+        `Known blocks: ${Object.keys(PKG_BLOCK_SPECS).map(k => `pkg:${k}`).join(', ')}`
+      )
+    }
+    const spec = PKG_BLOCK_SPECS[base]
+    const marker = ['pkg', base, ...segs].join(':')
+
+    const entry: ArkzenPkgBlock = { kind: base, marker, start: 0, end: 0 }
+    if (spec.shape === 'id') {
+      if (segs.length > 1) {
+        throw new Error(`[Arkzen Parser] @arkzen:${marker}: write @arkzen:pkg:${base} or @arkzen:pkg:${base}:<package-id>`)
+      }
+      if (segs[0] !== undefined) entry.id = segs[0]
+    } else if (spec.shape === 'target') {
+      if (segs.length < 1 || segs.length > 2) {
+        throw new Error(`[Arkzen Parser] @arkzen:${marker}: write @arkzen:pkg:target:<registry> or @arkzen:pkg:target:<registry>:<package-id>`)
+      }
+      entry.registry = segs[0]
+      if (segs[1] !== undefined) entry.id = segs[1]
+    } else {
+      if (segs.length !== 2) {
+        throw new Error(`[Arkzen Parser] @arkzen:${marker}: write @arkzen:pkg:${base}:<lang>:<name>`)
+      }
+      entry.lang = segs[0]
+      entry.name = segs[1]
+    }
+    if (entry.id === 'end') {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker}: "end" cannot be a package id`)
+    }
+    if (seen.has(marker)) {
+      throw new Error(`[Arkzen Parser] Duplicate @arkzen:${marker} block`)
+    }
+    seen.add(marker)
+
+    const openIdx = (m.index ?? 0) + m[0].indexOf('/*')
+    const openEnd = findOpeningCommentEnd(safe, openIdx, openIdx + 2)
+    if (openEnd === -1) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} opening comment is never closed with */`)
+    }
+
+    // The YAML header is everything between the opener line and the closing */.
+    const firstBreak = safe.indexOf('\n', openIdx)
+    const inline     = firstBreak === -1 || openEnd < firstBreak
+    const headerText = inline ? '' : content.slice(firstBreak + 1, openEnd)
+
+    if (spec.kind === 'yaml') {
+      entry.data  = loadYaml(marker, headerText) ?? {}
+      entry.start = openIdx
+      entry.end   = openEnd + 2
+      pkg.blocks.push(entry)
+      continue
+    }
+
+    const header = loadYaml(marker, headerText) ?? {}
+    if (typeof header !== 'object' || header === null || Array.isArray(header)) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} header must be a YAML mapping`)
+    }
+    const closeMarker = `/* @arkzen:${marker}:end */`
+    const closeIdx    = safe.indexOf(closeMarker, openEnd)
+    if (closeIdx === -1) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} is missing its closing ${closeMarker}`)
+    }
+    entry.header = header as Record<string, unknown>
+    entry.raw    = content.slice(openEnd + 2, closeIdx).trim()
+    entry.start  = openIdx
+    entry.end    = closeIdx + closeMarker.length
+    pkg.blocks.push(entry)
+  }
+
+  return pkg.blocks.length > 0 ? pkg : undefined
 }
 
 // ─────────────────────────────────────────────
@@ -2294,6 +2460,8 @@ const CODE_BLOCK_TAGS = [
   'native:frame', 'desktop:frame',
   // extension blocks - v17.0 (same-line */ for Shape C, a multi-line YAML opener for Shape B)
   ...EXT_CODE_TAGS,
+  // package blocks - v18.0 (same line */ for Shape C, a multi-line YAML opener for Shape B)
+  ...PKG_CODE_TAGS,
 ]
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
 const YAML_ONLY_TAGS  = [
@@ -2303,6 +2471,8 @@ const YAML_ONLY_TAGS  = [
   'oauth',
   // extension YAML-only blocks - v17.0
   ...EXT_YAML_TAGS,
+  // package YAML-only blocks - v18.0
+  ...PKG_YAML_TAGS,
 ]
 
 function validateDslTags(content: string, filePath: string): void {
@@ -2323,7 +2493,7 @@ function validateDslTags(content: string, filePath: string): void {
     if (trimmed.match(/^\/\* @arkzen:native:page:layout:/)) continue
 
     // v7.0: capture full type including web: prefix e.g. "web:page", "web:style", "script"
-    const tagMatch = trimmed.match(/^\/\* @arkzen:((?:web|native|desktop|ext):)?([a-zA-Z]+)/)
+    const tagMatch = trimmed.match(/^\/\* @arkzen:((?:web|native|desktop|ext|pkg):)?([a-zA-Z]+)/)
     if (!tagMatch) continue
     const tagType = tagMatch[1] ? `${tagMatch[1]}${tagMatch[2]}` : tagMatch[2]
 
@@ -2338,6 +2508,17 @@ function validateDslTags(content: string, filePath: string): void {
       continue
     }
 
+    // v18.0: a typo in a pkg block name gets a clear message instead of "Missing closing tag"
+    if (tagType.startsWith('pkg:') && ![...PKG_CODE_TAGS, ...PKG_YAML_TAGS].includes(tagType)) {
+      errors.push({
+        line:    lineNum,
+        tag:     trimmed.replace('/* ', '').trim(),
+        problem: `Unknown package block "@arkzen:${tagType}"`,
+        fix:     `Use one of: ${[...PKG_CODE_TAGS, ...PKG_YAML_TAGS].map(x => `@arkzen:${x}`).join(', ')}`,
+      })
+      continue
+    }
+
     const hasInlineClose = trimmed.endsWith('*/')
 
     // v11.0: web:layout and native:layout allow multi-line opening comments
@@ -2345,7 +2526,7 @@ function validateDslTags(content: string, filePath: string): void {
     // findOpeningCommentEnd — skip the inline-close requirement for them.
     const isLayoutTag = tagType === 'web:layout' || tagType === 'native:layout'
     // v17.0: ext code blocks may also open with a multi-line YAML header (Shape B)
-    const isExtCodeTag = EXT_CODE_TAGS.includes(tagType)
+    const isExtCodeTag = EXT_CODE_TAGS.includes(tagType) || PKG_CODE_TAGS.includes(tagType)
 
     // Code blocks must have */ on same line (except layout tags with YAML metadata)
     if (CODE_BLOCK_TAGS.includes(tagType) && !hasInlineClose && !isLayoutTag && !isExtCodeTag) {
@@ -2488,14 +2669,15 @@ function validatePages(
   nativePages:     ArkzenPage[],
   nativeLynxPages: ArkzenPage[],
   hasFreeFiles:    boolean = false,
-  hasExt:          boolean = false
+  hasExt:          boolean = false,
+  hasPkg:          boolean = false
 ): void {
   // v14.1: a tatemono made only of @arkzen:file blocks needs no pages
   // v10.0: valid if has web pages, native pages, or error handlers
   // v10.3: nativeLynxPages also counts as valid
   // A native-only tatemono has zero web pages — that's fine
   // v17.0: a tatemono with @arkzen:ext blocks needs no page either (the validator checks the ext contracts)
-  if (!hasFreeFiles && !hasExt && pages.length === 0 && errorHandlers.length === 0 && nativePages.length === 0 && nativeLynxPages.length === 0) {
+  if (!hasFreeFiles && !hasExt && !hasPkg && pages.length === 0 && errorHandlers.length === 0 && nativePages.length === 0 && nativeLynxPages.length === 0) {
     throw new Error('[Arkzen Parser] At least one @arkzen:web:page:name, @arkzen:native:page:name, or @arkzen:native:page:lynx:name section is required')
   }
   const seen = new Set<string>()
@@ -2626,6 +2808,9 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   // v17.0: extension blocks (opt-in; undefined when the Tatemono declares none)
   const ext = parseExt(content)
 
+  // v18.0: package blocks (opt-in; undefined when the Tatemono declares none)
+  const pkg = parsePkg(content)
+
   // Clear any existing DSL error file for this tatemono on successful parse
   try {
     const tatemono  = path.basename(path.dirname(filePath))
@@ -2637,7 +2822,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   validateTableNames(databases)
   validateNoDuplicateTables(databases)
   validateNoDuplicateControllers(apis)
-  validatePages(pages, errorHandlers, nativePages, nativeLynxPages, content.includes('/* @arkzen:file:'), ext !== undefined)
+  validatePages(pages, errorHandlers, nativePages, nativeLynxPages, content.includes('/* @arkzen:file:'), ext !== undefined, pkg !== undefined)
 
   const hasBackend =
     databases.length     > 0 ||
@@ -2705,6 +2890,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     nativeLynxErrorHandlers,
     ...(frames ? { frames } : {}),   // v15.0
     ...(ext ? { ext } : {}),         // v17.0
+    ...(pkg ? { pkg } : {}),         // v18.0
   }
 
   console.log(`[Arkzen Parser] ✓ Parsed: ${meta.name} v${meta.version}`)
@@ -2772,6 +2958,14 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     ].filter(Boolean)
     console.log(`[Arkzen Parser]   Extension: ${extParts.join(', ')}`)
   }
+  if (pkg) {
+    const kinds = new Set(pkg.blocks.map(b => b.kind))
+    const pkgParts = [...kinds].map(k => {
+      const n = pkg.blocks.filter(b => b.kind === k).length
+      return n > 1 ? `${k} (${n})` : k
+    })
+    console.log(`[Arkzen Parser]   Package: ${pkgParts.join(', ')}`)
+  }
   if (nativeLynxPages.length > 0 || nativeLynxLayouts.length > 0 || nativeLynxComponents.length > 0 || nativeLynxStyleGlobal || nativeLynxStyles.length > 0 || nativeLynxErrorHandlers.length > 0 || nativeAnimationLynx || nativeScriptLynx || nativeScriptsLynx.length > 0) {
     console.log(`[Arkzen Parser]   ── Native (Lynx) ──`)
     if (nativeLynxPages.length)         console.log(`[Arkzen Parser]   Lynx pages (${nativeLynxPages.length}): ${nativeLynxPages.map(p => p.name).join(', ')}`)
@@ -2827,5 +3021,7 @@ export function hasSections(filePath: string) {
     nativeScriptLynx:        content.includes('/* @arkzen:native:script:lynx'),
     // extension - v17.0
     ext:                     content.includes('/* @arkzen:ext:'),
+    // package - v18.0
+    pkg:                     content.includes('/* @arkzen:pkg:'),
   }
 }

@@ -619,6 +619,79 @@ add(EXT({ key: 'ext:export', sub: 'browser targets and zip options', name: null,
   tag: () => 'ext:export',
   build: () => shapeA('ext:export', `browsers: [chrome, firefox]\nzip: true`) }))
 
+// ---- Package ----
+const PKG = g => ({ group: 'Package', ...g })
+const PKG_TARGET_YAML = {
+  npm: slug => `name: "@scope/${slug}"\naccess: public`,
+  jsr: slug => `name: "@scope/${slug}"`,
+  pypi: slug => `name: ${slug}\nrequires_python: ">=3.10"`,
+  crates: slug => `name: ${slug}\nedition: "2021"`,
+  go: slug => `module_path: github.com/owner/${slug}`,
+  maven: slug => `group_id: com.example\nartifact_id: ${slug}`,
+  nuget: slug => `name: Example.${pascal(slug)}`,
+  packagist: slug => `name: vendor/${slug}\nphp: "^8.2"`,
+  github: () => `owner: owner`,
+}
+const PKG_SAMPLE_CODE = {
+  ts: "export function hello(name: string): string {\n  return 'Hello, ' + name\n}",
+  py: "def hello(name: str) -> str:\n    return 'Hello, ' + name",
+  rs: "pub fn hello(name: &str) -> String {\n    format!(\"Hello, {}\", name)\n}",
+  go: "package greet\n\nfunc Hello(name string) string {\n\treturn \"Hello, \" + name\n}",
+  java: "public class Greeter {\n    public static String hello(String name) { return \"Hello, \" + name; }\n}",
+  cs: "public static class Greeter\n{\n    public static string Hello(string name) => \"Hello, \" + name;\n}",
+  php: "<?php\n\nfunction hello(string $name): string {\n    return 'Hello, ' . $name;\n}",
+}
+const pkgOptionalId = { prompt: 'Package id (blank = the only package)', def: '', optional: true }
+const pkgTag = (base, n) => (n ? `pkg:${base}:${n}` : `pkg:${base}`)
+add(PKG({ key: 'pkg:project', sub: 'package identity: name, kind, license, targets (required)', name: pkgOptionalId,
+  tag: n => pkgTag('project', n),
+  build: ({ slug, name }) => shapeA(pkgTag('project', name), `name: ${slug}\nkind: library\nlicense: MIT\ntargets: [npm]`) }))
+add(PKG({ key: 'pkg:target', sub: 'registry-specific manifest fields (npm, jsr, pypi, crates, go, maven, nuget, packagist, github)', name: { prompt: 'Registry', def: 'npm' },
+  tag: n => `pkg:target:${n}`,
+  build: ({ slug, name }) => shapeA(`pkg:target:${name}`, (PKG_TARGET_YAML[name.split(':')[0]] ?? PKG_TARGET_YAML.npm)(slug)) }))
+add(PKG({ key: 'pkg:exports', sub: 'public surface: entry points, formats, binaries', name: pkgOptionalId,
+  tag: n => pkgTag('exports', n),
+  build: ({ name }) => shapeA(pkgTag('exports', name), `entries:\n  ".": index\nformats: [esm, cjs, dts]`) }))
+add(PKG({ key: 'pkg:build', sub: 'build tool and options', name: pkgOptionalId,
+  tag: n => pkgTag('build', n),
+  build: ({ name }) => shapeA(pkgTag('build', name), `clean: true\nsourcemap: false`) }))
+add(PKG({ key: 'pkg:verify', sub: 'checks run on the packed archive', name: pkgOptionalId,
+  tag: n => pkgTag('verify', n),
+  build: ({ name }) => shapeA(pkgTag('verify', name), `import: [hello]\ntype_check: true`) }))
+add(PKG({ key: 'pkg:sdk', sub: 'API client generated from the api and routes blocks', name: pkgOptionalId,
+  tag: n => pkgTag('sdk', n),
+  build: ({ name }) => shapeA(pkgTag('sdk', name), `languages: [ts]\nauth: bearer`) }))
+add(PKG({ key: 'pkg:types', sub: 'type definitions generated from database and api blocks', name: pkgOptionalId,
+  tag: n => pkgTag('types', n),
+  build: ({ name }) => shapeA(pkgTag('types', name), `languages: [ts]\nfrom: both`) }))
+add(PKG({ key: 'pkg:validators', sub: 'validators generated from database and api rules', name: pkgOptionalId,
+  tag: n => pkgTag('validators', n),
+  build: ({ name }) => shapeA(pkgTag('validators', name), `languages: [ts]`) }))
+add(PKG({ key: 'pkg:openapi', sub: 'the OpenAPI 3.1 spec as a package', name: pkgOptionalId,
+  tag: n => pkgTag('openapi', n),
+  build: ({ name }) => shapeA(pkgTag('openapi', name), `include_docs_html: false`) }))
+add(PKG({ key: 'pkg:backend', sub: 'installable backend module', name: pkgOptionalId,
+  tag: n => pkgTag('backend', n),
+  build: ({ name }) => shapeA(pkgTag('backend', name), `backend: laravel\ninclude: []\nmount: /example`) }))
+add(PKG({ key: 'pkg:assets', sub: 'bundled asset files from the tatemono assets folder', name: pkgOptionalId,
+  tag: n => pkgTag('assets', n),
+  build: ({ name }) => shapeA(pkgTag('assets', name), `include: ["logo.svg"]`) }))
+add(PKG({ key: 'pkg:template', sub: 'starter project or scaffolder', name: pkgOptionalId,
+  tag: n => pkgTag('template', n),
+  build: ({ name }) => shapeA(pkgTag('template', name), `variables:\n  - name: name\n    prompt: Project name`) }))
+add(PKG({ key: 'pkg:plugin', sub: 'host-tool plugin settings (vite, eslint, tailwind, laravel, ...)', name: pkgOptionalId,
+  tag: n => pkgTag('plugin', n),
+  build: ({ name }) => shapeA(pkgTag('plugin', name), `host: vite`) }))
+add(PKG({ key: 'pkg:source', sub: 'one source file of the package, in its own language (lang:name)', name: { prompt: 'Language and file name (lang:name)', def: 'ts:index' },
+  tag: n => `pkg:source:${n}`,
+  build: ({ name }) => shapeB(`pkg:source:${name}`, `entry: true`, PKG_SAMPLE_CODE[name.split(':')[0]] ?? PKG_SAMPLE_CODE.ts) }))
+add(PKG({ key: 'pkg:test', sub: 'one test file (lang:name)', name: { prompt: 'Language and file name (lang:name)', def: 'ts:index' },
+  tag: n => `pkg:test:${n}`,
+  build: ({ name }) => shapeC(`pkg:test:${name}`, `// write tests for the package here`) }))
+add(PKG({ key: 'pkg:readme', sub: 'README markdown body', name: pkgOptionalId,
+  tag: n => pkgTag('readme', n),
+  build: ({ slug, name }) => shapeC(pkgTag('readme', name), `# ${slug}\n\nDescribe the package here.`) }))
+
 // ---- Godot 4 ----
 const GODOT = g => ({ group: 'Godot 4', game: 'godot', ...g })
 add(GODOT({ key: 'godot:project', sub: 'project identity, renderer, display', name: null, once: true,
@@ -725,6 +798,8 @@ const TEMPLATES = {
     make: ({ slug }) => [metaBlock(slug, 'Unreal Engine scene tatemono'), make('unreal:project', null, { slug }), make('unreal:environment'), make('unreal:scene', 'main', { slug }), make('unreal:export')] },
   extension: { label: 'Browser extension', sub: 'meta + ext project + popup + export',
     make: ({ slug }) => [metaBlock(slug, 'Browser extension tatemono'), make('ext:project', null, { slug }), make('ext:popup', null, { slug }), make('ext:export')] },
+  package: { label: 'Package (npm library)', sub: 'meta + pkg project + npm target + source + exports + verify',
+    make: ({ slug }) => [metaBlock(slug, 'Package tatemono'), make('pkg:project', null, { slug }), make('pkg:target', 'npm', { slug }), make('pkg:source', 'ts:index', { slug }), make('pkg:exports'), make('pkg:verify')] },
 }
 
 
@@ -740,6 +815,9 @@ const DECL_RE = /^(web:page:layout|native:page:layout|native:page:lynx:layout):(
 const EXT_YAML_FAMILIES = new Set(['ext:project', 'ext:commands', 'ext:menus', 'ext:rules', 'ext:locale', 'ext:export'])
 const EXT_CODE_FAMILIES = new Set(['ext:popup', 'ext:sidepanel', 'ext:page', 'ext:content', 'ext:background', 'ext:script'])
 const EXT_NAMED_FAMILIES = new Set(['ext:page', 'ext:content', 'ext:script', 'ext:locale'])
+// Package blocks (@arkzen:pkg:*). target takes a registry, source and test take lang:name, the rest take an optional package id.
+const PKG_YAML_FAMILIES = new Set(['pkg:project', 'pkg:target', 'pkg:exports', 'pkg:build', 'pkg:verify', 'pkg:sdk', 'pkg:types', 'pkg:validators', 'pkg:openapi', 'pkg:backend', 'pkg:assets', 'pkg:template', 'pkg:plugin'])
+const PKG_CODE_FAMILIES = new Set(['pkg:source', 'pkg:test', 'pkg:readme'])
 
 function parseTag(tag) {
   const decl = tag.match(DECL_RE)
@@ -755,6 +833,7 @@ function parseTag(tag) {
   if (head === 'web') return { family: `web:${parts[1]}`, name: parts.slice(2).join(':') }
   if (head === 'desktop') return { family: `desktop:${parts[1]}`, name: parts.slice(2).join(':') }
   if (head === 'ext') return { family: `ext:${parts[1]}`, name: parts.slice(2).join(':') }
+  if (head === 'pkg') return { family: `pkg:${parts[1]}`, name: parts.slice(2).join(':') }
   if (head === 'godot' || head === 'unity' || head === 'unreal') return { family: `${head}:${parts[1]}`, name: parts.slice(2).join(':') }
   if (head === 'native') {
     if (parts[2] === 'lynx' && (parts[1] === 'page' || parts[1] === 'layout' || parts[1] === 'components'))
@@ -808,7 +887,7 @@ export function scanSource(source) {
   const model = {
     src, openers: [], meta: null, metaLine: 0, apis: [], tables: [], routes: [], events: [],
     webPages: [], webLayouts: [], nativePages: [], nativeLayouts: [], lynxPages: [], lynxLayouts: [],
-    code: [], mixed: [], frames: [], fileBlocks: [], game: null, ends: new Set(), oauth: null, exts: [],
+    code: [], mixed: [], frames: [], fileBlocks: [], game: null, ends: new Set(), oauth: null, exts: [], pkgs: [],
   }
   const lineOf = idx => src.slice(0, idx).split('\n').length
   let lastWeb = null, lastNative = null, lastLynx = null
@@ -829,6 +908,7 @@ export function scanSource(source) {
     const o = { tag, ...parseTag(tag), line: lineOf(m.index), sameLineClose, closed, yaml, nextLine }
     model.openers.push(o)
     if (o.family.startsWith('ext:')) model.exts.push({ ...o, name: o.name, fields: yamlTop(yaml) })
+    if (o.family.startsWith('pkg:')) model.pkgs.push({ ...o, name: o.name, fields: yamlTop(yaml) })
 
     switch (o.family) {
       case 'meta': model.meta = { ...yamlTop(yaml), _raw: yaml }; model.metaLine = o.line; break
@@ -914,15 +994,18 @@ export function lintSource(source, opts = {}) {
     if (seen.has(o.tag)) E(`Duplicate block @arkzen:${o.tag} (first at line ${seen.get(o.tag)})`, o.line)
     else seen.set(o.tag, o.line)
 
+    if (o.family.startsWith('pkg:')) {
+      if (!PKG_YAML_FAMILIES.has(o.family) && !PKG_CODE_FAMILIES.has(o.family)) E(`Unknown package block @arkzen:${o.tag}. Known: ${[...PKG_YAML_FAMILIES, ...PKG_CODE_FAMILIES].map(f => '@arkzen:' + f).join(', ')}`, o.line)
+    }
     if (o.family.startsWith('ext:')) {
       if (!EXT_YAML_FAMILIES.has(o.family) && !EXT_CODE_FAMILIES.has(o.family)) E(`Unknown extension block @arkzen:${o.tag}. Known: ${[...EXT_YAML_FAMILIES, ...EXT_CODE_FAMILIES].map(f => '@arkzen:' + f).join(', ')}.${didYouMean(o.family, [...EXT_YAML_FAMILIES, ...EXT_CODE_FAMILIES])}`, o.line)
       else if (EXT_NAMED_FAMILIES.has(o.family) && !o.name) E(`@arkzen:${o.tag} needs a name: write @arkzen:${o.family}:<name>`, o.line)
       else if (!EXT_NAMED_FAMILIES.has(o.family) && o.name) E(`@arkzen:${o.family} takes no name (found "${o.name}")`, o.line)
     }
     const head = o.tag.split(':')[0]
-    const isA = SHAPE_A_TAGS.has(o.tag) || head === 'database' || head === 'api' || EXT_YAML_FAMILIES.has(o.family)
+    const isA = SHAPE_A_TAGS.has(o.tag) || head === 'database' || head === 'api' || EXT_YAML_FAMILIES.has(o.family) || PKG_YAML_FAMILIES.has(o.family)
     const isD = BACKEND_CODE.has(head) || o.family === 'module:rs'
-    const isC = (SHAPE_C_HEADS.has(head) && !SHAPE_A_TAGS.has(o.tag) && o.family !== 'native:meta') || o.family === 'desktop:frame' || EXT_CODE_FAMILIES.has(o.family)
+    const isC = (SHAPE_C_HEADS.has(head) && !SHAPE_A_TAGS.has(o.tag) && o.family !== 'native:meta') || o.family === 'desktop:frame' || EXT_CODE_FAMILIES.has(o.family) || PKG_CODE_FAMILIES.has(o.family)
     const needsEnd = () => { if (!m.ends.has(o.tag)) E(`@arkzen:${o.tag} is missing its closing /* @arkzen:${o.tag}:end */`, o.line) }
     if (isA) {
       if (o.sameLineClose) E(`@arkzen:${o.tag} is a YAML-only block: do not put */ on the opening line, close it with a bare */ line`, o.line)
@@ -933,7 +1016,7 @@ export function lintSource(source, opts = {}) {
       needsEnd()
     } else if (isC) {
       // Layouts and ext blocks may open with a multi-line YAML header (Shape B).
-      const layoutWithYaml = (o.family === 'web:layout' || o.family === 'native:layout' || o.family === 'native:layout:lynx' || EXT_CODE_FAMILIES.has(o.family)) && !o.sameLineClose && o.closed
+      const layoutWithYaml = (o.family === 'web:layout' || o.family === 'native:layout' || o.family === 'native:layout:lynx' || EXT_CODE_FAMILIES.has(o.family) || PKG_CODE_FAMILIES.has(o.family)) && !o.sameLineClose && o.closed
       if (!o.sameLineClose && !layoutWithYaml) E(`@arkzen:${o.tag} is a code block: put */ on the SAME line as the opening tag`, o.line)
       needsEnd()
     } else if (o.family === 'file') {
@@ -949,7 +1032,7 @@ export function lintSource(source, opts = {}) {
   const hasFiles = m.fileBlocks.length > 0
 
   // pages
-  if (!isGame && !hasFiles && !m.exts.length && !m.webPages.length && !m.nativePages.length && !m.lynxPages.length)
+  if (!isGame && !hasFiles && !m.exts.length && !m.pkgs.length && !m.webPages.length && !m.nativePages.length && !m.lynxPages.length)
     E('At least one @arkzen:web:page:<name>, @arkzen:native:page:<name> or @arkzen:native:page:lynx:<name> is required')
   for (const [list, label] of [[m.webPages, 'web'], [m.nativePages, 'native'], [m.lynxPages, 'Lynx']]) {
     const names = new Set()
@@ -1041,6 +1124,24 @@ export function lintSource(source, opts = {}) {
     if (locales.length && !project?.fields.default_locale) E('@arkzen:ext:project needs default_locale: when @arkzen:ext:locale blocks exist', project?.line)
   }
 
+  // package blocks (engine contract, the main parts; the engine validator checks every key)
+  if (m.pkgs.length) {
+    const projects = m.pkgs.filter(x => x.family === 'pkg:project')
+    if (!projects.length) E('@arkzen:pkg:project is required when a tatemono has package blocks')
+    for (const x of projects) {
+      if (!x.fields.name) E(`@arkzen:${x.tag} needs a name:`, x.line)
+      if (!x.fields.kind) E(`@arkzen:${x.tag} needs a kind:`, x.line)
+      if (!x.fields.targets) E(`@arkzen:${x.tag} needs targets:`, x.line)
+    }
+    if (projects.length > 1 && projects.some(x => !x.name)) E('When a tatemono holds more than one package, every @arkzen:pkg:project needs an id: @arkzen:pkg:project:<package-id>')
+    for (const x of m.pkgs.filter(x => x.family === 'pkg:target')) {
+      if (!x.name) E('@arkzen:pkg:target needs a registry: write @arkzen:pkg:target:<registry>', x.line)
+    }
+    for (const x of m.pkgs.filter(x => x.family === 'pkg:source' || x.family === 'pkg:test')) {
+      if (!/^[a-z]+:[A-Za-z0-9_-]+$/.test(x.name)) E(`@arkzen:${x.tag} needs a language and a file name: write @arkzen:${x.family}:<lang>:<name>`, x.line)
+    }
+  }
+
   // frames (engine contract)
   for (const f of m.frames) {
     const o = m.openers.find(x => x.line === f.line)
@@ -1095,6 +1196,7 @@ const NAME_KIND = {
   endpoint: 'ident', handler: 'ident', policy: 'ident', middleware: 'ident',
   realtime: 'free', 'realtime:event': 'free', 'native:style:name': 'free', 'lynx:style:name': 'free',
   'native:script': 'free', 'lynx:script': 'free', 'ext:locale': 'free',
+  'pkg:target': 'free', 'pkg:source': 'free', 'pkg:test': 'free',
 }
 
 function normalizeName(block, raw, flags) {
@@ -1120,6 +1222,8 @@ function normalizeName(block, raw, flags) {
     const v = w.length ? w[0].toLowerCase() + w.slice(1).map(x => x[0].toUpperCase() + x.slice(1)).join('') : ''
     return /^[A-Za-z_]/.test(v) ? done(v) : { error: `"${input}" is not a valid ${block.key} name (letters, digits and _; not starting with a digit)` }
   }
+  // package blocks: target takes <registry>[:<package-id>], source and test take <lang>:<name>
+  if (block.key.startsWith('pkg:') && kind === 'free') return /^[A-Za-z0-9][A-Za-z0-9_-]*(:[A-Za-z0-9][A-Za-z0-9_-]*)?$/.test(input) ? { value: input } : { error: `"${input}" is not a valid ${block.key} name (letters, digits, - _ and one : between the parts)` }
   if (kind === 'free') return /^[A-Za-z0-9][A-Za-z0-9_.{}-]*$/.test(input) ? { value: input } : { error: `"${input}" is not a valid ${block.key} identifier (letters, digits, - _ . { })` }
   if (flags.exact) return /^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(input) ? { value: input } : { error: `"${input}" is not a valid name` }
   const v = /^[a-z0-9]+(-[a-z0-9]+)*$/.test(input) ? input : kebab(input)

@@ -19,7 +19,7 @@ import * as path from 'path'
 import { parsePageLayoutDecl, parseTatemono, findMissingBackendVariants } from './parser'
 import { activeBackendVariant, resolveActiveBackend } from './backends'
 import { hasFileBlocks, validateFileBlocks } from './file-writer'
-import type { ParsedTatemono, ValidationResult, ArkzenDatabase } from '../types'
+import type { ParsedTatemono, ValidationResult, ArkzenDatabase, ArkzenPkgBlock } from '../types'
 
 const VALID_COLUMN_TYPES = new Set([
   'integer', 'bigInteger', 'string', 'text', 'longText',
@@ -516,6 +516,482 @@ function validateExt(parsed: ParsedTatemono, filePath: string): { errors: string
 // MAIN VALIDATOR
 // ────────────────────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────
+// PACKAGE BLOCKS (v18.0)
+// @arkzen:pkg:project, target, exports, build, verify, sdk, types, validators, openapi,
+// backend, assets, template, plugin, source, test, readme.
+// The parser reads the structure; every contract is checked here so a wrong value is
+// reported before the package build. Only Tatemonos that declare a pkg block are checked.
+// ─────────────────────────────────────────────
+
+const PKG_REGISTRIES = ['npm', 'jsr', 'pypi', 'crates', 'go', 'maven', 'nuget', 'packagist', 'github']
+const PKG_LANGS      = ['ts', 'py', 'rs', 'go', 'java', 'cs', 'php']
+const PKG_KINDS      = ['library', 'components', 'plugin', 'config', 'template', 'assets', 'cli', 'backend', 'sdk', 'types', 'validators', 'openapi']
+const PKG_BACKENDS   = ['laravel', 'express', 'fastapi', 'go', 'rust', 'spring-boot', 'aspnet']
+const PKG_FORMATS    = ['esm', 'cjs', 'dts']
+const PKG_ID_RE      = /^[a-z][a-z0-9-]*$/
+const PKG_SEMVER_RE  = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/
+const PKG_SECRET_KEY = /(token|password|passwd|secret|private[_-]?key|api[_-]?key|credential)/i
+
+// Registry to the language its source blocks are written in. github follows the package's language.
+const PKG_REGISTRY_LANG: Record<string, string | null> = {
+  npm: 'ts', jsr: 'ts', pypi: 'py', crates: 'rs', go: 'go', maven: 'java', nuget: 'cs', packagist: 'php', github: null,
+}
+
+// Common SPDX identifiers. An id outside this list is a warning, not an error,
+// because the full SPDX list is not bundled with the engine.
+const PKG_SPDX = new Set([
+  '0BSD', 'AGPL-3.0-only', 'AGPL-3.0-or-later', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'BSL-1.0',
+  'CC0-1.0', 'CC-BY-4.0', 'CC-BY-SA-4.0', 'EPL-2.0', 'GPL-2.0-only', 'GPL-2.0-or-later', 'GPL-3.0-only',
+  'GPL-3.0-or-later', 'ISC', 'LGPL-2.1-only', 'LGPL-2.1-or-later', 'LGPL-3.0-only', 'LGPL-3.0-or-later',
+  'MIT', 'MIT-0', 'MPL-2.0', 'Unlicense', 'Zlib', 'UNLICENSED',
+])
+
+// Which blocks each kind needs (R) and does not use (X). Everything else is optional.
+// Source: PLUFFY_PACKAGE_PLAN.md section 6.7.
+const PKG_DERIVED_BLOCKS = ['sdk', 'types', 'validators', 'openapi']
+const PKG_KIND_RULES: Record<string, { required: string[]; unused: string[] }> = {
+  library:    { required: ['project', 'target', 'exports', 'source'],
+                unused:   [...PKG_DERIVED_BLOCKS, 'backend', 'assets', 'template', 'plugin'] },
+  components: { required: ['project', 'target', 'exports'],
+                unused:   [...PKG_DERIVED_BLOCKS, 'backend', 'template', 'plugin'] },
+  plugin:     { required: ['project', 'target', 'exports', 'source', 'plugin'],
+                unused:   [...PKG_DERIVED_BLOCKS, 'backend', 'assets', 'template'] },
+  config:     { required: ['project', 'target', 'exports'],
+                unused:   ['build', 'test', ...PKG_DERIVED_BLOCKS, 'backend', 'assets', 'template', 'plugin'] },
+  template:   { required: ['project', 'target', 'template'],
+                unused:   ['exports', 'build', 'source', 'test', ...PKG_DERIVED_BLOCKS, 'backend', 'plugin'] },
+  assets:     { required: ['project', 'target', 'exports', 'assets'],
+                unused:   ['build', 'source', 'test', ...PKG_DERIVED_BLOCKS, 'backend', 'template', 'plugin'] },
+  cli:        { required: ['project', 'target', 'exports', 'source'],
+                unused:   [...PKG_DERIVED_BLOCKS, 'backend', 'assets', 'template', 'plugin'] },
+  backend:    { required: ['project', 'target', 'backend'],
+                unused:   ['exports', ...PKG_DERIVED_BLOCKS, 'assets', 'template', 'plugin'] },
+  sdk:        { required: ['project', 'target', 'sdk'],
+                unused:   ['types', 'validators', 'openapi', 'backend', 'assets', 'template', 'plugin'] },
+  types:      { required: ['project', 'target', 'types'],
+                unused:   ['source', 'test', 'sdk', 'validators', 'openapi', 'backend', 'assets', 'template', 'plugin'] },
+  validators: { required: ['project', 'target', 'validators'],
+                unused:   ['sdk', 'types', 'openapi', 'backend', 'assets', 'template', 'plugin'] },
+  openapi:    { required: ['project', 'target', 'openapi'],
+                unused:   ['build', 'source', 'test', 'sdk', 'types', 'validators', 'backend', 'assets', 'template', 'plugin'] },
+}
+
+// Name rules per registry (from each registry's own naming rules; not tested against the registries).
+const PKG_NPM_NAME_RE       = /^(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/
+const PKG_JSR_NAME_RE       = /^@[a-z0-9][a-z0-9-]*\/[a-z0-9][a-z0-9-]*$/
+const PKG_PYPI_NAME_RE      = /^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?$/
+const PKG_CRATE_NAME_RE     = /^[A-Za-z][A-Za-z0-9_-]*$/
+const PKG_NUGET_NAME_RE     = /^[A-Za-z0-9_](?:[A-Za-z0-9_.-]*[A-Za-z0-9_])?$/
+const PKG_PACKAGIST_NAME_RE = /^[a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)*$/
+const PKG_MAVEN_PART_RE     = /^[A-Za-z0-9_.-]+$/
+const PKG_GO_MODULE_RE      = /^[A-Za-z0-9][A-Za-z0-9._~-]*(?:\/[A-Za-z0-9._~-]+)+$/
+
+const PKG_STACK_IMPORT_RE   = /from\s+['"]@\/arkzen\/core|from\s+['"][^'"]*arkzen\/core|adapters\/router|adapters\/Link/
+
+function validatePkg(parsed: ParsedTatemono, filePath: string): { errors: string[]; warnings: string[] } {
+  const errors:   string[] = []
+  const warnings: string[] = []
+  const pkg = parsed.pkg
+  if (!pkg) return { errors, warnings }
+
+  const source = (() => { try { return fs.readFileSync(filePath, 'utf-8') } catch { return '' } })()
+  const blocks = pkg.blocks
+
+  // ── Secrets: no pkg block may carry a credential (Pluffy never stores or sends tokens) ──
+  const scanSecrets = (label: string, value: unknown, trail: string): void => {
+    if (Array.isArray(value)) { value.forEach((v, i) => scanSecrets(label, v, `${trail}[${i}]`)); return }
+    if (!isMap(value)) return
+    for (const [key, inner] of Object.entries(value)) {
+      if (PKG_SECRET_KEY.test(key)) {
+        errors.push(`@arkzen:${label}: key "${trail}${key}" looks like a credential. Package blocks never hold secrets; the user's own environment (.npmrc, ~/.pypirc, ...) supplies them at publish time`)
+      }
+      scanSecrets(label, inner, `${trail}${key}.`)
+    }
+  }
+  for (const b of blocks) {
+    if (b.data !== undefined) scanSecrets(b.marker, b.data, '')
+    if (b.header) scanSecrets(b.marker, b.header, '')
+  }
+
+  // ── Packages: one per pkg:project block ──
+  const projects = blocks.filter(b => b.kind === 'project')
+  if (projects.length === 0) {
+    errors.push('@arkzen:pkg:project is required when a tatemono has package blocks (it holds the package name, kind, license and targets)')
+    return { errors, warnings }
+  }
+  const idOf = (b: { id?: string }): string => b.id ?? '_default'
+  const label = (id: string): string => (id === '_default' ? 'package' : `package "${id}"`)
+
+  const ids = new Set<string>()
+  for (const p of projects) {
+    const id = idOf(p)
+    if (id !== '_default' && !PKG_ID_RE.test(id)) {
+      errors.push(`@arkzen:${p.marker}: the package id must be lowercase kebab-case (letters, digits, hyphens, starting with a letter)`)
+    }
+    if (ids.has(id)) errors.push(`Duplicate package id: ${label(id)}`)
+    ids.add(id)
+  }
+  if (projects.length > 1 && projects.some(p => p.id === undefined)) {
+    errors.push('When a tatemono holds more than one package, every @arkzen:pkg:project needs an id: write @arkzen:pkg:project:<package-id>')
+  }
+  const soleId = projects.length === 1 ? idOf(projects[0]) : undefined
+
+  // Which package a block belongs to: its [:id], else its package: header key, else the only package.
+  const ownerOf = (b: ArkzenPkgBlock): string | undefined => {
+    if (b.id !== undefined) return b.id
+    const fromData   = isMap(b.data)   && isText(b.data.package)   ? b.data.package   : undefined
+    const fromHeader = isMap(b.header) && isText(b.header.package) ? b.header.package : undefined
+    return fromData ?? fromHeader ?? soleId
+  }
+
+  const owners = new Map<ArkzenPkgBlock, string>()
+  for (const b of blocks) {
+    if (b.kind === 'project') { owners.set(b, idOf(b)); continue }
+    const owner = ownerOf(b)
+    if (owner === undefined) {
+      errors.push(`@arkzen:${b.marker} does not say which package it belongs to. Add package: <id> (or use the @arkzen:pkg:${b.kind}:<package-id> form)`)
+      continue
+    }
+    if (!ids.has(owner)) {
+      errors.push(`@arkzen:${b.marker} refers to package "${owner}", which has no @arkzen:pkg:project:${owner} block`)
+      continue
+    }
+    owners.set(b, owner)
+  }
+  const ofPackage = (id: string, kind: string): ArkzenPkgBlock[] =>
+    blocks.filter(b => b.kind === kind && owners.get(b) === id)
+
+  // Duplicate singleton blocks per package (the parser only rejects an identical marker).
+  for (const kind of ['project', 'exports', 'build', 'verify', 'sdk', 'types', 'validators', 'openapi', 'backend', 'assets', 'template', 'plugin', 'readme']) {
+    for (const id of ids) {
+      if (ofPackage(id, kind).length > 1) errors.push(`${label(id)} has more than one @arkzen:pkg:${kind} block`)
+    }
+  }
+
+  // ── Per package ──
+  const packageFacts = new Map<string, { registries: string[]; kind?: string }>()
+  for (const p of projects) {
+    const id   = idOf(p)
+    const data = p.data
+    const tag  = `@arkzen:${p.marker}`
+    if (!isMap(data)) { errors.push(`${tag} must be a YAML mapping`); continue }
+
+    if (!isText(data.name)) errors.push(`${tag} needs name:`)
+    let kind: string | undefined
+    if (!isText(data.kind)) {
+      errors.push(`${tag} needs kind: (${PKG_KINDS.join(', ')})`)
+    } else if (!PKG_KINDS.includes(data.kind)) {
+      errors.push(`${tag} kind must be one of: ${PKG_KINDS.join(', ')} (got ${JSON.stringify(data.kind)})`)
+    } else {
+      kind = data.kind
+    }
+
+    const version = data.version ?? parsed.meta.version
+    if (typeof version !== 'string' || !PKG_SEMVER_RE.test(version)) {
+      errors.push(`${tag} version must be a semver string such as 1.0.0 (got ${JSON.stringify(version)}; it defaults to meta.version)`)
+    }
+    if (data.license !== undefined) {
+      if (!isText(data.license)) errors.push(`${tag} license must be an SPDX id such as MIT`)
+      else if (!PKG_SPDX.has(data.license)) warnings.push(`${tag} license "${data.license}" is not in the common SPDX list the engine knows. Check it at spdx.org/licenses`)
+    } else {
+      warnings.push(`${tag} has no license:. Registries accept a package without one, but nobody can legally reuse it`)
+    }
+    if (data.visibility !== undefined && !(data.visibility === 'public' || data.visibility === 'private')) {
+      errors.push(`${tag} visibility must be one of: public, private`)
+    }
+    if (data.workspace_only !== undefined && typeof data.workspace_only !== 'boolean') errors.push(`${tag} workspace_only must be true or false`)
+    if (data.keywords !== undefined && !isTexts(data.keywords)) errors.push(`${tag} keywords must be a list of strings`)
+    for (const key of ['description', 'author', 'repository', 'homepage', 'bugs'] as const) {
+      if (data[key] !== undefined && !isText(data[key])) errors.push(`${tag} ${key} must be a non-empty string`)
+    }
+    if (data.runtime !== undefined && !isMap(data.runtime)) errors.push(`${tag} runtime must be a mapping (node, python, rustc, go, java, dotnet, php)`)
+
+    let registries: string[] = []
+    if (!Array.isArray(data.targets) || data.targets.length === 0) {
+      errors.push(`${tag} needs targets: a list of registries (${PKG_REGISTRIES.join(', ')})`)
+    } else {
+      for (const t of data.targets) {
+        if (typeof t !== 'string' || !PKG_REGISTRIES.includes(t)) {
+          errors.push(`${tag} targets: unknown registry ${JSON.stringify(t)}. Valid: ${PKG_REGISTRIES.join(', ')}`)
+        } else {
+          registries.push(t)
+        }
+      }
+      if (new Set(registries).size !== registries.length) errors.push(`${tag} targets lists a registry twice`)
+    }
+    packageFacts.set(id, { registries, kind })
+
+    // kind and blocks agree (plan section 6.7)
+    if (kind) {
+      const rules = PKG_KIND_RULES[kind]
+      for (const need of rules.required) {
+        if (need === 'project') continue
+        if (ofPackage(id, need).length === 0) {
+          errors.push(`${label(id)} has kind: ${kind}, which needs @arkzen:pkg:${need}${need === 'source' ? ':<lang>:<name>' : need === 'target' ? ':<registry>' : ''}`)
+        }
+      }
+      for (const no of rules.unused) {
+        if (ofPackage(id, no).length > 0) errors.push(`${label(id)} has kind: ${kind}, which does not use @arkzen:pkg:${no}. Remove the block or change the kind`)
+      }
+    }
+
+    // every listed registry has a target block, and every target block is listed
+    const targets = ofPackage(id, 'target')
+    for (const reg of registries) {
+      if (!targets.some(t => t.registry === reg)) {
+        errors.push(`${label(id)} lists the ${reg} registry in targets but has no @arkzen:pkg:target:${reg} block (it holds the registry name)`)
+      }
+    }
+    for (const t of targets) {
+      if (t.registry && PKG_REGISTRIES.includes(t.registry) && !registries.includes(t.registry)) {
+        errors.push(`@arkzen:${t.marker} is for ${t.registry}, which is not in the targets of ${label(id)}`)
+      }
+    }
+  }
+
+  // ── Target blocks: names follow each registry's rules ──
+  for (const t of blocks.filter(b => b.kind === 'target')) {
+    const tag = `@arkzen:${t.marker}`
+    const reg = t.registry as string
+    if (!PKG_REGISTRIES.includes(reg)) {
+      errors.push(`${tag}: unknown registry "${reg}". Valid: ${PKG_REGISTRIES.join(', ')}`)
+      continue
+    }
+    const d = t.data
+    if (!isMap(d)) { errors.push(`${tag} must be a YAML mapping`); continue }
+    const name = d.name
+    const need = (key: string): string | undefined => {
+      if (!isText(d[key])) { errors.push(`${tag} needs ${key}:`); return undefined }
+      return d[key] as string
+    }
+    const check = (re: RegExp, value: string | undefined, what: string): void => {
+      if (value !== undefined && !re.test(value)) errors.push(`${tag} ${what} is not valid for the ${reg} registry (got ${JSON.stringify(value)})`)
+    }
+    switch (reg) {
+      case 'npm': {
+        const n = need('name')
+        check(PKG_NPM_NAME_RE, n, 'name')
+        if (n !== undefined && n.length > 214) errors.push(`${tag} name is longer than 214 characters`)
+        break
+      }
+      case 'jsr':       check(PKG_JSR_NAME_RE, need('name'), 'name (JSR names need a scope: @scope/name)'); break
+      case 'pypi':      check(PKG_PYPI_NAME_RE, need('name'), 'name'); break
+      case 'crates': {
+        const n = need('name')
+        check(PKG_CRATE_NAME_RE, n, 'name')
+        if (n !== undefined && n.length > 64) errors.push(`${tag} name is longer than 64 characters`)
+        break
+      }
+      case 'go':        check(PKG_GO_MODULE_RE, need('module_path'), 'module_path (for example github.com/owner/repo)'); break
+      case 'maven':
+        check(PKG_MAVEN_PART_RE, need('group_id'), 'group_id')
+        check(PKG_MAVEN_PART_RE, need('artifact_id'), 'artifact_id')
+        break
+      case 'nuget':     check(PKG_NUGET_NAME_RE, need('name'), 'name'); break
+      case 'packagist': check(PKG_PACKAGIST_NAME_RE, need('name'), 'name (Packagist names are vendor/name, lowercase)'); break
+      case 'github':    need('owner'); break
+    }
+    if (name !== undefined && !isText(name) && reg !== 'go' && reg !== 'maven') errors.push(`${tag} name must be a non-empty string`)
+    for (const key of ['dependencies', 'dev_dependencies', 'peer_dependencies', 'optional_dependencies'] as const) {
+      if (d[key] !== undefined && !isMap(d[key]) && !isTexts(d[key])) errors.push(`${tag} ${key} must be a mapping (name: range) or a list`)
+    }
+  }
+
+  // ── Source and test blocks ──
+  const names = new Set<string>()
+  for (const b of blocks.filter(x => x.kind === 'source' || x.kind === 'test')) {
+    const tag = `@arkzen:${b.marker}`
+    const lang = b.lang as string
+    if (!PKG_LANGS.includes(lang)) { errors.push(`${tag}: unknown language "${lang}". Valid: ${PKG_LANGS.join(', ')}`); continue }
+    if (!/^[A-Za-z0-9_-]+$/.test(b.name as string)) errors.push(`${tag}: the file name may use letters, digits, hyphens and underscores only`)
+    const dupKey = `${owners.get(b) ?? '?'}|${b.kind}|${lang}|${b.name}`
+    if (names.has(dupKey)) errors.push(`Duplicate ${b.kind} block ${lang}:${b.name} in ${label(owners.get(b) ?? '?')}`)
+    names.add(dupKey)
+
+    const owner = owners.get(b)
+    const facts = owner !== undefined ? packageFacts.get(owner) : undefined
+    if (facts && facts.registries.length > 0) {
+      const ok = facts.registries.some(r => PKG_REGISTRY_LANG[r] === lang || PKG_REGISTRY_LANG[r] === null)
+      if (!ok) {
+        const want = facts.registries.map(r => `${r}: ${PKG_REGISTRY_LANG[r] ?? 'any language'}`).join(', ')
+        errors.push(`${tag}: ${lang} code does not match the targets of ${label(owner as string)} (${want})`)
+      }
+    }
+    if (b.header) {
+      if (b.header.ext !== undefined && !(typeof b.header.ext === 'string' && ['ts', 'tsx', 'js', 'jsx'].includes(b.header.ext))) {
+        errors.push(`${tag} ext must be one of: ts, tsx, js, jsx`)
+      }
+      if (b.header.entry !== undefined && typeof b.header.entry !== 'boolean') errors.push(`${tag} entry must be true or false`)
+      if (b.header.path !== undefined && (!isText(b.header.path) || b.header.path.includes('..') || /^([A-Za-z]:|[\\/])/.test(b.header.path))) {
+        errors.push(`${tag} path must be a relative path inside the package (no .. and no absolute path)`)
+      }
+    }
+    // published packages cannot depend on stack internals
+    if (b.kind === 'source' && lang === 'ts' && b.raw && PKG_STACK_IMPORT_RE.test(b.raw)) {
+      errors.push(`${tag} imports from the Pluffy stack (arkzen/core or the router adapter). A published package can only import what its own manifest declares`)
+    }
+  }
+
+  // ── Exports ──
+  for (const e of blocks.filter(b => b.kind === 'exports')) {
+    const tag = `@arkzen:${e.marker}`
+    const d = e.data
+    if (!isMap(d)) { errors.push(`${tag} must be a YAML mapping`); continue }
+    const owner = owners.get(e)
+    const sources = new Set(blocks.filter(b => b.kind === 'source' && owners.get(b) === owner).map(b => b.name))
+    if (d.entries !== undefined) {
+      if (!isMap(d.entries)) errors.push(`${tag} entries must map a subpath to a source name or { from: ... }`)
+      else {
+        for (const [subpath, target] of Object.entries(d.entries)) {
+          if (subpath !== '.' && !subpath.startsWith('./')) { errors.push(`${tag} entries: subpath "${subpath}" must be "." or start with "./"`); continue }
+          if (typeof target === 'string') {
+            if (!sources.has(target) && !/\.(css|json)$/.test(target)) errors.push(`${tag} entries: "${subpath}" points at source "${target}", but no @arkzen:pkg:source block has that name`)
+          } else if (isMap(target) && isText(target.from)) {
+            const from = target.from
+            const comp = from.match(/^web:components:([A-Za-z0-9_-]+)$/)
+            const style = from.match(/^web:style:([A-Za-z0-9_-]+)$/)
+            if (comp) {
+              const found = parsed.components.find(c => c.name === comp[1])
+              if (!found) errors.push(`${tag} entries: "${subpath}" exports web:components:${comp[1]}, which does not exist in this tatemono`)
+              else if (PKG_STACK_IMPORT_RE.test(found.raw)) errors.push(`${tag} entries: web:components:${comp[1]} imports from the Pluffy stack (arkzen/core or the router adapter), so it cannot be published as a package`)
+            } else if (style) {
+              if (!new RegExp(`@arkzen:web:style:${style[1]}\\b`).test(source)) errors.push(`${tag} entries: "${subpath}" exports web:style:${style[1]}, which does not exist in this tatemono`)
+            } else {
+              errors.push(`${tag} entries: "${subpath}" from: must be web:components:<Name> or web:style:<Name> (got ${JSON.stringify(from)})`)
+            }
+          } else {
+            errors.push(`${tag} entries: "${subpath}" must be a source name or { from: web:components:<Name> }`)
+          }
+        }
+      }
+    }
+    if (d.formats !== undefined) {
+      if (!Array.isArray(d.formats) || !d.formats.every(f => typeof f === 'string' && PKG_FORMATS.includes(f))) {
+        errors.push(`${tag} formats must be a list drawn from: ${PKG_FORMATS.join(', ')}`)
+      }
+    }
+    if (d.bin !== undefined) {
+      if (!isMap(d.bin)) errors.push(`${tag} bin must map a command name to a source name`)
+      else for (const [cmd, src] of Object.entries(d.bin)) {
+        if (typeof src !== 'string' || !sources.has(src)) errors.push(`${tag} bin: "${cmd}" points at source "${String(src)}", but no @arkzen:pkg:source block has that name`)
+      }
+    }
+    if (d.types_only !== undefined && typeof d.types_only !== 'boolean') errors.push(`${tag} types_only must be true or false`)
+    const facts = owner !== undefined ? packageFacts.get(owner) : undefined
+    if (facts?.kind === 'cli' && d.bin === undefined) errors.push(`${tag}: a package with kind: cli needs bin:`)
+  }
+
+  // ── Derived blocks: reference the database and api blocks of this tatemono ──
+  const apiNames = new Set<string>()
+  for (const a of parsed.apis) {
+    apiNames.add(a.model.toLowerCase())
+    apiNames.add(a.controller.replace(/Controller$/, '').toLowerCase())
+    const last = a.prefix.split('/').filter(Boolean).pop()
+    if (last) apiNames.add(last.toLowerCase())
+  }
+  const dbNames = new Set(parsed.databases.map(d => d.table.toLowerCase()))
+  const knownIds = [...new Set([...apiNames, ...dbNames])]
+  for (const kind of PKG_DERIVED_BLOCKS) {
+    for (const b of blocks.filter(x => x.kind === kind)) {
+      const tag = `@arkzen:${b.marker}`
+      const d = b.data
+      if (!isMap(d)) { errors.push(`${tag} must be a YAML mapping`); continue }
+      if (d.languages !== undefined) {
+        if (!Array.isArray(d.languages) || d.languages.length === 0 || !d.languages.every(l => typeof l === 'string' && PKG_LANGS.includes(l))) {
+          errors.push(`${tag} languages must be a list drawn from: ${PKG_LANGS.join(', ')}`)
+        } else {
+          const owner = owners.get(b)
+          const facts = owner !== undefined ? packageFacts.get(owner) : undefined
+          if (facts && facts.registries.length > 0) {
+            for (const l of d.languages as string[]) {
+              if (!facts.registries.some(r => PKG_REGISTRY_LANG[r] === l || PKG_REGISTRY_LANG[r] === null)) {
+                errors.push(`${tag} languages includes ${l}, but no target of ${label(owner as string)} publishes ${l} code`)
+              }
+            }
+          }
+        }
+      } else if (kind !== 'openapi') {
+        errors.push(`${tag} needs languages:`)
+      }
+      for (const key of ['include', 'exclude'] as const) {
+        if (d[key] === undefined) continue
+        if (!isTexts(d[key])) { errors.push(`${tag} ${key} must be a list of api or table names`); continue }
+        for (const ref of d[key] as string[]) {
+          if (!knownIds.includes(ref.toLowerCase())) {
+            errors.push(`${tag} ${key}: "${ref}" matches no @arkzen:database table or @arkzen:api in this tatemono${knownIds.length ? ` (known: ${knownIds.join(', ')})` : ''}`)
+          }
+        }
+      }
+      if (kind === 'sdk') {
+        if (d.auth !== undefined && !(d.auth === 'bearer' || d.auth === 'none')) errors.push(`${tag} auth must be one of: bearer, none`)
+        if (d.style !== undefined && !(d.style === 'class' || d.style === 'functions')) errors.push(`${tag} style must be one of: class, functions`)
+      }
+      if (kind === 'types' && d.from !== undefined && !(d.from === 'database' || d.from === 'api' || d.from === 'both')) {
+        errors.push(`${tag} from must be one of: database, api, both`)
+      }
+      if (kind === 'openapi' && d.backend !== undefined && !(typeof d.backend === 'string' && PKG_BACKENDS.includes(d.backend))) {
+        errors.push(`${tag} backend must be one of: ${PKG_BACKENDS.join(', ')}`)
+      }
+    }
+  }
+
+  // ── Backend module ──
+  for (const b of blocks.filter(x => x.kind === 'backend')) {
+    const tag = `@arkzen:${b.marker}`
+    const d = b.data
+    if (!isMap(d)) { errors.push(`${tag} must be a YAML mapping`); continue }
+    if (!isText(d.backend) || !PKG_BACKENDS.includes(d.backend)) errors.push(`${tag} needs backend: one of ${PKG_BACKENDS.join(', ')}`)
+    if (d.include !== undefined) {
+      if (!isTexts(d.include)) errors.push(`${tag} include must be a list such as [database:notes, api:notes]`)
+      else for (const ref of d.include as string[]) {
+        const m = ref.match(/^(database|api|routes|events|jobs)(?::(.+))?$/)
+        if (!m) { errors.push(`${tag} include: "${ref}" must be database:<table>, api:<name>, routes, events or jobs`); continue }
+        if (m[2] && !knownIds.includes(m[2].toLowerCase()) && (m[1] === 'database' || m[1] === 'api')) {
+          errors.push(`${tag} include: "${ref}" matches nothing in this tatemono${knownIds.length ? ` (known: ${knownIds.join(', ')})` : ''}`)
+        }
+      }
+    }
+    if (d.migrations !== undefined && !(d.migrations === 'bundled' || d.migrations === 'separate')) errors.push(`${tag} migrations must be one of: bundled, separate`)
+    if (d.auth !== undefined && !(d.auth === 'host' || d.auth === 'bundled')) errors.push(`${tag} auth must be one of: host, bundled`)
+  }
+
+  // ── Verify block ──
+  for (const b of blocks.filter(x => x.kind === 'verify')) {
+    const tag = `@arkzen:${b.marker}`
+    const d = b.data
+    if (!isMap(d)) { errors.push(`${tag} must be a YAML mapping`); continue }
+    for (const key of ['install', 'type_check', 'tests', 'license_check'] as const) {
+      if (d[key] !== undefined && typeof d[key] !== 'boolean') errors.push(`${tag} ${key} must be true or false`)
+    }
+    for (const key of ['import', 'pack_contents', 'consumers'] as const) {
+      if (d[key] !== undefined && !isTexts(d[key])) errors.push(`${tag} ${key} must be a list of strings`)
+    }
+  }
+
+  // ── Template and assets ──
+  for (const b of blocks.filter(x => x.kind === 'template' || x.kind === 'assets')) {
+    const tag = `@arkzen:${b.marker}`
+    const d = b.data
+    if (!isMap(d)) { errors.push(`${tag} must be a YAML mapping`); continue }
+    if (b.kind === 'assets') {
+      if (!isTexts(d.include) || (d.include as string[]).length === 0) errors.push(`${tag} needs include: a list of files or globs under tatemonos/${parsed.meta.name}/assets/`)
+      else for (const g of d.include as string[]) if (g.includes('..')) errors.push(`${tag} include: "${g}" must stay inside the assets folder`)
+    }
+    if (b.kind === 'template' && d.variables !== undefined && !Array.isArray(d.variables)) errors.push(`${tag} variables must be a list`)
+  }
+
+  // ── Plugin ──
+  for (const b of blocks.filter(x => x.kind === 'plugin')) {
+    const tag = `@arkzen:${b.marker}`
+    const d = b.data
+    if (!isMap(d)) { errors.push(`${tag} must be a YAML mapping`); continue }
+    if (!isText(d.host)) errors.push(`${tag} needs host: (vite, eslint, tailwind, laravel, maven, gradle, ...)`)
+  }
+
+  return { errors, warnings }
+}
+
 export function validateTatemono(filePath: string): ValidationResult {
   const errors:   string[] = []
   const warnings: string[] = []
@@ -612,11 +1088,18 @@ export function validateTatemono(filePath: string): ValidationResult {
     warnings.push(...extResult.warnings)
   }
 
+  // v18.0: package blocks (opt-in)
+  if (parsed.pkg) {
+    const pkgResult = validatePkg(parsed, filePath)
+    errors.push(...pkgResult.errors)
+    warnings.push(...pkgResult.warnings)
+  }
+
   const hasFreeFiles = hasFileBlocks(fs.readFileSync(filePath, 'utf-8'))
 
   // v14.1: @arkzen:file blocks are valid without any page
   // v17.0: @arkzen:ext blocks are valid without any page (validateExt checks the ext contracts)
-  if (!hasFreeFiles && !parsed.ext && parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0) {
+  if (!hasFreeFiles && !parsed.ext && !parsed.pkg && parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0) {
     errors.push('At least one @arkzen:web:page:name, @arkzen:native:page:name, or @arkzen:native:page:lynx:name section is required')
   }
 
@@ -625,7 +1108,7 @@ export function validateTatemono(filePath: string): ValidationResult {
     catch (e) { errors.push(e instanceof Error ? e.message : String(e)) }
   }
 
-  const extOnly = !!parsed.ext && parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0
+  const extOnly = (!!parsed.ext || !!parsed.pkg) && parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0
   if (!hasFreeFiles && !extOnly && parsed.components.length === 0 && parsed.nativeComponents.length === 0 && parsed.nativeLynxComponents.length === 0) {
     warnings.push('No @arkzen:components or @arkzen:native:components found – consider adding shared UI components.')
   }

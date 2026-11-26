@@ -178,7 +178,7 @@ function symbolKind(tag) {
     case 'listener': case 'events': case 'realtime': return k.Event
     case 'jobs': case 'console': case 'notifications': case 'mail': return k.Function
     case 'file': return k.File
-    case 'godot': case 'unity': case 'unreal': case 'ext': return k.Object
+    case 'godot': case 'unity': case 'unreal': case 'ext': case 'pkg': return k.Object
     default: return k.Variable
   }
 }

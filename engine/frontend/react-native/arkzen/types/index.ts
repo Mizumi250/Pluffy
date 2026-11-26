@@ -153,6 +153,29 @@ export interface ArkzenExt {
   export?:     ArkzenExtYamlBlock         // @arkzen:ext:export
 }
 
+// ─────────────────────────────────────────────
+// PACKAGE BLOCKS - v18.0
+// @arkzen:pkg:* blocks describe a reusable package (npm, PyPI, crates.io, ...).
+// The parser records structure only; validator.ts checks the contracts.
+// ─────────────────────────────────────────────
+export interface ArkzenPkgBlock {
+  kind:      string                       // project | target | exports | build | verify | sdk | types | validators | openapi | backend | assets | template | plugin | readme | source | test
+  marker:    string                       // the marker without "@arkzen:", e.g. "pkg:source:ts:index"
+  id?:       string                       // package id for the [:id] blocks
+  registry?: string                       // pkg:target:<registry>
+  lang?:     string                       // pkg:source|test:<lang>:<name>
+  name?:     string                       // pkg:source|test:<lang>:<name>
+  data?:     unknown                      // YAML blocks: the parsed value
+  header?:   Record<string, unknown>      // code blocks: YAML in the opening comment ({} when none)
+  raw?:      string                       // code blocks: the body, verbatim and trimmed
+  start:     number
+  end:       number
+}
+
+export interface ArkzenPkg {
+  blocks: ArkzenPkgBlock[]
+}
+
 export interface ArkzenMeta {
   name:         string
   version:      string
@@ -416,6 +439,7 @@ export interface ParsedTatemono {
   desktopConfig?: ArkzenDesktopConfig
   frames?:        ArkzenFrames        // v15.0: @arkzen:native:frame:* / @arkzen:desktop:frame:*
   ext?:           ArkzenExt           // v17.0: @arkzen:ext:* browser extension blocks
+  pkg?:           ArkzenPkg           // v18.0: @arkzen:pkg:* package blocks
 
   databases:          ArkzenDatabase[]
   apis:               ArkzenApi[]
