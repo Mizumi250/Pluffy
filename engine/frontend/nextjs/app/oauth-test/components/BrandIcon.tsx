@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — BrandIcon
 // Source: @arkzen:components (oauth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T03:48:50.232Z
+// Generated: 2026-11-26T13:03:56.680Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

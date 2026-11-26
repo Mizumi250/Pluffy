@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — TicketArkzenSeeder
 // Tatemono: fastapi-test  |  Connection: fastapi_test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T03:48:36.354675Z
+// Generated: 2026-11-26T13:03:42.671538Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\FastapiTest;

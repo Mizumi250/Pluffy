@@ -5,7 +5,7 @@
 // Tatemono: aspnet-test
 // v6.0: Methods may include injected logic from @arkzen:policy:methodName blocks
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T03:48:24.826975Z
+// Generated: 2026-11-26T13:03:32.976242Z
 // ============================================================
 
 namespace App\Policies\Arkzen\AspnetTest;

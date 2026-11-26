@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — webmcp-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T03:49:01.466991Z
+// Generated: 2026-11-26T13:04:08.449762Z
 // Resources: Service, RepairTicket, Booking
 // Custom controllers: 
 // ============================================================

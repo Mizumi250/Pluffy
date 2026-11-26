@@ -5,7 +5,7 @@
 // Tatemono: kotoba
 // Type: Custom Route Controller (no model/resource)
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:routes block in the tatemono instead.
-// Generated: 2026-11-26T03:48:44.743548Z
+// Generated: 2026-11-26T13:03:50.790327Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Kotoba;

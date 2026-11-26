@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — CommentController
 // Tatemono: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T03:48:44.711476Z
+// Generated: 2026-11-26T13:03:50.732496Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Kotoba;

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — TaskStoreRequest
 // Tatemono: go-concurrency-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T03:48:37.919927Z
+// Generated: 2026-11-26T13:03:44.240634Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\GoConcurrencyLab;

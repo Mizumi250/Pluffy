@@ -5,7 +5,7 @@
 // Tatemono: express-test
 // Channel: express-test-public (public)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T03:48:34.364020Z
+// Generated: 2026-11-26T13:03:40.880276Z
 // ============================================================
 
 namespace App\Events\Arkzen\ExpressTest\Broadcast;

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — jo-payroll
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T03:48:40.493Z
+// Generated: 2026-11-26T13:03:46.594Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CircularRing
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T03:48:53.145Z
+// Generated: 2026-11-26T13:03:59.842Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — UploadedFileController
 // Tatemono: express-test-2
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T03:48:34.917787Z
+// Generated: 2026-11-26T13:03:41.499849Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\ExpressTest2;

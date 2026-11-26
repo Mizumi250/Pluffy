@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — AccountOpenRequest
 // Tatemono: aspnet-ledger
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T03:48:24.107463Z
+// Generated: 2026-11-26T13:03:32.225052Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\AspnetLedger;

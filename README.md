@@ -4,6 +4,8 @@
 
 Pluffy is a place where an app starts as a single file and grows into a complete, working system: database, backend, web pages, mobile screens and a desktop shell, all from the same source. Make yourself at home.
 
+DOWNLOAD HERE: [Pluffy Studio](https://pluffy-engine.vercel.app/)
+
 ---
 
 ## The idea

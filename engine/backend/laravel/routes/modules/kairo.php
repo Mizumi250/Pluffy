@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — kairo
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T03:48:42.474995Z
+// Generated: 2026-11-26T13:03:48.378189Z
 // Resources: Chip
 // Custom controllers: 
 // ============================================================

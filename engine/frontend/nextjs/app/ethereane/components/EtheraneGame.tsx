@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — EtheraneGame
 // Source: @arkzen:components (ethereane)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T03:48:32.804Z
+// Generated: 2026-11-26T13:03:39.736Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
