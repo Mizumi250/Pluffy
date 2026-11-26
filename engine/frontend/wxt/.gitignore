@@ -1,0 +1,7 @@
+node_modules
+.output
+.wxt
+# written by the emitter (anchored on purpose: an unanchored "entrypoints" also matches reference/*/entrypoints,
+# and Tailwind skips gitignored paths, which leaves the popup without any utility classes)
+/entrypoints
+/arkzen/generated

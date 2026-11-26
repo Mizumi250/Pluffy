@@ -1,0 +1,6 @@
+{
+  "name": "Tab Notes",
+  "version": "1.0.0",
+  "description": "Notes in the toolbar popup",
+  "permissions": ["storage"]
+}

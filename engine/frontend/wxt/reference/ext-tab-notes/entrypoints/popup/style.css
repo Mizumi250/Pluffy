@@ -1,0 +1,12 @@
+@import "tailwindcss";
+/* scan this folder even when it is gitignored (the emitter writes entrypoints/ and ignores it) */
+@source "./";
+
+/* popup size from the ext:popup header (width, height) */
+html,
+body,
+#root {
+  width: 360px;
+  height: 480px;
+  margin: 0;
+}
