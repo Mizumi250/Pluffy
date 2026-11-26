@@ -1,0 +1,159 @@
+// ─────────────────────────────────────────────
+// PACKAGE BLOCKS - v18.0
+//
+// A tatemono can describe a reusable package with the `pkg` family:
+//
+//   YAML-only (Shape A: bare */ closes the comment, no :end)
+//     @arkzen:pkg:project[:id]        identity: name, version, kind, license, targets
+//     @arkzen:pkg:target:<registry>[:id]   registry-specific manifest fields
+//     @arkzen:pkg:exports[:id]        public surface: entries, formats, bin
+//     @arkzen:pkg:build[:id]          build tool and options
+//     @arkzen:pkg:verify[:id]         verification checks
+//     @arkzen:pkg:sdk[:id]            derived API client
+//     @arkzen:pkg:types[:id]          derived type definitions
+//     @arkzen:pkg:validators[:id]     derived validators
+//     @arkzen:pkg:openapi[:id]        OpenAPI spec as a package
+//     @arkzen:pkg:backend[:id]        installable backend module
+//     @arkzen:pkg:assets[:id]         bundled assets
+//     @arkzen:pkg:template[:id]       starter / scaffolder
+//     @arkzen:pkg:plugin[:id]         host-tool plugin settings
+//
+//   Code blocks (:end required; Shape B with a YAML header, Shape C without)
+//     @arkzen:pkg:source:<lang>:<name>   one source file, written verbatim
+//     @arkzen:pkg:test:<lang>:<name>     one test file
+//     @arkzen:pkg:readme[:id]            README markdown body
+//
+// Opt-in: a Tatemono with no pkg block gets no `pkg` field. This parser reads the
+// structure only (tags, names, YAML, bodies). The contracts live in validator.ts.
+// ─────────────────────────────────────────────
+
+type PkgShape = 'id' | 'target' | 'langname'
+
+interface PkgBlockSpec {
+  kind:  'code' | 'yaml'
+  shape: PkgShape          // id: 0 or 1 segment, target: registry + optional id, langname: <lang>:<name>
+}
+
+const PKG_BLOCK_SPECS: Readonly<Record<string, PkgBlockSpec>> = {
+  project:    { kind: 'yaml', shape: 'id' },
+  target:     { kind: 'yaml', shape: 'target' },
+  exports:    { kind: 'yaml', shape: 'id' },
+  build:      { kind: 'yaml', shape: 'id' },
+  verify:     { kind: 'yaml', shape: 'id' },
+  sdk:        { kind: 'yaml', shape: 'id' },
+  types:      { kind: 'yaml', shape: 'id' },
+  validators: { kind: 'yaml', shape: 'id' },
+  openapi:    { kind: 'yaml', shape: 'id' },
+  backend:    { kind: 'yaml', shape: 'id' },
+  assets:     { kind: 'yaml', shape: 'id' },
+  template:   { kind: 'yaml', shape: 'id' },
+  plugin:     { kind: 'yaml', shape: 'id' },
+  source:     { kind: 'code', shape: 'langname' },
+  test:       { kind: 'code', shape: 'langname' },
+  readme:     { kind: 'code', shape: 'id' },
+}
+
+const PKG_CODE_TAGS = Object.keys(PKG_BLOCK_SPECS).filter(k => PKG_BLOCK_SPECS[k].kind === 'code').map(k => `pkg:${k}`)
+const PKG_YAML_TAGS = Object.keys(PKG_BLOCK_SPECS).filter(k => PKG_BLOCK_SPECS[k].kind === 'yaml').map(k => `pkg:${k}`)
+
+function parsePkg(content: string): ArkzenPkg | undefined {
+  // Marker searches run on a copy with template literal text blanked out (same length),
+  // so a marker inside a demo string is not read as a block. Slices use the original.
+  const safe = stripTemplateLiterals(content)
+
+  // Opening tags only. Segments after the block name are captured together; a closer
+  // such as "pkg:source:ts:index:end" ends in an "end" segment and is skipped.
+  const openerRe = /^[ \t]*\/\*[ \t]*@arkzen:pkg:([A-Za-z0-9_-]+)((?::[A-Za-z0-9_-]+)*)(?=\s|\*\/)/gm
+
+  const pkg: ArkzenPkg = { blocks: [] }
+  const seen = new Set<string>()
+
+  const loadYaml = (marker: string, text: string): unknown => {
+    if (!text.trim()) return undefined
+    try {
+      return yaml.load(text)
+    } catch (e) {
+      const why = e instanceof Error ? e.message.split('\n')[0] : String(e)
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} has invalid YAML: ${why}`)
+    }
+  }
+
+  for (const m of safe.matchAll(openerRe)) {
+    const base = m[1]
+    const segs = m[2] ? m[2].slice(1).split(':') : []
+    if (segs[segs.length - 1] === 'end') continue
+
+    if (!Object.prototype.hasOwnProperty.call(PKG_BLOCK_SPECS, base)) {
+      throw new Error(
+        `[Arkzen Parser] Unknown package block @arkzen:pkg:${base}. ` +
+        `Known blocks: ${Object.keys(PKG_BLOCK_SPECS).map(k => `pkg:${k}`).join(', ')}`
+      )
+    }
+    const spec = PKG_BLOCK_SPECS[base]
+    const marker = ['pkg', base, ...segs].join(':')
+
+    const entry: ArkzenPkgBlock = { kind: base, marker, start: 0, end: 0 }
+    if (spec.shape === 'id') {
+      if (segs.length > 1) {
+        throw new Error(`[Arkzen Parser] @arkzen:${marker}: write @arkzen:pkg:${base} or @arkzen:pkg:${base}:<package-id>`)
+      }
+      if (segs[0] !== undefined) entry.id = segs[0]
+    } else if (spec.shape === 'target') {
+      if (segs.length < 1 || segs.length > 2) {
+        throw new Error(`[Arkzen Parser] @arkzen:${marker}: write @arkzen:pkg:target:<registry> or @arkzen:pkg:target:<registry>:<package-id>`)
+      }
+      entry.registry = segs[0]
+      if (segs[1] !== undefined) entry.id = segs[1]
+    } else {
+      if (segs.length !== 2) {
+        throw new Error(`[Arkzen Parser] @arkzen:${marker}: write @arkzen:pkg:${base}:<lang>:<name>`)
+      }
+      entry.lang = segs[0]
+      entry.name = segs[1]
+    }
+    if (entry.id === 'end') {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker}: "end" cannot be a package id`)
+    }
+    if (seen.has(marker)) {
+      throw new Error(`[Arkzen Parser] Duplicate @arkzen:${marker} block`)
+    }
+    seen.add(marker)
+
+    const openIdx = (m.index ?? 0) + m[0].indexOf('/*')
+    const openEnd = findOpeningCommentEnd(safe, openIdx, openIdx + 2)
+    if (openEnd === -1) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} opening comment is never closed with */`)
+    }
+
+    // The YAML header is everything between the opener line and the closing */.
+    const firstBreak = safe.indexOf('\n', openIdx)
+    const inline     = firstBreak === -1 || openEnd < firstBreak
+    const headerText = inline ? '' : content.slice(firstBreak + 1, openEnd)
+
+    if (spec.kind === 'yaml') {
+      entry.data  = loadYaml(marker, headerText) ?? {}
+      entry.start = openIdx
+      entry.end   = openEnd + 2
+      pkg.blocks.push(entry)
+      continue
+    }
+
+    const header = loadYaml(marker, headerText) ?? {}
+    if (typeof header !== 'object' || header === null || Array.isArray(header)) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} header must be a YAML mapping`)
+    }
+    const closeMarker = `/* @arkzen:${marker}:end */`
+    const closeIdx    = safe.indexOf(closeMarker, openEnd)
+    if (closeIdx === -1) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} is missing its closing ${closeMarker}`)
+    }
+    entry.header = header as Record<string, unknown>
+    entry.raw    = content.slice(openEnd + 2, closeIdx).trim()
+    entry.start  = openIdx
+    entry.end    = closeIdx + closeMarker.length
+    pkg.blocks.push(entry)
+  }
+
+  return pkg.blocks.length > 0 ? pkg : undefined
+}
+

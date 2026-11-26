@@ -1,0 +1,73 @@
+
+// ---- Package ----
+const PKG = g => ({ group: 'Package', ...g })
+const PKG_TARGET_YAML = {
+  npm: slug => `name: "@scope/${slug}"\naccess: public`,
+  jsr: slug => `name: "@scope/${slug}"`,
+  pypi: slug => `name: ${slug}\nrequires_python: ">=3.10"`,
+  crates: slug => `name: ${slug}\nedition: "2021"`,
+  go: slug => `module_path: github.com/owner/${slug}`,
+  maven: slug => `group_id: com.example\nartifact_id: ${slug}`,
+  nuget: slug => `name: Example.${pascal(slug)}`,
+  packagist: slug => `name: vendor/${slug}\nphp: "^8.2"`,
+  github: () => `owner: owner`,
+}
+const PKG_SAMPLE_CODE = {
+  ts: "export function hello(name: string): string {\n  return 'Hello, ' + name\n}",
+  py: "def hello(name: str) -> str:\n    return 'Hello, ' + name",
+  rs: "pub fn hello(name: &str) -> String {\n    format!(\"Hello, {}\", name)\n}",
+  go: "package greet\n\nfunc Hello(name string) string {\n\treturn \"Hello, \" + name\n}",
+  java: "public class Greeter {\n    public static String hello(String name) { return \"Hello, \" + name; }\n}",
+  cs: "public static class Greeter\n{\n    public static string Hello(string name) => \"Hello, \" + name;\n}",
+  php: "<?php\n\nfunction hello(string $name): string {\n    return 'Hello, ' . $name;\n}",
+}
+const pkgOptionalId = { prompt: 'Package id (blank = the only package)', def: '', optional: true }
+const pkgTag = (base, n) => (n ? `pkg:${base}:${n}` : `pkg:${base}`)
+add(PKG({ key: 'pkg:project', sub: 'package identity: name, kind, license, targets (required)', name: pkgOptionalId,
+  tag: n => pkgTag('project', n),
+  build: ({ slug, name }) => shapeA(pkgTag('project', name), `name: ${slug}\nkind: library\nlicense: MIT\ntargets: [npm]`) }))
+add(PKG({ key: 'pkg:target', sub: 'registry-specific manifest fields (npm, jsr, pypi, crates, go, maven, nuget, packagist, github)', name: { prompt: 'Registry', def: 'npm' },
+  tag: n => `pkg:target:${n}`,
+  build: ({ slug, name }) => shapeA(`pkg:target:${name}`, (PKG_TARGET_YAML[name.split(':')[0]] ?? PKG_TARGET_YAML.npm)(slug)) }))
+add(PKG({ key: 'pkg:exports', sub: 'public surface: entry points, formats, binaries', name: pkgOptionalId,
+  tag: n => pkgTag('exports', n),
+  build: ({ name }) => shapeA(pkgTag('exports', name), `entries:\n  ".": index\nformats: [esm, cjs, dts]`) }))
+add(PKG({ key: 'pkg:build', sub: 'build tool and options', name: pkgOptionalId,
+  tag: n => pkgTag('build', n),
+  build: ({ name }) => shapeA(pkgTag('build', name), `clean: true\nsourcemap: false`) }))
+add(PKG({ key: 'pkg:verify', sub: 'checks run on the packed archive', name: pkgOptionalId,
+  tag: n => pkgTag('verify', n),
+  build: ({ name }) => shapeA(pkgTag('verify', name), `import: [hello]\ntype_check: true`) }))
+add(PKG({ key: 'pkg:sdk', sub: 'API client generated from the api and routes blocks', name: pkgOptionalId,
+  tag: n => pkgTag('sdk', n),
+  build: ({ name }) => shapeA(pkgTag('sdk', name), `languages: [ts]\nauth: bearer`) }))
+add(PKG({ key: 'pkg:types', sub: 'type definitions generated from database and api blocks', name: pkgOptionalId,
+  tag: n => pkgTag('types', n),
+  build: ({ name }) => shapeA(pkgTag('types', name), `languages: [ts]\nfrom: both`) }))
+add(PKG({ key: 'pkg:validators', sub: 'validators generated from database and api rules', name: pkgOptionalId,
+  tag: n => pkgTag('validators', n),
+  build: ({ name }) => shapeA(pkgTag('validators', name), `languages: [ts]`) }))
+add(PKG({ key: 'pkg:openapi', sub: 'the OpenAPI 3.1 spec as a package', name: pkgOptionalId,
+  tag: n => pkgTag('openapi', n),
+  build: ({ name }) => shapeA(pkgTag('openapi', name), `include_docs_html: false`) }))
+add(PKG({ key: 'pkg:backend', sub: 'installable backend module', name: pkgOptionalId,
+  tag: n => pkgTag('backend', n),
+  build: ({ name }) => shapeA(pkgTag('backend', name), `backend: laravel\ninclude: []\nmount: /example`) }))
+add(PKG({ key: 'pkg:assets', sub: 'bundled asset files from the tatemono assets folder', name: pkgOptionalId,
+  tag: n => pkgTag('assets', n),
+  build: ({ name }) => shapeA(pkgTag('assets', name), `include: ["logo.svg"]`) }))
+add(PKG({ key: 'pkg:template', sub: 'starter project or scaffolder', name: pkgOptionalId,
+  tag: n => pkgTag('template', n),
+  build: ({ name }) => shapeA(pkgTag('template', name), `variables:\n  - name: name\n    prompt: Project name`) }))
+add(PKG({ key: 'pkg:plugin', sub: 'host-tool plugin settings (vite, eslint, tailwind, laravel, ...)', name: pkgOptionalId,
+  tag: n => pkgTag('plugin', n),
+  build: ({ name }) => shapeA(pkgTag('plugin', name), `host: vite`) }))
+add(PKG({ key: 'pkg:source', sub: 'one source file of the package, in its own language (lang:name)', name: { prompt: 'Language and file name (lang:name)', def: 'ts:index' },
+  tag: n => `pkg:source:${n}`,
+  build: ({ name }) => shapeB(`pkg:source:${name}`, `entry: true`, PKG_SAMPLE_CODE[name.split(':')[0]] ?? PKG_SAMPLE_CODE.ts) }))
+add(PKG({ key: 'pkg:test', sub: 'one test file (lang:name)', name: { prompt: 'Language and file name (lang:name)', def: 'ts:index' },
+  tag: n => `pkg:test:${n}`,
+  build: ({ name }) => shapeC(`pkg:test:${name}`, `// write tests for the package here`) }))
+add(PKG({ key: 'pkg:readme', sub: 'README markdown body', name: pkgOptionalId,
+  tag: n => pkgTag('readme', n),
+  build: ({ slug, name }) => shapeC(pkgTag('readme', name), `# ${slug}\n\nDescribe the package here.`) }))

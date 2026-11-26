@@ -1,0 +1,18 @@
+  // package blocks (engine contract, the main parts; the engine validator checks every key)
+  if (m.pkgs.length) {
+    const projects = m.pkgs.filter(x => x.family === 'pkg:project')
+    if (!projects.length) E('@arkzen:pkg:project is required when a tatemono has package blocks')
+    for (const x of projects) {
+      if (!x.fields.name) E(`@arkzen:${x.tag} needs a name:`, x.line)
+      if (!x.fields.kind) E(`@arkzen:${x.tag} needs a kind:`, x.line)
+      if (!x.fields.targets) E(`@arkzen:${x.tag} needs targets:`, x.line)
+    }
+    if (projects.length > 1 && projects.some(x => !x.name)) E('When a tatemono holds more than one package, every @arkzen:pkg:project needs an id: @arkzen:pkg:project:<package-id>')
+    for (const x of m.pkgs.filter(x => x.family === 'pkg:target')) {
+      if (!x.name) E('@arkzen:pkg:target needs a registry: write @arkzen:pkg:target:<registry>', x.line)
+    }
+    for (const x of m.pkgs.filter(x => x.family === 'pkg:source' || x.family === 'pkg:test')) {
+      if (!/^[a-z]+:[A-Za-z0-9_-]+$/.test(x.name)) E(`@arkzen:${x.tag} needs a language and a file name: write @arkzen:${x.family}:<lang>:<name>`, x.line)
+    }
+  }
+
