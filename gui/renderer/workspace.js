@@ -203,6 +203,10 @@ async function saveActive(announce) { return WS.active ? saveRel(WS.active, anno
 async function saveAll() { for (const r of WS.tabs) if (!(await saveRel(r))) return false; return true }
 
 const autosaveOn = () => localStorage.getItem('pluffy.autosave') === '1'
+// the extension's `pluffy.backend` setting: which backend variant to lint for (auto = none, like mizumi check)
+const BACKENDS = [['auto', 'Auto'], ['php', 'PHP (Laravel)'], ['ts', 'TS (Express)'], ['py', 'Python (FastAPI)'], ['java', 'Java (Spring)'], ['cs', 'C# (ASP.NET)'], ['go', 'Go (Chi)'], ['rs', 'Rust (Axum)']]
+const backendPref = () => { try { const v = localStorage.getItem('pluffy.backend'); return BACKENDS.some(([k]) => k === v) ? v : 'auto' } catch { return 'auto' } }
+const lintVariant = () => { const v = backendPref(); return v === 'auto' ? null : v }
 
 function onModelChange(key) {
   const rel = key.slice(WS.name.length + 1)
@@ -216,7 +220,7 @@ async function runLint() {
   const key = WSK('core.tsx')
   if (!WS.ed || !WS.ed.has(key)) return
   const name = WS.name
-  const r = await pluffy.tmLint({ name, text: WS.ed.value(key) })
+  const r = await pluffy.tmLint({ name, text: WS.ed.value(key), variant: lintVariant() })
   if (name !== WS.name || fail(r)) return
   applyProblems(r)
 }
@@ -331,6 +335,14 @@ function renderFoot() {
       !e && !w ? el('span', { class: 'good', style: 'display:inline-flex;align-items:center;gap:6px' }, icon('circle-check', 14), 'Clean') : null) : null,
     el('span', { title: srcText }, `${WS.cursor ? `Ln ${WS.cursor.line}, Col ${WS.cursor.col}` : ''}   ${core ? 'Tatemono' : PluffEditor.languageFor(rel)}`),
     el('span', { class: 'sp' }),
+    core ? el('label', { class: 'switch', style: 'cursor:default', title: 'Backend to lint for: warns about blocks that have no body for it (same as the extension setting pluffy.backend). Auto = no backend checks, like mizumi check.' },
+      'Backend',
+      (() => {
+        const sel = el('select', { style: 'height:22px;border-radius:8px;padding:0 6px;background:var(--secondary);cursor:pointer', onchange: (ev) => { try { localStorage.setItem('pluffy.backend', ev.target.value) } catch { /* not fatal */ } runLint() } },
+          ...BACKENDS.map(([v, l]) => el('option', { value: v }, l)))
+        sel.value = backendPref()
+        return sel
+      })()) : null,
     el('span', { class: 'switch' + (autosaveOn() ? ' on' : ''), title: 'Save automatically after a short pause', onclick: (ev) => { localStorage.setItem('pluffy.autosave', autosaveOn() ? '0' : '1'); ev.currentTarget.classList.toggle('on'); if (autosaveOn()) saveAll() } }, el('i'), 'Auto-save'),
     el('button', { onclick: () => saveActive(true), title: 'Save (Ctrl+S)' }, icon('save', 14), dirty ? 'Save' : saved ? 'Saved' : 'Saved'))
 }
@@ -394,7 +406,7 @@ async function openAddBlock() {
 
   async function choose(b) {
     st.sel = b; st.variant = null; st.names = []; st.pickName = ''; st.flags = {}; st.plan = null; st.cands = null
-    if (b.variants) st.variant = b.variants.optional ? null : (b.variants.list[0] || null)
+    if (b.variants) st.variant = b.variants.optional ? null : ((b.variants.backend && b.variants.list.includes(lintVariant()) ? lintVariant() : null) || b.variants.list[0] || null)
     if (b.unityMode) st.flags.mode = ''
     if (b.extra) st.flags[b.extra.key] = b.extra.def || ''
     if (b.name && !b.name.choices) st.pickName = b.name.def || ''
@@ -419,7 +431,8 @@ async function openAddBlock() {
     const field = (label, ...body) => el('div', { class: 'field' }, el('label', { class: 'l' }, label), ...body)
     const pills = (opts, value, onpick) => el('div', { class: 'pills' }, opts.map((o) => el('span', { class: 'pill' + (value === o.v ? ' on' : ''), onclick: () => onpick(o.v) }, o.l)))
     if (b.variants) {
-      const opts = b.variants.list.map((v) => ({ v, l: `:${v}  ${b.variants.labels[v] || ''}`.trim() }))
+      const opts = b.variants.list.map((v) => ({ v, l: `:${v}  ${b.variants.labels[v] || ''}${b.variants.backend && v === lintVariant() ? '  (active backend)' : ''}`.trim() }))
+      if (b.variants.backend && lintVariant()) opts.sort((a, c) => (c.v === lintVariant()) - (a.v === lintVariant()))
       if (b.variants.optional) opts.unshift({ v: null, l: 'shared (works on every backend)' })
       kids.push(field(b.variants.backend ? 'Backend' : 'Target', pills(opts, st.variant, async (v) => { st.variant = v; await refreshCands(); paintForm(); refreshPlan() })))
     }
@@ -465,7 +478,7 @@ async function openAddBlock() {
     const noneLeft = st.cands && Array.isArray(st.cands.names) && !st.cands.names.length
     if (needsName || noneLeft || (st.cands && st.cands.error)) { go.disabled = true; box.replaceChildren(); return }
     const flags = { ...st.flags }
-    const plan = await pluffy.tmPlan({ name: WS.name, text: WS.ed.value(key), key: b.key, variant: st.variant, names: [b.name || b.composite ? st.pickName : null], flags })
+    const plan = await pluffy.tmPlan({ name: WS.name, text: WS.ed.value(key), key: b.key, variant: st.variant, names: [b.name || b.composite ? st.pickName : null], flags, lintVariant: lintVariant() })
     if (token !== st.token) return
     st.plan = plan
     if (plan.error) { box.replaceChildren(el('p', { class: 'err' }, plan.error)); go.disabled = true; return }

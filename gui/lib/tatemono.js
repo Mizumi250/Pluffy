@@ -183,10 +183,10 @@ class Tatemono {
     return out
   }
 
-  async lint({ name, text }) {
+  async lint({ name, text, variant = null }) {
     const { api } = await this.features()
     if (!api || !api.lintSource) return { errors: [], warnings: [], unavailable: true }
-    const res = api.lintSource(text, { variant: null, slug: name || undefined })
+    const res = api.lintSource(text, { variant: variant || null, slug: name || undefined })
     return { errors: res.errors.map((f) => ({ msg: f.msg, line: f.line || 1 })), warnings: [...res.warnings, ...this.diskWarnings(name, text, api)].map((f) => ({ msg: f.msg, line: f.line || 1 })) }
   }
 
@@ -273,6 +273,135 @@ class Tatemono {
     return lines.join('\n')
   }
 
+  // ---------------------------------------------------------------- go to definition
+  // Same rules as the extension's definitionProvider. Lines and columns are 0-based.
+  geometry(text, api) {
+    const lines = text.split(/\r?\n/)
+    const model = api.scanSource(text)
+    const blocks = []
+    for (const o of model.openers) {
+      if (o.decl !== undefined) continue
+      const start = o.line - 1
+      const endRe = new RegExp('^\\s*/\\*\\s*@arkzen:' + escapeRe(o.tag) + ':end\\s*\\*/')
+      let end = -1
+      for (let i = start; i < lines.length; i++) if (endRe.test(lines[i])) { end = i; break }
+      if (end < 0) for (let i = start; i < lines.length; i++) if (lines[i].includes('*/')) { end = i; break }
+      blocks.push({ o, start, end: end < 0 ? start : end })
+    }
+    return { lines, model, blocks }
+  }
+
+  async definition({ text, line, col }) {
+    const { api } = await this.features()
+    if (!api || !api.scanSource) return []
+    const { lines, blocks } = this.geometry(text, api)
+    const at = lines[line] || ''
+    const find = (re) => { const out = []; lines.forEach((l, i) => { if (re.test(l)) out.push({ line: i, col: Math.max(l.indexOf('@arkzen'), 0) }) }); return out }
+    const opener = (family, name) => new RegExp(`^\\s*/\\*\\s*@arkzen:${family}:${escapeRe(name)}(?![\\w:+-])`)
+    let m
+
+    // page layout line -> the layout block
+    if ((m = /@arkzen:(web:page|native:page(?::lynx)?):layout:([^\s*]+)/.exec(at)) && api.parseLayoutDecl) {
+      const d = api.parseLayoutDecl(m[2])
+      if (d.layout) {
+        const family = m[1] === 'web:page' ? 'web:layout' : m[1].includes('lynx') ? 'native:layout:lynx' : 'native:layout'
+        return find(opener(family, d.layout))
+      }
+    }
+    // parent: x inside a layout -> the parent layout block
+    if ((m = /^\s*parent:\s*["']?([A-Za-z0-9_-]+)/.exec(at))) {
+      for (let i = line; i >= 0; i--) {
+        const mm = /\/\*\s*@arkzen:(web:layout|native:layout:lynx|native:layout):[A-Za-z0-9_-]+/.exec(lines[i])
+        if (mm) return find(opener(mm[1], m[1]))
+      }
+    }
+    // routes handler: x -> handler bodies
+    if ((m = /^\s*(?:-\s*)?handler:\s*["']?([A-Za-z0-9_]+)/.exec(at))) {
+      return find(new RegExp(`^\\s*/\\*\\s*@arkzen:handler:(?:[a-z]+:)?${escapeRe(m[1])}(?![\\w-])`))
+    }
+    // listeners: [A, B] -> listener bodies (the word under the cursor)
+    if (/listeners:\s*\[/.test(at)) {
+      const re = /[A-Za-z0-9_]+/g
+      let w
+      while ((w = re.exec(at))) {
+        if (col >= w.index && col <= w.index + w[0].length) return find(new RegExp(`^\\s*/\\*\\s*@arkzen:listener:(?:[a-z]+:)?${escapeRe(w[0])}(?![\\w-])`))
+      }
+    }
+    // endpoint body -> the endpoint key inside the api block
+    if ((m = /@arkzen:endpoint:(?:[a-z]+:)?([A-Za-z0-9_]+)/.exec(at)) && !/:end\b/.test(at)) {
+      const out = []
+      for (const b of blocks.filter((x) => x.o.family === 'api')) {
+        let inEndpoints = false
+        for (let i = b.start; i <= b.end; i++) {
+          if (/^\s*endpoints:\s*$/.test(lines[i])) { inEndpoints = true; continue }
+          if (inEndpoints && new RegExp(`^\\s+${escapeRe(m[1])}:\\s*$`).test(lines[i])) out.push({ line: i, col: lines[i].search(/\S/) })
+        }
+      }
+      if (out.length) return out
+    }
+    // endpoint key inside an api block -> the endpoint bodies
+    const km = /^\s{2,}([A-Za-z0-9_]+):\s*$/.exec(at)
+    if (km) {
+      const b = blocks.find((x) => x.o.family === 'api' && line > x.start && line <= x.end)
+      if (b && lines.slice(b.start, line).some((l) => /^\s*endpoints:\s*$/.test(l))) {
+        return find(new RegExp(`^\\s*/\\*\\s*@arkzen:endpoint:(?:[a-z]+:)?${escapeRe(km[1])}(?![\\w-])`))
+      }
+    }
+    return []
+  }
+
+  // ---------------------------------------------------------------- quick fixes
+  // `issues` are the problems under the cursor: [{ msg, line }] (line is 1-based, like the problem list).
+  // Returns [{ issue, title, edits: [{ sl, sc, el, ec, text }] }], 0-based, text uses \n (the editor adapts it).
+  async fixes({ text, issues = [] }) {
+    const lines = text.split(/\r?\n/)
+    const OPENER_RE = /^\s*\/\*\s*@arkzen:(?!import:|resolved:)(?![^\s*]*:page:(?:lynx:)?layout:)([A-Za-z0-9:_+.{}-]+)/
+    const isOpenerLine = (l) => { const m = OPENER_RE.exec(l); return !!m && !m[1].endsWith(':end') }
+    const out = []
+    issues.forEach((d, issue) => {
+      const row = Math.min(Math.max((d.line || 1) - 1, 0), Math.max(lines.length - 1, 0))
+      const msg = String(d.msg || '')
+      let m
+      if ((m = /^@arkzen:(\S+) is missing its closing \/\* @arkzen:\S+:end \*\/$/.exec(msg))) {
+        const tag = m[1]
+        let next = lines.length
+        for (let j = row + 1; j < lines.length; j++) if (isOpenerLine(lines[j])) { next = j; break }
+        let k = next - 1
+        while (k > row && !lines[k].trim()) k--
+        const c = (lines[k] || '').length
+        out.push({ issue, title: `Add closing /* @arkzen:${tag}:end */`, edits: [{ sl: k, sc: c, el: k, ec: c, text: `\n/* @arkzen:${tag}:end */` }] })
+      } else if (/^@arkzen:oauth requires auth: true/.test(msg)) {
+        const open = lines.findIndex((l) => /^\s*\/\*\s*@arkzen:meta\s*$/.test(l))
+        if (open < 0) return
+        let close = open + 1
+        while (close < lines.length && !lines[close].includes('*/')) close++
+        let edit = null
+        for (let i = open + 1; i < close; i++) {
+          if (/^\s*auth:/.test(lines[i])) { edit = { sl: i, sc: 0, el: i, ec: lines[i].length, text: 'auth: true' }; break }
+        }
+        if (!edit) {
+          let at = open
+          for (let i = open + 1; i < close; i++) if (/^\s*name:/.test(lines[i])) { at = i; break }
+          edit = { sl: at, sc: lines[at].length, el: at, ec: lines[at].length, text: '\nauth: true' }
+        }
+        out.push({ issue, title: 'Set auth: true in @arkzen:meta', edits: [edit] })
+      } else if ((m = /^@arkzen:(\S+?): .*Did you mean "([^"]+)"\?/.exec(msg))) {
+        const tag = m[1]
+        const fixed = tag.slice(0, tag.lastIndexOf(':') + 1) + m[2]
+        const edits = []
+        const opener = new RegExp(escapeRe('@arkzen:' + tag) + '(?![\\w:+-])').exec(lines[row] || '')
+        if (opener) edits.push({ sl: row, sc: opener.index, el: row, ec: opener.index + opener[0].length, text: '@arkzen:' + fixed })
+        const closeRe = new RegExp(escapeRe('@arkzen:' + tag + ':end'))
+        for (let i = row + 1; i < lines.length; i++) {
+          const c = closeRe.exec(lines[i])
+          if (c) { edits.push({ sl: i, sc: c.index, el: i, ec: c.index + c[0].length, text: '@arkzen:' + fixed + ':end' }); break }
+        }
+        if (edits.length) out.push({ issue, title: `Rename block to @arkzen:${fixed}`, edits })
+      }
+    })
+    return out
+  }
+
   // ---------------------------------------------------------------- add block
   gameKind(text) {
     return /@arkzen:godot:project/.test(text) ? 'godot' : /@arkzen:unity:project/.test(text) ? 'unity' : /@arkzen:unreal:project/.test(text) ? 'unreal' : null
@@ -310,7 +439,7 @@ class Tatemono {
   }
 
   // Builds the new text exactly like `mizumi block` / the extension: validated, never worse than before.
-  async plan({ name, text, key, variant = null, names = [null], flags = {} }) {
+  async plan({ name, text, key, variant = null, names = [null], flags = {}, lintVariant = null }) {
     const { api } = await this.features()
     const block = api.blockByKey(key)
     if (!block) return { error: `Unknown block "${key}".` }
@@ -353,8 +482,8 @@ class Tatemono {
       candidate = candidate.replace(/\s*$/, '') + eol + eol + snippet.replace(/\n/g, eol)
       written.push(tag)
     }
-    const before = api.lintSource(text, { variant: null, slug: name || undefined })
-    const after = api.lintSource(candidate, { variant: null, slug: name || undefined })
+    const before = api.lintSource(text, { variant: lintVariant || null, slug: name || undefined })
+    const after = api.lintSource(candidate, { variant: lintVariant || null, slug: name || undefined })
     const known = new Set(before.errors.map((e) => e.msg))
     const fresh = after.errors.filter((e) => !known.has(e.msg)).map((e) => e.msg)
     return { insertion: candidate.slice(trimmedLength), trimmedLength, written, notes, fresh, eol }

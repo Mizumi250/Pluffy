@@ -5,6 +5,7 @@
 //   completions, hover   <- the extension's snippets.js / scaffold.mjs (via the main process)
 //   outline, folding     <- scaffold.mjs scanSource
 //   problems             <- scaffold.mjs lintSource (the same rules as `mizumi check`)
+//   definition, quick fixes <- ported from the extension (lib/tatemono.js: definition, fixes)
 
 import * as monaco from 'monaco-editor/editor/editor.api.js'
 import 'pluffy:monaco-contrib'
@@ -260,16 +261,42 @@ async function boot(assets) {
 // ---------------------------------------------------------------- providers (the extension does the thinking)
 const KIND = () => monaco.languages.CompletionItemKind
 
+// "/*", "/* @", "/* @ark", "@arkzen", "ark" ... -> offer the opener "/* @arkzen:" (the extension's own list only starts
+// once "/* @arkzen:" is typed). Returns the replaced span, or null when there is nothing to hint.
+function openerHint(before) {
+  const m = /(\/\*\s*)?(@?)([A-Za-z]*)$/.exec(before)
+  if (!m) return null
+  const [whole, slash, at, word] = m
+  if (/@arkzen:/.test(before.slice(before.length - whole.length - 8))) return null
+  if (!'arkzen'.startsWith(word.toLowerCase())) return null
+  if (!slash && !at && word.length < 3) return null          // a bare "a" or "ar" in a YAML value is just text
+  if (word.toLowerCase() === 'arkzen' && /:$/.test(before)) return null
+  return { start: before.length - whole.length, typed: whole }
+}
+
 function registerProviders() {
   monaco.languages.registerCompletionItemProvider('tatemono', {
     triggerCharacters: ['@', ':', '+', '[', ','],
     async provideCompletionItems(model, position, _ctx, token) {
       const res = await window.pluffy.tmComplete({ text: model.getValue(), line: position.lineNumber - 1, col: position.column - 1 })
-      if (token.isCancellationRequested || !Array.isArray(res)) return { suggestions: [] }
+      if (token.isCancellationRequested) return { suggestions: [] }
       const word = model.getWordUntilPosition(position)
       const kinds = KIND()
+      const before = model.getLineContent(position.lineNumber).slice(0, position.column - 1)
+      const hint = openerHint(before)
+      const opener = hint ? [{
+        label: '/* @arkzen:',
+        kind: kinds.Snippet,
+        detail: 'Start a tatemono block (then pick the block type)',
+        insertText: '/* @arkzen:',
+        filterText: hint.typed,                       // always matches what was typed so far
+        sortText: '0',
+        range: new monaco.Range(position.lineNumber, hint.start + 1, position.lineNumber, position.column),
+        command: { id: 'editor.action.triggerSuggest', title: '' },   // open the block list right after it
+      }] : []
+      if (!Array.isArray(res)) return { suggestions: opener }
       return {
-        suggestions: res.map((it) => ({
+        suggestions: [...opener, ...res.map((it) => ({
           label: it.label,
           kind: kinds[it.kind] ?? kinds.Snippet,
           detail: it.detail,
@@ -279,7 +306,7 @@ function registerProviders() {
           range: it.range
             ? new monaco.Range(it.range.sl + 1, it.range.sc + 1, it.range.el + 1, it.range.ec + 1)
             : new monaco.Range(position.lineNumber, word.startColumn, position.lineNumber, word.endColumn),
-        })),
+        }))],
       }
     },
   })
@@ -300,6 +327,35 @@ function registerProviders() {
       return null
     },
   })
+
+  // go to definition (F12 / Ctrl+click): layouts, parent layouts, handlers, listeners, endpoints
+  monaco.languages.registerDefinitionProvider('tatemono', {
+    async provideDefinition(model, position) {
+      const res = await window.pluffy.tmDefinition({ text: model.getValue(), line: position.lineNumber - 1, col: position.column - 1 })
+      if (!Array.isArray(res)) return null
+      return res.map((r) => ({ uri: model.uri, range: new monaco.Range(r.line + 1, r.col + 1, r.line + 1, model.getLineMaxColumn(r.line + 1)) }))
+    },
+  })
+
+  // quick fixes (lightbulb / Ctrl+.): add the closing marker, set auth: true, rename to the suggested name
+  monaco.languages.registerCodeActionProvider('tatemono', {
+    async provideCodeActions(model, _range, context) {
+      const marks = (context.markers || []).filter((m) => m.source === 'pluffy')
+      if (!marks.length) return { actions: [], dispose() {} }
+      const res = await window.pluffy.tmFixes({ text: model.getValue(), issues: marks.map((m) => ({ msg: m.message, line: m.startLineNumber })) })
+      if (!Array.isArray(res)) return { actions: [], dispose() {} }
+      return {
+        dispose() {},
+        actions: res.map((f) => ({
+          title: f.title,
+          kind: 'quickfix',
+          isPreferred: true,
+          diagnostics: [marks[f.issue]],
+          edit: { edits: f.edits.map((e) => ({ resource: model.uri, versionId: undefined, textEdit: { range: new monaco.Range(e.sl + 1, e.sc + 1, e.el + 1, e.ec + 1), text: e.text } })) },
+        })),
+      }
+    },
+  }, { providedCodeActionKinds: ['quickfix'] })
 
   monaco.languages.registerFoldingRangeProvider('tatemono', {
     async provideFoldingRanges(model) {
@@ -336,7 +392,7 @@ function createEditor(el, handlers = {}) {
     glyphMargin: false,
     lineNumbersMinChars: 3,
     wordWrap: 'off',
-    wordBasedSuggestions: 'off',
+    wordBasedSuggestions: 'currentDocument',
     quickSuggestions: { other: true, comments: true, strings: true },
     suggestOnTriggerCharacters: true,
     tabSize: 2,

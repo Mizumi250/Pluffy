@@ -26,6 +26,8 @@ contextBridge.exposeInMainWorld('pluffy', {
   tmOutline: call('tm:outline'),
   tmComplete: call('tm:complete'),
   tmHover: call('tm:hover'),
+  tmDefinition: call('tm:definition'),
+  tmFixes: call('tm:fixes'),
   tmCatalog: call('tm:catalog'),
   tmCandidates: call('tm:candidates'),
   tmPlan: call('tm:plan'),

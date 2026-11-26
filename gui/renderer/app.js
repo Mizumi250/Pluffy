@@ -203,7 +203,9 @@ async function openForm(it, preset = {}) {
   if (!fail(r)) lists = r
   const form = it.form
   const values = {}
-  const sheet = el('div', { class: 'sheet', role: 'dialog', 'aria-label': it.title }, el('h2', {}, it.title), el('p', {}, it.desc))
+  // a big landscape dialog: header on top, the fields in two columns, preview and buttons at the bottom
+  const grid = el('div', { class: 'form-grid' })
+  const sheet = el('div', { class: 'sheet-modal sheet-form', role: 'dialog', 'aria-label': it.title }, el('h2', {}, it.title), el('p', {}, it.desc), grid)
   const preview = el('div', { class: 'preview' })
   const err = el('div', { class: 'err' })
 
@@ -249,7 +251,8 @@ async function openForm(it, preset = {}) {
     if (f.type !== 'check') wrap.append(input)
     if (f.hint) wrap.append(el('div', { class: 'help' }, f.hint))
     input.addEventListener('input', refresh); input.addEventListener('change', refresh)
-    sheet.append(wrap)
+    if (['textarea', 'multi'].includes(f.type) || form.fields.length === 1) wrap.classList.add('wide')
+    grid.append(wrap)
   }
 
   const collect = () => { const v = {}; for (const f of form.fields) v[f.id] = values[f.id](); return v }

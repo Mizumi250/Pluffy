@@ -155,6 +155,8 @@ function startStudio() {
   h('tm:outline', (text) => tm.outline(text))
   h('tm:complete', (a) => tm.complete(a))
   h('tm:hover', (a) => tm.hover(a))
+  h('tm:definition', (a) => tm.definition(a))
+  h('tm:fixes', (a) => tm.fixes(a))
   h('tm:catalog', (text) => tm.catalog(text))
   h('tm:candidates', (a) => tm.candidates(a))
   h('tm:plan', (a) => tm.plan(a))

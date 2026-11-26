@@ -7,6 +7,8 @@ A GUI skin over the Pluffy CLI. The CLI is still the engine: every card builds a
 - **Tatemono workspace**: pick a tatemono in the sidebar and it opens in its own editor
   - Monaco, highlighted with the Pluff Tatemono extension's own TextMate grammar
   - the same problems as `mizumi check` (live), completions, hover docs and folding, all taken from the extension
+  - go to definition (F12 / Ctrl+click) for layouts, handlers, listeners and endpoints, and quick fixes (lightbulb / Ctrl+.): add the missing closing marker, set `auth: true`, rename a block to the suggested name
+  - a Backend picker in the editor footer (the extension's `pluffy.backend`): lint warns about blocks with no body for that backend, and Add block preselects it. Auto = no backend checks, like `mizumi check`
   - a block timeline (click to jump), an **Add block** dialog that uses the same rules as `mizumi block`
   - tabs for the other files in the folder, Save / Auto-save, a warning before unsaved edits are dropped,
     and live reload when the CLI, an AI or VS Code changes the file on disk
