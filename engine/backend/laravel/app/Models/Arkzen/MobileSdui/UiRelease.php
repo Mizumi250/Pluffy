@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — UiRelease
 // Tatemono: mobile-sdui
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:31.319060Z
+// Generated: 2026-11-26T03:48:48.891938Z
 // ============================================================
 
 namespace App\Models\Arkzen\MobileSdui;

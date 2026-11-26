@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — UiReleaseController
 // Tatemono: mobile-sdui
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:31.339083Z
+// Generated: 2026-11-26T03:48:48.900613Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\MobileSdui;

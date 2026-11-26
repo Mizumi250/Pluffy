@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Skeleton
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:14.905Z
+// Generated: 2026-11-26T03:48:30.901Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

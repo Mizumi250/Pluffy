@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Product
 // Tatemono: pay-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:34.597463Z
+// Generated: 2026-11-26T03:48:51.935502Z
 // ============================================================
 
 namespace App\Models\Arkzen\PayLab;

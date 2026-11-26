@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — LainNav
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:28.995Z
+// Generated: 2026-11-26T03:48:46.610Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

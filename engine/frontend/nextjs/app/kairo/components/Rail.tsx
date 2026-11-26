@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Rail
 // Source: @arkzen:components (kairo)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:24.892Z
+// Generated: 2026-11-26T03:48:42.062Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'

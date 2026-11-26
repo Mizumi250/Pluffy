@@ -5,7 +5,7 @@
 // Tatemono: express-test-2
 // v6.0: Methods may include injected logic from @arkzen:policy:methodName blocks
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:18.295584Z
+// Generated: 2026-11-26T03:48:34.894055Z
 // ============================================================
 
 namespace App\Policies\Arkzen\ExpressTest2;

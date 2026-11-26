@@ -5,7 +5,7 @@
 // Tatemono: fastapi-test
 // Channel: fastapi-test-public (public)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:19.537187Z
+// Generated: 2026-11-26T03:48:36.547180Z
 // ============================================================
 
 namespace App\Events\Arkzen\FastapiTest\Broadcast;

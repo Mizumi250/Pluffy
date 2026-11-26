@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — AssistantChatRequest
 // Tatemono: ollama-studio
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:34.131708Z
+// Generated: 2026-11-26T03:48:51.435399Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\OllamaStudio;

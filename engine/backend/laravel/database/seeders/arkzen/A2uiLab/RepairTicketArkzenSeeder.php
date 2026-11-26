@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — RepairTicketArkzenSeeder
 // Tatemono: a2ui-lab  |  Connection: a2ui_lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:05.790149Z
+// Generated: 2026-11-26T03:48:22.707914Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\A2uiLab;

@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/kotoba/auth')->group(fu
 // ============================================================
 // ARKZEN GENERATED ROUTES — kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:27.237151Z
+// Generated: 2026-11-26T03:48:44.816686Z
 // Resources: Profile, Post, Comment, Like, Follow, Mission, Lesson, LessonResult, VocabCard, Conversation, Message, Circle, CircleMember, Alert
 // Custom controllers: KotobaController
 // ============================================================

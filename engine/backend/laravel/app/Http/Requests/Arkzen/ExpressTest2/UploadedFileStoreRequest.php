@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — UploadedFileStoreRequest
 // Tatemono: express-test-2
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:18.315188Z
+// Generated: 2026-11-26T03:48:34.896738Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\ExpressTest2;

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — PriceList
 // Source: @arkzen:components (a2ui-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:03.294Z
+// Generated: 2026-11-26T03:48:20.063Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

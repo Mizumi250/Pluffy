@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Spinner
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:23.499Z
+// Generated: 2026-11-26T03:48:40.509Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

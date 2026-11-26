@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — UnmetRequestPlanRequest
 // Tatemono: a2ui-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:04.762493Z
+// Generated: 2026-11-26T03:48:21.595218Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\A2uiLab;

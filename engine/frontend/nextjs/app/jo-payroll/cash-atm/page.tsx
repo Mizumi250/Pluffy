@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/cash-atm
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-25T01:29:23.624Z
+// Generated: 2026-11-26T03:48:40.632Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
