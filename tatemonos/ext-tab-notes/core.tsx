@@ -9,6 +9,10 @@ auth: false
 name: Tab Notes
 permissions: [storage]
 targets: [chrome, firefox]
+firefox:
+  id: tab-notes@pluffy.example
+  data_collection_permissions:
+    required: [none]
 */
 
 /* @arkzen:ext:popup

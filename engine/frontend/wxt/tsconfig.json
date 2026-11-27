@@ -11,6 +11,7 @@
     ".wxt/wxt.d.ts",
     "entrypoints/**/*",
     "arkzen/**/*",
+    "ext-scripts/**/*",
     "reference/**/*",
     "wxt.config.ts"
   ]

@@ -605,7 +605,7 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg, open
       platforms.push({ label: 'Unreal Engine game', sub: 'generate an isolated Unreal Engine 5 C++ project', value: 'unreal' })
     }
     if (listExtensionTatemonoNames().includes(tatName)) {
-      platforms.push({ label: 'Browser extension', sub: 'build a Chrome extension (.zip + unpacked folder)', value: 'extension' })
+      platforms.push({ label: 'Browser extension', sub: 'build a browser extension for Chrome and Firefox (.zip + unpacked folders)', value: 'extension' })
     }
     const platform = await picker('どのプラットフォーム？ Export for which platform?', platforms)
 
@@ -708,8 +708,8 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg, open
         success(`Generated → projects/unreal/${tatName}/  ${paint(c.gray, '(Unreal Engine 5)')}`)
         info(`Open the .uproject in projects/unreal/${tatName}/ with Unreal Engine (it builds the C++ module on first open)`)
       } else if (stack === 'wxt') {
-        success(`Built → projects/extension/${tatName}/  ${paint(c.gray, '(Chrome extension)')}`)
-        info(`Load projects/extension/${tatName}/chrome-mv3 in chrome://extensions (Developer mode > Load unpacked). The .zip next to it is for the Chrome Web Store.`)
+        success(`Built → projects/extension/${tatName}/  ${paint(c.gray, '(browser extension)')}`)
+        info(`See projects/extension/${tatName}/INSTALL.md to load it in Chrome or Firefox. The .zip files next to it are for the stores.`)
       } else {
         success(`Exported → projects/${tatName}/  ${paint(c.gray, `(${stack})`)}`)
         info(`Deploy steps: projects/${tatName}/DEPLOY.md${dockerFlag ? '   Docker: docker compose --env-file deploy.env up -d --build' : ''}`)
@@ -1337,7 +1337,7 @@ async function interactiveMenu() {
     { label: 'Database切替     Switch database',         sub: 'sqlite / postgresql',          value: 'db'         },
     { label: 'パッケージ管理    Install / uninstall deps', sub: 'frontend node_modules + backend vendor', value: 'deps' },
     { label: 'スタック情報     Stack info',              sub: 'web + app + desktop active stacks',    value: 'stacks'     },
-    { label: '新規タテモノ     New tatemono',            sub: 'start from a template (web, crud, routes, auth, native, multi, lynx, files, godot, unity, unreal, extension, package)', value: 'new' },
+    { label: '新規タテモノ     New tatemono',            sub: 'start from a template (web, crud, routes, auth, native, multi, lynx, files, godot, unity, unreal, extension)', value: 'new' },
     { label: 'ブロック追加     Add DSL block',           sub: 'insert a block + backend variant into a tatemono', value: 'block' },
     { label: 'タテモノ一覧     List modules',            sub: 'registered tatemonos',       value: 'modules'    },
     { label: 'AI生成           Pluffy AI',               sub: 'generate a tatemono with your model (toggle options)', value: 'ai' },
@@ -1399,7 +1399,7 @@ function printHelp() {
     ['mizumi export <godot-tatemono> godot', '→ Generate isolated Godot 4 project'],
     ['mizumi export <unity-tatemono> unity', '→ Generate isolated Unity project'],
     ['mizumi export <unreal-tatemono> unreal', '→ Generate isolated Unreal Engine 5 C++ project'],
-    ['mizumi export <ext-tatemono> extension', '→ Build a Chrome extension (.zip + unpacked folder)'],
+    ['mizumi export <ext-tatemono> extension', '→ Build a browser extension for Chrome and Firefox (.zip + unpacked folders)'],
     ['mizumi export <name> <stack> --docker', '→ Also write Dockerfile + docker-compose (web stacks only)'],
     ['mizumi export <name> <stack> --openapi', '→ Also write openapi.json + Swagger UI page (openapi/)'],
     ['mizumi openapi',          '→ OpenAPI docs for one tatemono (openapi.json + api-docs.html)'],
@@ -1420,7 +1420,7 @@ function printHelp() {
     ['mizumi stack',             '→ Show active web + app + desktop stacks'],
     ['mizumi stacks',            '→ List all stacks'],
     ['mizumi modules',           '→ List tatemonos'],
-    ['mizumi new <name>',        '→ Create a tatemono (--template=web|crud|routes|auth|native|multi|lynx|files|godot|unity|unreal|extension|package)'],
+    ['mizumi new <name>',        '→ Create a tatemono (--template=web|crud|routes|auth|native|multi|lynx|files|godot|unity|unreal|extension)'],
     ['mizumi block',             '→ Add a DSL block to a tatemono (pick tatemono, DSL, block, backend)'],
     ['mizumi block [t] <block> [names..] --ts', '→ Same, no prompts; t is optional (latest edited), several names add several blocks (--list, --dry, --help)'],
     ['mizumi check [t ...]',      '→ Lint tatemonos without the engine: tag shapes, names, layouts, endpoint/handler cross-references'],

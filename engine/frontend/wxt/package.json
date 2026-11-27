@@ -16,7 +16,7 @@
     "build:reference": "node scripts/build-reference.mjs",
     "typecheck": "node scripts/typecheck.mjs",
     "emit": "tsx arkzen/emit.ts",
-    "test": "tsx --test arkzen/core/ext-router.test.ts"
+    "test": "tsx --test arkzen/core/ext-router.test.ts arkzen/core/scaffold-lint.test.ts arkzen/runtime/ext.test.ts"
   },
   "dependencies": {
     "js-yaml": "^5.4.3",

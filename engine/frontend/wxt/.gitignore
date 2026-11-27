@@ -5,6 +5,7 @@ node_modules
 # and Tailwind skips gitignored paths, which leaves the popup without any utility classes)
 /entrypoints
 /public
+/ext-scripts
 /arkzen/generated
 # copied from engine/shared by arkzen/sync.ts
 /arkzen/core/parser.ts

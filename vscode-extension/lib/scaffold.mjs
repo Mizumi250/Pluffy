@@ -821,7 +821,15 @@ export function scanSource(source) {
     const sameLineClose = rest.includes('*/')
     let yaml = '', closed = true
     if (!sameLineClose) {
-      const end = src.indexOf('*/', afterOpen)
+      // ext blocks hold match patterns such as "https://*/*", which contain */ inside a string.
+      // Their header ends at a */ that starts its own line, the same rule the engine parser uses.
+      let end
+      if (tag.startsWith('ext:')) {
+        const own = /\n\*\//.exec(src.slice(afterOpen))
+        end = own ? afterOpen + own.index + 1 : -1
+      } else {
+        end = src.indexOf('*/', afterOpen)
+      }
       closed = end >= 0
       yaml = closed ? src.slice(afterOpen, end).replace(/^\n/, '') : ''
     }

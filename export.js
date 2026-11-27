@@ -296,30 +296,52 @@ if (activeStack === 'wxt' || activeStack === 'extension') {
     const built = []
     for (const browser of settings.browsers) {
       log(`Building for ${browser}`)
-      run(process.execPath, [wxtCli, 'build', '-b', browser], `WXT build (${browser})`)
+      // Firefox defaults to Manifest V2 in WXT, so Manifest V3 is always asked for explicitly.
+      const mv = browser === 'firefox' ? ['--mv3'] : []
+      run(process.execPath, [wxtCli, 'build', '-b', browser, ...mv], `WXT build (${browser})`)
       fs.cpSync(path.join(EXT_STACK_DIR, '.output', `${browser}-mv3`), path.join(outDir, `${browser}-mv3`), { recursive: true })
       built.push(`${browser}-mv3/`)
       if (settings.zip) {
-        run(process.execPath, [wxtCli, 'zip', '-b', browser], `WXT zip (${browser})`)
+        run(process.execPath, [wxtCli, 'zip', '-b', browser, ...mv], `WXT zip (${browser})`)
         const zipFile = `${settings.zipName}-${settings.version}-${browser}.zip`
         fs.copyFileSync(path.join(EXT_STACK_DIR, '.output', zipFile), path.join(outDir, zipFile))
         built.push(zipFile)
       }
     }
+    // Firefox reviewers ask for the source code of a bundled extension. Written once, next to the zips.
+    const sourcesZip = `${settings.zipName}-${settings.version}-sources.zip`
+    if (settings.sourcesZip && fs.existsSync(path.join(EXT_STACK_DIR, '.output', sourcesZip))) {
+      fs.copyFileSync(path.join(EXT_STACK_DIR, '.output', sourcesZip), path.join(outDir, sourcesZip))
+      built.push(sourcesZip)
+    }
     fs.writeFileSync(path.join(outDir, 'INSTALL.md'), [
       `# ${settings.name} ${settings.version}`,
       '',
-      '## Try it in Chrome',
-      '1. Open chrome://extensions and turn on Developer mode.',
-      '2. Choose "Load unpacked" and select the `chrome-mv3` folder next to this file.',
-      '',
-      ...(settings.zip ? ['## Publish', `Upload \`${settings.zipName}-${settings.version}-chrome.zip\` in the Chrome Web Store Developer Dashboard.`, ''] : []),
+      ...(settings.browsers.includes('chrome') ? [
+        '## Try it in Chrome',
+        '1. Open chrome://extensions and turn on Developer mode.',
+        '2. Choose "Load unpacked" and select the `chrome-mv3` folder next to this file.',
+        '',
+      ] : []),
+      ...(settings.browsers.includes('firefox') ? [
+        '## Try it in Firefox',
+        '1. Open about:debugging#/runtime/this-firefox.',
+        '2. Choose "Load Temporary Add-on" and select `manifest.json` inside the `firefox-mv3` folder.',
+        '   (A temporary add-on is removed when Firefox closes.)',
+        '',
+      ] : []),
+      ...(settings.zip ? [
+        '## Publish',
+        ...(settings.browsers.includes('chrome') ? [`- Chrome Web Store: upload \`${settings.zipName}-${settings.version}-chrome.zip\` in the Developer Dashboard.`] : []),
+        ...(settings.browsers.includes('firefox') ? [`- Firefox Add-ons: upload \`${settings.zipName}-${settings.version}-firefox.zip\`. Reviewers ask for the source of a bundled extension, so set \`sources_zip: true\` in @arkzen:ext:export to get a \`${settings.zipName}-${settings.version}-sources.zip\` as well.`] : []),
+        '',
+      ] : []),
     ].join('\n'))
 
     divider()
     success(`Extension built: ${path.relative(ROOT_DIR, outDir)}`)
     log(`Contains: ${built.join(', ')}`)
-    log('Load the chrome-mv3 folder in chrome://extensions (Developer mode > Load unpacked). The web/backend stack and active Pluff configuration were not used.')
+    log('See INSTALL.md in that folder for how to load it in each browser. The web/backend stack and active Pluff configuration were not used.')
     divider()
   } catch (error) {
     console.error(`\n  ✗ ${error instanceof Error ? error.message : String(error)}\n`)

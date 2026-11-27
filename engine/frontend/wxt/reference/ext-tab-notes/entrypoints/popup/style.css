@@ -1,5 +1,5 @@
-@import "tailwindcss";
-/* scan this folder even when it is gitignored (the emitter writes entrypoints/ and ignores it) */
+@import "tailwindcss" source(none);
+/* scan only this folder (the emitter writes entrypoints/ and ignores it, so it has to be named) */
 @source "./";
 
 /* popup size from the ext:popup header (width, height) */
