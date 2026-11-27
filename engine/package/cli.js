@@ -3,7 +3,7 @@
 // PLUFF PACKAGE CLI v1.0
 //
 //   node engine/package/cli.js build <tatemono> [--id=<package-id>] [--target=<registry>] [--no-verify]
-//                                     [--stack=<frontend>] [--backend=<name>] [--api-url=<url>]   (derived kinds)
+//                                     [--jsr-dry-run] [--stack=<frontend>] [--backend=<name>] [--api-url=<url>]   (derived kinds)
 //   node engine/package/cli.js deps          install the tools (npm install in engine/package)
 //   node engine/package/cli.js status        which tools are installed
 //
@@ -29,6 +29,10 @@ const DERIVED_KINDS = ['sdk', 'types', 'validators', 'openapi']
 
 const GENERATORS = {
   npm: async () => (await import('./npm/generator.js')).buildNpmPackage,
+  // GitHub Packages are npm packages scoped to their owner, published to npm.pkg.github.com
+  github: async () => (await import('./npm/generator.js')).buildNpmPackage,
+  // jsr.io publishes TypeScript sources: no build, and its own dry run needs Deno (opt in with --jsr-dry-run)
+  jsr: async () => (await import('./npm/jsr.js')).buildJsrPackage,
 }
 
 function printReport(report) {
@@ -63,7 +67,7 @@ async function build() {
     if (registries.length === 0) { console.error(`[pkg] Package "${pkg.id}" has no target${wantedTarget ? ` "${wantedTarget}"` : ''}`); exit = 2; continue }
     // sdk, types, validators and openapi are generated from the api and database blocks (read once per package)
     let derived
-    if (registries.includes('npm') && DERIVED_KINDS.includes(pkg.project.kind)) {
+    if ((registries.includes('npm') || registries.includes('github')) && DERIVED_KINDS.includes(pkg.project.kind)) {
       try {
         const { derivePackage } = await import('./derive/index.js')
         derived = derivePackage({ kind: pkg.project.kind, rootDir: ROOT_DIR, tatName: name, pkg, version: tatemono.meta.version, stack: flag('stack'), backend: flag('backend'), apiUrl: flag('api-url') })
@@ -75,11 +79,11 @@ async function build() {
     }
     for (const registry of registries) {
       const generator = GENERATORS[registry]
-      if (!generator) { console.log(`\n  ${pkg.id} (${registry}): ${paint(33, 'not implemented yet')} (npm is the only registry in this phase)`); continue }
+      if (!generator) { console.log(`\n  ${pkg.id} (${registry}): ${paint(33, 'not implemented yet')} (npm, github and jsr are the registries implemented so far)`); continue }
       const outDir = path.join(ROOT_DIR, 'projects', 'package', name, pkg.id, registry)
       try {
         const buildPackage = await generator()
-        const report = buildPackage({ tatemono, pkg, outDir, derived, verify: !args.includes('--no-verify'), log: m => console.log(`  ${paint(90, m)}`) })
+        const report = buildPackage({ tatemono, pkg, outDir, derived, registry, jsrDryRun: args.includes('--jsr-dry-run'), verify: !args.includes('--no-verify'), log: m => console.log(`  ${paint(90, m)}`) })
         printReport(report)
         console.log(`  ${paint(90, 'output')}  ${path.relative(ROOT_DIR, outDir)}`)
         if (report.verified === 'failed') exit = 1

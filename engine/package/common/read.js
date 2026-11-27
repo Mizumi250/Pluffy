@@ -27,7 +27,8 @@ const fail = message => { throw new Error(`[pkg] ${message}`) }
 function loadYaml(marker, text) {
   if (!text.trim()) return {}
   try { return yaml.load(text) ?? {} } catch (error) {
-    return fail(`@arkzen:${marker} has invalid YAML: ${String(error.message).split('\n')[0]}`)
+    const hint = text.includes('**') ? ' (a glob such as **/*.svg contains "*/", which ends the block comment early: write it as "**\\/*.svg" inside double quotes, since \\/ is a valid YAML escape for /)' : ''
+    return fail(`@arkzen:${marker} has invalid YAML: ${String(error.message).split('\n')[0]}${hint}`)
   }
 }
 
@@ -144,10 +145,28 @@ export function groupPackages(blocks) {
   return [...packages.values()]
 }
 
+// The web:components and web:style blocks a component package can export (`from: web:components:Button`).
+// Both are code blocks closed by ":end"; the body is returned verbatim.
+export function readWebBlocks(source) {
+  const text = String(source).replace(/\r\n?/g, '\n')
+  const out = { components: {}, styles: {} }
+  for (const [kind, bucket] of [['components', out.components], ['style', out.styles]]) {
+    const re = new RegExp(`^[ \\t]*\\/\\*[ \\t]*@arkzen:web:${kind}:([A-Za-z0-9_-]+)[ \\t]*\\*\\/[ \\t]*\\n`, 'gm')
+    for (const m of text.matchAll(re)) {
+      const closer = `/* @arkzen:web:${kind}:${m[1]}:end */`
+      const start = m.index + m[0].length
+      const end = text.indexOf(closer, start)
+      if (end === -1) fail(`@arkzen:web:${kind}:${m[1]} is missing its closing ${closer}`)
+      bucket[m[1]] = text.slice(start, end).replace(/^\n+/, '').replace(/\s+$/, '')
+    }
+  }
+  return out
+}
+
 export function readTatemono(filePath) {
   const source = fs.readFileSync(filePath, 'utf8')
   const meta = readMeta(source)
   const blocks = readPkgBlocks(source)
   if (blocks.length === 0) fail(`${path.basename(path.dirname(filePath))} has no @arkzen:pkg blocks`)
-  return { file: filePath, dir: path.dirname(filePath), meta, packages: groupPackages(blocks) }
+  return { file: filePath, dir: path.dirname(filePath), meta, packages: groupPackages(blocks), web: readWebBlocks(source) }
 }

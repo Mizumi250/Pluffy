@@ -36,3 +36,7 @@ entries:
   ".": { from: "web:components:Button" }
   "./styles.css": { from: "web:style:Button" }
 */
+
+/* @arkzen:pkg:verify:ui
+import: [Button]
+*/

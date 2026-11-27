@@ -38,7 +38,7 @@ test('plan: version and description default to meta, entries default to the only
 
 test('plan errors say what to change', () => {
   const lib = BASE + SRC('index', 'export const a = 1')
-  assert.throws(() => planNpmPackage({ tatemono: META, pkg: pkgOf(lib.replace('kind: library', 'kind: components')) }), /kind: components on npm is not implemented yet/)
+  assert.throws(() => planNpmPackage({ tatemono: META, pkg: pkgOf(lib.replace('kind: library', 'kind: backend')) }), /kind: backend on npm is not implemented yet/)
   assert.throws(() => planNpmPackage({ tatemono: META, pkg: pkgOf(BASE) }), /needs at least one @arkzen:pkg:source:ts/)
   assert.throws(() => planNpmPackage({ tatemono: META, pkg: pkgOf(lib + '/* @arkzen:pkg:exports\nentries:\n  ".": nope\n*/\n') }), /points at source "nope"/)
   assert.throws(() => planNpmPackage({ tatemono: META, pkg: pkgOf(lib + '/* @arkzen:pkg:exports\nformats: [dts]\n*/\n') }), /needs esm or cjs/)
