@@ -30,6 +30,7 @@
 //    node mizumi.js ai           ← Pluffy AI (checkbox options, then your app idea)
 //    node mizumi.js scan         ← scan tatemonos into training data
 //    node mizumi.js chat         ← open the Pluffy chat window (Electron)
+//    node mizumi.js tui          ← Pluffy TUI: the GUI's menu in the terminal, with falling petals
 // ============================================================
 
 import { execFileSync, spawn } from 'node:child_process'
@@ -1319,6 +1320,14 @@ async function cmdChat(rest = []) {
   process.exitCode = await runNode('chat.js', rest)
 }
 
+// The TUI is a skin over this file (like gui/): it only ever runs `node mizumi.js <command>`.
+async function cmdTui(rest = []) {
+  const entry = path.join(ROOT_DIR, 'tui', 'main.js')
+  if (!fs.existsSync(entry)) { error('tui/main.js not found in the repo root'); process.exitCode = 1; return }
+  if (!process.stdin.isTTY || !process.stdout.isTTY) { error('The TUI needs a real terminal. In scripts, call the commands directly (mizumi help).'); process.exitCode = 1; return }
+  process.exitCode = await runNode('tui/main.js', rest)
+}
+
 async function interactiveMenu() {
   printBanner()
 
@@ -1429,6 +1438,7 @@ function printHelp() {
     ['mizumi scan',              '→ Scan tatemonos → training data (scan.js)'],
     ['mizumi index',             '→ Refresh the online tatemono index in the guidelines (--check / --dry)'],
     ['mizumi chat',              '→ Open the Pluffy chat window (Electron)'],
+    ['mizumi tui',               '→ Pluffy TUI (same cards as Studio, in your terminal)'],
     ['mizumi review',            '→ Second AI reviews the repo (menu), report in .pluffy-review/'],
     ['mizumi review engine --apply', '→ Review one folder and approve edits one by one'],
   ]
@@ -1490,6 +1500,8 @@ switch (command) {
   case 'scan':    cmdScan();                   break
   case 'index':   cmdIndex(args.slice(1));     break
   case 'chat':    cmdChat(args.slice(1));      break
+  case 'tui':
+  case 'dash':    cmdTui(args.slice(1));       break
   case 'review':  cmdReview(args.slice(1));    break
   case 'help':
   case '--help':

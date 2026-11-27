@@ -1,0 +1,7 @@
+{
+  "name": "pluffy-tui",
+  "private": true,
+  "type": "module",
+  "description": "Pluffy terminal UI. A skin over mizumi.js, like gui/. No dependencies.",
+  "scripts": { "start": "node main.js" }
+}
