@@ -657,3 +657,31 @@ Verified against the latest repo: all 68 tatemonos in `tatemonos/` parse to byte
 Not verified: no web watcher or builder was run against a term tatemono (they treat it as a page-less tatemono, the same path `ext-tab-notes` takes). Not run on Windows. No generator exists yet.
 
 Next: step 2, `engine/terminal/common` (the `ctx` helper contract, config and data handling, the pseudo-terminal test harness) and the `ts` commander generator.
+
+### Step 2 (done): command line programs in TypeScript
+
+Built on commit `ab1bcc49e`. Nothing outside `engine/terminal/` and the fixture changed, so the shared parser, validator, scaffold and stacks are untouched.
+
+New:
+- `engine/terminal/cli.js` with `build`, `verify`, `check`, `deps`.
+- `engine/terminal/common/`: `read.js` (loads the real parser and validator through tsx), `model.js` (command tree, defaults), `run.js`, `shell.js`, `verify.js` (the CLI verification harness).
+- `engine/terminal/ts/`: `generator.js`, `build.js`, `checks.js`, `templates/runtime.ts`, `templates/examples.test.ts`.
+- Fixture `tatemonos/term-cli-features` (every command feature). `tatemonos/term-todo-cli` is built too.
+- 50 tests: model, shell splitting, generator output, the verifier failing on broken programs, and an end to end build.
+
+What `build` does for a `mode: cli` project with a `ts` runtime: generates the project, runs `npm install` and `tsc`, checks that the code imports only its own files, Node and declared packages, runs `--help`, `--version`, every command's `--help` and every command example, runs a non-interactive pass (no TTY, `NO_COLOR`, `TERM=dumb`, no escape codes), then runs the project's own `npm test`.
+
+Decisions made while building:
+- `ctx` is `{ command, args, flags, out, err, stdin, env, exit }`. Names are camelCase. A handler may return a number to set the exit code.
+- A switch that is not given is `false`. A flag that is on by default also gets a `--no-<name>` form. A repeatable flag is an array.
+- A command that declares `output` also gets `--json`. `out.data(value)` prints in the declared kind (json, table, lines, text).
+- `expect_stdout` and `expect_stderr`: a value written as `/pattern/` is a regular expression (no flags), anything else is a substring. `expect_exit` defaults to 0.
+- A command with `prompt` is refused (prompts are step 3). `mode: tui` and `mode: hybrid` are refused. A `builtin: completion` command is left out with a warning. `config`, `assets` and `export` are reported as declared but not generated.
+- Pinned versions: commander 15.1.0, `typescript ^5.9`, `@types/node ^22`. `engines.node` is at least 22.12.0 because commander 15 needs it, and a lower `min_version` is raised with a warning.
+- The generated code never mentions Pluffy, not even in a comment.
+
+Verified: 177 tests pass (127 from step 1, 50 new), including a real `npm install` and `tsc` build of two fixtures with every verification step passing. The verifier has tests that feed it wrong programs (wrong version, wrong exit code, missing output, colors, a crash, a hang) and check it reports FAIL. `mizumi check` is clean on the new fixture.
+
+Not verified: Windows. The npm registry was reachable here, so the offline skip path has not run. No terminal UI exists yet. `mizumi.js` and `export.js` are not wired to the terminal engine, so use `node engine/terminal/cli.js build <tatemono>` for now.
+
+Next: step 3, prompts (`term:prompt`, scaffolders with `assets.templates`) and declared TUI screens on `ts` with Ink, plus the pseudo-terminal test harness.
