@@ -1,0 +1,16 @@
+{
+  "name": "pluffy-package-tools",
+  "private": true,
+  "type": "module",
+  "description": "Tools Pluffy uses to build, pack and verify packages. Installed with: node mizumi.js deps install package",
+  "scripts": {
+    "test": "node --test \"common/*.test.js\" \"npm/*.test.js\""
+  },
+  "dependencies": {
+    "@types/node": "^22.0.0",
+    "js-yaml": "^4.1.0",
+    "tsdown": "^0.23.7",
+    "tsx": "^4.23.0",
+    "typescript": "^5.9.0"
+  }
+}

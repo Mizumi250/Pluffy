@@ -1,0 +1,411 @@
+// ============================================================
+// PLUFF PACKAGE GENERATOR: npm v1.0
+//
+// buildNpmPackage({ tatemono, pkg, outDir, verify, log }) writes, builds, packs and verifies
+// one authored TypeScript/JavaScript library for the npm registry.
+//
+//   1. write   src/, tsconfig.json, tsdown.config.mjs, README.md, LICENSE
+//   2. build   tsdown (tool-owned, from engine/package/node_modules), formats esm / cjs / dts
+//   3. manifest  package.json is written AFTER the build, from the files the build really
+//              produced (a manifest written before the build pointed at dist/index.js while
+//              the build made dist/index.mjs; the packed package then failed to import)
+//   4. test    pkg:test blocks run with tsx --test
+//   5. pack    npm pack
+//   6. verify  install the packed archive into a throwaway project that is connected to
+//              nothing, import it as ESM and as CommonJS, type-check a consumer file
+//
+// Supported here: kind "library". The other kinds are later phases and fail with a clear message.
+// A step whose tool is missing is reported UNVERIFIED, never "passed".
+// ============================================================
+
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { licenseText } from '../common/license.js'
+import { npm, run, toolBin, toolDir, toolVersion, TOOL_ROOT } from '../common/run.js'
+
+const SUPPORTED_KINDS = ['library']
+const FORMATS = ['esm', 'cjs', 'dts']
+const isMap = v => typeof v === 'object' && v !== null && !Array.isArray(v)
+const fail = message => { throw new Error(`[pkg:npm] ${message}`) }
+
+// ── plan: everything the generator decides, derived from the blocks ──────────────
+export function planNpmPackage({ tatemono, pkg }) {
+  const project = pkg.project
+  const target = pkg.targets.npm
+  if (!target) fail(`Package "${pkg.id}" has no @arkzen:pkg:target:npm block`)
+  if (!SUPPORTED_KINDS.includes(project.kind)) fail(`kind: ${project.kind} on npm is not implemented yet (supported now: ${SUPPORTED_KINDS.join(', ')})`)
+  if (typeof target.name !== 'string' || !target.name) fail('@arkzen:pkg:target:npm needs name:')
+
+  const tsSources = pkg.sources.filter(s => s.lang === 'ts')
+  if (tsSources.length === 0) fail('A library needs at least one @arkzen:pkg:source:ts:<name> block')
+  const otherLang = pkg.sources.find(s => s.lang !== 'ts')
+  if (otherLang) fail(`@arkzen:pkg:source:${otherLang.lang}:${otherLang.name} is not TypeScript, so it cannot go into an npm package`)
+
+  const files = new Map()   // source name -> relative path
+  const used = new Set()
+  for (const s of tsSources) {
+    const ext = s.header.ext ?? 'ts'
+    const rel = (s.header.path ?? `src/${s.name}.${ext}`).replace(/\\/g, '/')
+    if (rel.includes('..') || path.isAbsolute(rel)) fail(`@arkzen:pkg:source:ts:${s.name} path must stay inside the package`)
+    if (used.has(rel)) fail(`Two sources write to ${rel}`)
+    used.add(rel)
+    files.set(s.name, rel)
+  }
+
+  // entries: subpath -> source name
+  const exp = pkg.exports ?? {}
+  let entries = exp.entries
+  if (entries === undefined) {
+    const entrySource = tsSources.find(s => s.header.entry === true) ?? (tsSources.length === 1 ? tsSources[0] : null)
+    if (!entrySource) fail('Several sources and no exports: mark one with entry: true or add @arkzen:pkg:exports')
+    entries = { '.': entrySource.name }
+  }
+  if (!isMap(entries)) fail('@arkzen:pkg:exports entries must map a subpath to a source name')
+  const entryList = []
+  for (const [subpath, ref] of Object.entries(entries)) {
+    if (typeof ref !== 'string') fail(`@arkzen:pkg:exports entries "${subpath}": only a source name is supported for a library (found a reference)`)
+    if (!files.has(ref)) fail(`@arkzen:pkg:exports entries "${subpath}" points at source "${ref}", which does not exist`)
+    const key = subpath === '.' ? 'index' : subpath.replace(/^\.\//, '').replace(/[^A-Za-z0-9_-]+/g, '-')
+    entryList.push({ subpath, source: ref, key, file: files.get(ref) })
+  }
+  if (new Set(entryList.map(e => e.key)).size !== entryList.length) fail('Two exports entries produce the same output file name')
+
+  const formats = exp.formats ?? ['esm', 'cjs', 'dts']
+  if (!Array.isArray(formats) || formats.length === 0 || !formats.every(f => FORMATS.includes(f))) fail(`@arkzen:pkg:exports formats must be a list drawn from: ${FORMATS.join(', ')}`)
+  if (exp.types_only) fail('@arkzen:pkg:exports types_only is not implemented yet')
+  if (exp.bin) fail('@arkzen:pkg:exports bin belongs to kind: cli (a later phase)')
+  const wantEsm = formats.includes('esm')
+  const wantCjs = formats.includes('cjs')
+  if (!wantEsm && !wantCjs) fail('formats needs esm or cjs (dts alone produces no code)')
+
+  const build = pkg.build ?? {}
+  if (build.tool !== undefined && build.tool !== 'tsdown') fail(`@arkzen:pkg:build tool "${build.tool}" is not supported (tsdown)`)
+
+  return {
+    name: target.name,
+    version: String(project.version ?? tatemono.meta.version ?? '0.0.0'),
+    description: project.description ?? tatemono.meta.description ?? '',
+    project, target, build, verifySpec: pkg.verify ?? {},
+    sources: tsSources.map(s => ({ ...s, file: files.get(s.name) })),
+    tests: pkg.tests.filter(t => t.lang === 'ts').map(t => ({ ...t, file: (t.header.path ?? `src/${t.name}.test.${t.header.ext ?? 'ts'}`).replace(/\\/g, '/') })),
+    entries: entryList, formats: { esm: wantEsm, cjs: wantCjs, dts: formats.includes('dts') },
+    readme: pkg.readme,
+  }
+}
+
+// ── file writers ─────────────────────────────────────────────────────────────────
+const write = (root, rel, content) => {
+  const abs = path.join(root, rel)
+  fs.mkdirSync(path.dirname(abs), { recursive: true })
+  fs.writeFileSync(abs, content.endsWith('\n') ? content : content + '\n')
+}
+
+function tsdownConfig(plan) {
+  const entry = Object.fromEntries(plan.entries.map(e => [e.key, e.file]))
+  const cfg = {
+    entry,
+    format: [plan.formats.esm && 'esm', plan.formats.cjs && 'cjs'].filter(Boolean),
+    dts: plan.formats.dts,
+    clean: plan.build.clean ?? true,
+    outDir: 'dist',
+    sourcemap: plan.build.sourcemap ?? false,
+    minify: plan.build.minify ?? false,
+  }
+  if (Array.isArray(plan.build.external)) cfg.external = plan.build.external
+  if (typeof plan.build.target === 'string') cfg.target = plan.build.target
+  if (typeof plan.build.platform === 'string') cfg.platform = plan.build.platform
+  return `// Generated by Pluffy from @arkzen:pkg:build. Plain object: no imports, so it needs no node_modules to load.\nexport default ${JSON.stringify(cfg, null, 2)}\n`
+}
+
+const TSCONFIG = {
+  compilerOptions: {
+    target: 'ES2022', module: 'ESNext', moduleResolution: 'Bundler', strict: true, declaration: true,
+    skipLibCheck: true, esModuleInterop: true, forceConsistentCasingInFileNames: true, types: [],
+  },
+  include: ['src'],
+  exclude: ['src/**/*.test.*'],
+}
+
+function defaultReadme(plan) {
+  const lines = [`# ${plan.name}`, '']
+  if (plan.description) lines.push(plan.description, '')
+  lines.push('## Install', '', '```sh', `npm install ${plan.name}`, '```', '')
+  lines.push('## Entry points', '')
+  for (const e of plan.entries) lines.push(`- \`${plan.name}${e.subpath === '.' ? '' : e.subpath.slice(1)}\``)
+  lines.push('', 'Generated by [Pluffy](https://github.com/Mizumi250/Pluffy).')
+  return lines.join('\n')
+}
+
+// ── build outputs -> manifest ────────────────────────────────────────────────────
+// For each entry, find the files the build really wrote. Extensions depend on the package
+// "type" and on the formats built, so they are looked up, never assumed.
+function findOutputs(dir, plan) {
+  const exists = file => fs.existsSync(path.join(dir, file))
+  const first = (...files) => files.find(exists)
+  const out = []
+  for (const e of plan.entries) {
+    const o = { subpath: e.subpath, key: e.key }
+    if (plan.formats.esm) {
+      o.esm = first(`dist/${e.key}.mjs`, `dist/${e.key}.js`)
+      if (plan.formats.dts) o.esmTypes = first(`dist/${e.key}.d.mts`, `dist/${e.key}.d.ts`)
+      if (!o.esm) fail(`The build did not produce an ES module for "${e.subpath}" (looked for dist/${e.key}.mjs and .js)`)
+    }
+    if (plan.formats.cjs) {
+      o.cjs = first(`dist/${e.key}.cjs`)
+      if (plan.formats.dts) o.cjsTypes = first(`dist/${e.key}.d.cts`)
+      if (!o.cjs) fail(`The build did not produce a CommonJS file for "${e.subpath}" (looked for dist/${e.key}.cjs)`)
+    }
+    if (plan.formats.dts && !(o.esmTypes || o.cjsTypes)) fail(`The build did not produce type declarations for "${e.subpath}"`)
+    out.push(o)
+  }
+  return out
+}
+
+const dot = f => `./${f}`
+
+function manifest(plan, outputs) {
+  const { project, target } = plan
+  const exportsMap = {}
+  for (const o of outputs) {
+    const entry = {}
+    if (o.esm) entry.import = o.esmTypes ? { types: dot(o.esmTypes), default: dot(o.esm) } : dot(o.esm)
+    if (o.cjs) entry.require = o.cjsTypes ? { types: dot(o.cjsTypes), default: dot(o.cjs) } : dot(o.cjs)
+    exportsMap[o.subpath] = entry
+  }
+  exportsMap['./package.json'] = './package.json'
+  const root = outputs.find(o => o.subpath === '.') ?? outputs[0]
+
+  const pm = {}
+  pm.name = plan.name
+  pm.version = plan.version
+  if (plan.description) pm.description = plan.description
+  if (project.license) pm.license = project.license
+  if (project.author) pm.author = project.author
+  if (project.repository) pm.repository = /^(https?|git)/.test(project.repository) ? { type: 'git', url: project.repository } : project.repository
+  if (project.homepage) pm.homepage = project.homepage
+  if (project.bugs) pm.bugs = { url: project.bugs }
+  if (Array.isArray(project.keywords)) pm.keywords = project.keywords
+  pm.type = 'module'
+  if (root.cjs) pm.main = dot(root.cjs)
+  if (root.esm) pm.module = dot(root.esm)
+  const rootTypes = root.esmTypes ?? root.cjsTypes
+  if (rootTypes) pm.types = dot(rootTypes)
+  pm.exports = exportsMap
+  pm.files = ['dist', 'README.md', 'LICENSE', ...(Array.isArray(plan.build.include) ? plan.build.include : [])]
+  pm.sideEffects = target.side_effects ?? plan.build.side_effects ?? false
+  const engines = target.engines ?? (isMap(project.runtime) && project.runtime.node ? { node: `>=${project.runtime.node}` } : undefined)
+  if (engines) pm.engines = engines
+  const publish = {}
+  for (const k of ['access', 'tag', 'provenance']) if (target[k] !== undefined) publish[k] = target[k]
+  if (Object.keys(publish).length) pm.publishConfig = publish
+
+  const deps = value => (Array.isArray(value) ? Object.fromEntries(value.map(n => [n, '*'])) : isMap(value) ? value : undefined)
+  for (const [key, source] of [['peerDependencies', target.peer_dependencies], ['dependencies', target.dependencies], ['optionalDependencies', target.optional_dependencies]]) {
+    const v = deps(source)
+    if (v && Object.keys(v).length) pm[key] = v
+  }
+  const dev = { ...(deps(target.dev_dependencies) ?? {}) }
+  if (toolVersion('tsdown')) dev.tsdown ??= `^${toolVersion('tsdown')}`
+  if (toolVersion('typescript')) dev.typescript ??= `^${toolVersion('typescript')}`
+  if (plan.tests.length && toolVersion('tsx')) dev.tsx ??= `^${toolVersion('tsx')}`
+  pm.devDependencies = dev
+  pm.scripts = { build: 'tsdown', prepublishOnly: 'npm run build' }
+  if (plan.tests.length) pm.scripts.test = 'tsx --test src/*.test.ts'
+  return pm
+}
+
+// ── packing and verification ─────────────────────────────────────────────────────
+const step = (steps, name, status, detail = '') => { steps.push({ name, status, detail }); return status }
+
+function exportTargets(exportsMap) {
+  const files = []
+  const walk = v => { if (typeof v === 'string') files.push(v); else if (isMap(v)) Object.values(v).forEach(walk) }
+  walk(exportsMap)
+  return files.filter(f => f !== './package.json').map(f => f.replace(/^\.\//, ''))
+}
+
+function verifyArchive({ plan, pm, archive, packedFiles, steps, log }) {
+  const spec = plan.verifySpec
+  const names = packedFiles.map(f => f.path)
+
+  // archive contents
+  const missing = exportTargets(pm.exports).filter(f => !names.includes(f))
+  step(steps, 'pack contents', missing.length ? 'failed' : 'passed', missing.length ? `exports point at files that are not in the archive: ${missing.join(', ')}` : `${names.length} files, every export target is inside`)
+  for (const need of spec.pack_contents ?? []) {
+    if (!names.some(n => n === need || n.startsWith(need.replace(/\/?$/, '/')))) step(steps, `pack_contents ${need}`, 'failed', 'not in the archive')
+  }
+  if (spec.max_size !== undefined) {
+    const limit = typeof spec.max_size === 'number' ? spec.max_size : parseSize(spec.max_size)
+    const size = fs.statSync(archive).size
+    step(steps, 'max_size', limit !== null && size <= limit ? 'passed' : 'failed', `${size} bytes (limit ${spec.max_size})`)
+  }
+  if (spec.license_check !== false) {
+    const ok = pm.license && names.includes('LICENSE')
+    step(steps, 'license', ok ? 'passed' : 'failed', ok ? `${pm.license}, LICENSE file shipped` : 'missing license field or LICENSE file')
+  }
+
+  if (spec.install === false) { step(steps, 'install and import', 'skipped', 'verify.install is false'); return }
+
+  // throwaway consumer project: connected to nothing
+  const consumer = fs.mkdtempSync(path.join(os.tmpdir(), 'pluffy-consumer-'))
+  try {
+    fs.writeFileSync(path.join(consumer, 'package.json'), JSON.stringify({ name: 'consumer', version: '1.0.0', private: true, type: 'module' }, null, 2))
+    const install = npm(['install', archive, '--no-audit', '--no-fund', '--ignore-scripts', '--prefer-offline', '--loglevel=error'], { cwd: consumer })
+    if (step(steps, 'install archive', install.ok ? 'passed' : 'failed', install.ok ? 'installed into a fresh project' : tail(install.stderr || install.stdout)) !== 'passed') return
+
+    const symbols = Array.isArray(spec.import) ? spec.import : []
+    const subpaths = plan.entries.map(e => (e.subpath === '.' ? plan.name : plan.name + e.subpath.slice(1)))
+    const checkBody = style => {
+      const lines = []
+      subpaths.forEach((p, i) => {
+        lines.push(style === 'esm' ? `const m${i} = await import(${JSON.stringify(p)})` : `const m${i} = require(${JSON.stringify(p)})`)
+        lines.push(`if (!m${i} || typeof m${i} !== 'object') throw new Error('import of ${p} did not return a module')`)
+      })
+      for (const s of symbols) {
+        const hit = subpaths.map((_, i) => `m${i}[${JSON.stringify(s)}] !== undefined`).join(' || ')
+        lines.push(`if (!(${hit})) throw new Error('symbol ${s} is not exported by any entry point')`)
+      }
+      lines.push(`console.log(JSON.stringify(${JSON.stringify(symbols)}.map(s => [s, [${subpaths.map((_, i) => `m${i}`).join(', ')}].findIndex(m => m[s] !== undefined)])))`)
+      return lines.join('\n')
+    }
+    let symbolHome = []   // [symbol, index of the entry point that exports it]
+    const readHome = r => { try { return JSON.parse(r.stdout.trim().split('\n').pop()) } catch { return [] } }
+    if (plan.formats.esm) {
+      fs.writeFileSync(path.join(consumer, 'check.mjs'), checkBody('esm'))
+      const r = run(process.execPath, ['check.mjs'], { cwd: consumer })
+      if (r.ok) symbolHome = readHome(r)
+      step(steps, 'import as ES module', r.ok ? 'passed' : 'failed', r.ok ? `${subpaths.length} entry point(s)${symbols.length ? `, symbols: ${symbols.join(', ')}` : ''}` : tail(r.stderr))
+    }
+    if (plan.formats.cjs) {
+      fs.writeFileSync(path.join(consumer, 'check.cjs'), checkBody('cjs'))
+      const r = run(process.execPath, ['check.cjs'], { cwd: consumer })
+      if (r.ok && symbolHome.length === 0) symbolHome = readHome(r)
+      step(steps, 'import as CommonJS', r.ok ? 'passed' : 'failed', r.ok ? `${subpaths.length} entry point(s)` : tail(r.stderr))
+    }
+
+    // type check a consumer file against the shipped declarations
+    if (spec.type_check === true || (spec.type_check === undefined && plan.formats.dts)) {
+      const tsc = toolBin('typescript', 'tsc')
+      if (!plan.formats.dts) step(steps, 'type check', 'skipped', 'formats has no dts')
+      else if (!tsc) step(steps, 'type check', 'unverified', 'typescript is not installed (node mizumi.js deps install package)')
+      else {
+        const imports = subpaths.map((p, i) => `import * as t${i} from ${JSON.stringify(p)}\nvoid t${i}`).join('\n')
+        const named = symbolHome.filter(([, i]) => i >= 0).map(([s, i]) => `import { ${s} } from ${JSON.stringify(subpaths[i])}\nvoid ${s}`).join('\n') + '\n'
+        for (const mode of [{ label: 'ESM consumer', module: 'nodenext', ext: 'mts' }, { label: 'CommonJS consumer', module: 'node16', ext: 'cts' }].filter(m => (m.ext === 'mts' ? plan.formats.esm : plan.formats.cjs))) {
+          const file = `types-check.${mode.ext}`
+          fs.writeFileSync(path.join(consumer, file), (mode.ext === 'cts' ? imports.replace(/import \* as (\w+) from ("[^"]+")/g, 'import $1 = require($2)') : imports) + '\n' + (mode.ext === 'mts' ? named : ''))
+          const r = run(process.execPath, [tsc, '--noEmit', '--strict', '--skipLibCheck', 'false', '--module', mode.module, '--moduleResolution', mode.module, '--target', 'ES2022', file], { cwd: consumer })
+          step(steps, `type check (${mode.label})`, r.ok ? 'passed' : 'failed', r.ok ? 'declarations resolve and type-check' : tail(r.stdout + r.stderr))
+        }
+      }
+    }
+  } finally {
+    fs.rmSync(consumer, { recursive: true, force: true })
+  }
+}
+
+const tail = text => String(text).trim().split('\n').slice(-6).join('\n')
+function parseSize(text) {
+  const m = String(text).trim().match(/^(\d+(?:\.\d+)?)\s*(b|kb|kib|mb|mib)?$/i)
+  if (!m) return null
+  const unit = (m[2] ?? 'b').toLowerCase()
+  return Math.round(Number(m[1]) * ({ b: 1, kb: 1000, kib: 1024, mb: 1e6, mib: 1048576 })[unit])
+}
+
+// ── main entry ───────────────────────────────────────────────────────────────────
+export function buildNpmPackage({ tatemono, pkg, outDir, verify = true, log = () => {} }) {
+  const plan = planNpmPackage({ tatemono, pkg })
+  const steps = []
+  const staging = `${outDir}.building-${process.pid}`
+  fs.rmSync(staging, { recursive: true, force: true })
+  fs.mkdirSync(staging, { recursive: true })
+  const warnings = []
+  let archive = null
+  let pm = null
+
+  try {
+    // 1. write sources and config
+    for (const s of plan.sources) write(staging, s.file, s.raw)
+    for (const t of plan.tests) write(staging, t.file, t.raw)
+    write(staging, 'tsconfig.json', JSON.stringify(TSCONFIG, null, 2))
+    write(staging, 'tsdown.config.mjs', tsdownConfig(plan))
+    write(staging, 'README.md', plan.readme ?? defaultReadme(plan))
+    if (plan.project.license) {
+      const lic = licenseText(plan.project.license, { holder: plan.project.author ?? 'The authors' })
+      write(staging, 'LICENSE', lic.text)
+      if (!lic.complete) warnings.push(`LICENSE for ${plan.project.license} is a placeholder (the full text is not bundled). Replace it before publishing.`)
+    } else warnings.push('No license: set in @arkzen:pkg:project, so no LICENSE file was written.')
+    // a minimal manifest so the build tool sees "type": "module"
+    write(staging, 'package.json', JSON.stringify({ name: plan.name, version: plan.version, type: 'module', private: true }, null, 2))
+    step(steps, 'write', 'passed', `${plan.sources.length} source file(s), config, README${plan.project.license ? ', LICENSE' : ''}`)
+
+    // 2. build
+    const tsdown = toolBin('tsdown')
+    if (!tsdown) {
+      step(steps, 'build', 'unverified', 'tsdown is not installed. Run: node mizumi.js deps install package')
+      return finish(false)
+    }
+    // tsdown bundles without type-checking, so the sources are checked with tsc first
+    const tsc = toolBin('typescript', 'tsc')
+    if (!tsc) step(steps, 'type check sources', 'unverified', 'typescript is not installed (node mizumi.js deps install package)')
+    else {
+      const wantsNode = '@types/node' in (isMap(plan.target.dev_dependencies) ? plan.target.dev_dependencies : {}) || (Array.isArray(plan.target.dev_dependencies) && plan.target.dev_dependencies.includes('@types/node'))
+      const nodeTypes = toolDir('@types/node') ? path.dirname(toolDir('@types/node')) : null
+      const tscArgs = [tsc, '--noEmit', '-p', 'tsconfig.json', ...(wantsNode && nodeTypes ? ['--typeRoots', nodeTypes, '--types', 'node'] : [])]
+      const checked = run(process.execPath, tscArgs, { cwd: staging })
+      if (step(steps, 'type check sources', checked.ok ? 'passed' : 'failed', checked.ok ? `typescript ${toolVersion('typescript')}` : tail(checked.stdout + checked.stderr)) !== 'passed') return finish(false)
+    }
+    log(`building ${plan.name} with tsdown ${toolVersion('tsdown')}`)
+    const built = run(process.execPath, [tsdown], { cwd: staging })
+    if (step(steps, 'build', built.ok ? 'passed' : 'failed', built.ok ? `tsdown ${toolVersion('tsdown')}` : tail(built.stderr || built.stdout)) !== 'passed') return finish(false)
+
+    // 3. manifest from the real outputs
+    const outputs = findOutputs(staging, plan)
+    pm = manifest(plan, outputs)
+    write(staging, 'package.json', JSON.stringify(pm, null, 2))
+    step(steps, 'manifest', 'passed', `exports written from ${outputs.length} built entry point(s)`)
+
+    // 4. tests
+    if (plan.tests.length) {
+      const tsx = toolBin('tsx')
+      if (!tsx) step(steps, 'tests', 'unverified', 'tsx is not installed (node mizumi.js deps install package)')
+      else {
+        const files = plan.tests.map(t => t.file)
+        const r = run(process.execPath, [tsx, '--test', ...files], { cwd: staging })
+        step(steps, 'tests', r.ok ? 'passed' : 'failed', r.ok ? `${files.length} test file(s)` : tail(r.stdout + r.stderr))
+      }
+    }
+
+    // 5. pack
+    const packed = npm(['pack', '--json', '--ignore-scripts', '--loglevel=error'], { cwd: staging })
+    let packInfo
+    try { packInfo = JSON.parse(packed.stdout)[0] } catch { /* handled below */ }
+    if (!packed.ok || !packInfo) { step(steps, 'pack', 'failed', tail(packed.stderr || packed.stdout)); return finish(false) }
+    archive = path.join(staging, packInfo.filename)
+    step(steps, 'pack', 'passed', `${packInfo.filename} (${packInfo.size} bytes, ${packInfo.files.length} files)`)
+
+    // 6. verify the archive
+    if (verify) verifyArchive({ plan, pm, archive, packedFiles: packInfo.files, steps, log })
+    else step(steps, 'verify', 'skipped', '--no-verify')
+    return finish(true)
+  } catch (error) {
+    fs.rmSync(staging, { recursive: true, force: true })
+    throw error
+  }
+
+  // Swap the finished folder in. A failed build or verify still leaves the folder so it can be inspected.
+  function finish(built) {
+    const failed = steps.some(s => s.status === 'failed')
+    const unverified = steps.some(s => s.status === 'unverified')
+    const verified = failed ? 'failed' : (unverified || !built) ? 'unverified' : (steps.some(s => s.name === 'verify') ? 'skipped' : 'passed')
+    const report = { package: plan.name, version: plan.version, registry: 'npm', verified, steps, warnings, archive: archive ? path.basename(archive) : null, tools: { tsdown: toolVersion('tsdown'), typescript: toolVersion('typescript'), node: process.version } }
+    fs.writeFileSync(path.join(staging, 'PLUFFY_REPORT.json'), JSON.stringify(report, null, 2) + '\n')
+    fs.rmSync(outDir, { recursive: true, force: true })
+    fs.mkdirSync(path.dirname(outDir), { recursive: true })
+    fs.renameSync(staging, outDir)
+    return { ...report, outDir, archivePath: archive ? path.join(outDir, path.basename(archive)) : null }
+  }
+}
+
+export { TOOL_ROOT }

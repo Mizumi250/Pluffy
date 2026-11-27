@@ -1,8 +1,9 @@
 // Phase 1 tests for the pkg family: parse and validate the fixtures, and check the error messages.
 //
-// Run from a stack folder that has its node_modules installed (it needs js-yaml and tsx):
-//   cd engine/frontend/react-vite
-//   npx tsx --test ../../package/tests/phase1.test.ts
+// Run from engine/package after `node mizumi.js deps install package` (it provides tsx), with at
+// least one web stack installed (it provides js-yaml for the parser):
+//   cd engine/package
+//   npx tsx --test tests/phase1.test.ts
 //
 // Uses the stack's own copy of the engine-core files (shared-sync keeps them equal to engine/shared).
 
@@ -11,9 +12,20 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { parseTatemono } from '../../frontend/react-vite/arkzen/core/parser'
-import { validateTatemono } from '../../frontend/react-vite/arkzen/core/validator'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+// The engine-core files import js-yaml, which resolves from the stack folder that holds them.
+// Use the first stack that has its node_modules installed.
+const stacksDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../frontend')
+const stack = fs.readdirSync(stacksDir).find(name =>
+  fs.existsSync(path.join(stacksDir, name, 'node_modules', 'js-yaml')) && fs.existsSync(path.join(stacksDir, name, 'arkzen', 'core', 'parser.ts')))
+if (!stack) {
+  console.log('SKIPPED: no stack has its node_modules installed. Run: node mizumi.js deps install react-vite (or any web stack), then run this again.')
+  process.exit(0)
+}
+const core = path.join(stacksDir, stack, 'arkzen', 'core')
+const { parseTatemono } = await import(pathToFileURL(path.join(core, 'parser.ts')).href)
+const { validateTatemono } = await import(pathToFileURL(path.join(core, 'validator.ts')).href)
 
 const FIXTURES = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../fixtures')
 
