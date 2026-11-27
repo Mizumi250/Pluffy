@@ -143,6 +143,62 @@ export interface ArkzenExt {
   export?:     ArkzenExtYamlBlock         // @arkzen:ext:export
 }
 
+// v19.0 - terminal (CLI and TUI) blocks (@arkzen:term:*). See parser parseTerm.
+// YAML blocks keep the parsed value (a mapping for most blocks; the validator checks the
+// shape). Code blocks keep their YAML header and body apart, like the ext blocks.
+export interface ArkzenTermYamlBlock {
+  data:  unknown
+  start: number
+  end:   number
+}
+
+export interface ArkzenTermNamedYamlBlock extends ArkzenTermYamlBlock {
+  name: string
+}
+
+// @arkzen:term:keymap[:name]: the name is optional (an unnamed keymap is the global one)
+export interface ArkzenTermKeymapBlock extends ArkzenTermYamlBlock {
+  name?: string
+}
+
+// @arkzen:term:runtime:<lang>
+export interface ArkzenTermRuntimeBlock extends ArkzenTermYamlBlock {
+  lang: string
+}
+
+export interface ArkzenTermCodeBlock {
+  header: Record<string, unknown>   // YAML in the opening comment ({} when the opener closes with */ on the same line)
+  raw:    string                    // the code body, verbatim and trimmed
+  start:  number
+  end:    number
+}
+
+// @arkzen:term:handler|view|script|test:<lang>:<name>
+export interface ArkzenTermLangCodeBlock extends ArkzenTermCodeBlock {
+  lang: string
+  name: string
+}
+
+export interface ArkzenTerm {
+  project?:  ArkzenTermYamlBlock          // @arkzen:term:project
+  config?:   ArkzenTermYamlBlock          // @arkzen:term:config
+  theme?:    ArkzenTermYamlBlock          // @arkzen:term:theme
+  assets?:   ArkzenTermYamlBlock          // @arkzen:term:assets
+  export?:   ArkzenTermYamlBlock          // @arkzen:term:export
+  runtimes:  ArkzenTermRuntimeBlock[]     // @arkzen:term:runtime:<lang>
+  keymaps:   ArkzenTermKeymapBlock[]      // @arkzen:term:keymap[:name]
+  commands:  ArkzenTermNamedYamlBlock[]   // @arkzen:term:command:<name> (dotted for subcommands)
+  prompts:   ArkzenTermNamedYamlBlock[]   // @arkzen:term:prompt:<name>
+  screens:   ArkzenTermNamedYamlBlock[]   // @arkzen:term:screen:<name>
+  data:      ArkzenTermNamedYamlBlock[]   // @arkzen:term:data:<name>
+  loops:     ArkzenTermNamedYamlBlock[]   // @arkzen:term:loop:<name>
+  handlers:  ArkzenTermLangCodeBlock[]    // @arkzen:term:handler:<lang>:<name>
+  views:     ArkzenTermLangCodeBlock[]    // @arkzen:term:view:<lang>:<name>
+  scripts:   ArkzenTermLangCodeBlock[]    // @arkzen:term:script:<lang>:<name>
+  tests:     ArkzenTermLangCodeBlock[]    // @arkzen:term:test:<lang>:<name>
+  readme?:   ArkzenTermCodeBlock          // @arkzen:term:readme
+}
+
 // ─────────────────────────────────────────────
 // PACKAGE BLOCKS - v18.0
 // @arkzen:pkg:* blocks describe a reusable package (npm, PyPI, crates.io, ...).
@@ -431,6 +487,7 @@ export interface ParsedTatemono {
   desktopConfig?: ArkzenDesktopConfig
   frames?:        ArkzenFrames        // v15.0: @arkzen:native:frame:* / @arkzen:desktop:frame:*
   ext?:           ArkzenExt           // v17.0: @arkzen:ext:* browser extension blocks
+  term?:          ArkzenTerm          // v19.0: @arkzen:term:* terminal (CLI/TUI) blocks
   pkg?:           ArkzenPkg           // v18.0: @arkzen:pkg:* package blocks
 
   databases:          ArkzenDatabase[]

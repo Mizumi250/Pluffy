@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — kairo
 // Source: @arkzen:components (kairo)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:03:48.121Z
+// Generated: 2026-11-27T06:51:35.064Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'

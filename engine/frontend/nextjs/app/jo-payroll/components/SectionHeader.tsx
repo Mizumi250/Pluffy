@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — SectionHeader
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:03:46.619Z
+// Generated: 2026-11-27T06:51:33.749Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

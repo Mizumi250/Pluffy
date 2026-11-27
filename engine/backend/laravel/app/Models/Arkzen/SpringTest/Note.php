@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Note
 // Tatemono: spring-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:04:04.551823Z
+// Generated: 2026-11-27T06:51:56.260966Z
 // ============================================================
 
 namespace App\Models\Arkzen\SpringTest;

@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — spring-ledger
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:04:03.818681Z
+// Generated: 2026-11-27T06:51:55.546549Z
 // Resources: Account, Transfer
 // Custom controllers: 
 // ============================================================

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPScrollSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:03:31.491Z
+// Generated: 2026-11-27T06:51:16.631Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

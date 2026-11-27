@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — AccountTransferRequest
 // Tatemono: spring-ledger
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:04:03.809292Z
+// Generated: 2026-11-27T06:51:55.529776Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\SpringLedger;

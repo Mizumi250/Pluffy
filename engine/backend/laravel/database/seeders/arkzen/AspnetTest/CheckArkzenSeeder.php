@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — CheckArkzenSeeder
 // Tatemono: aspnet-test  |  Connection: aspnet_test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:03:33.380746Z
+// Generated: 2026-11-27T06:51:18.661530Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\AspnetTest;

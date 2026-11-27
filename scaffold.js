@@ -619,6 +619,95 @@ add(EXT({ key: 'ext:export', sub: 'browser targets and zip options', name: null,
   tag: () => 'ext:export',
   build: () => shapeA('ext:export', `browsers: [chrome, firefox]\nzip: true`) }))
 
+// ---- Terminal (CLI / TUI) ----
+// @arkzen:term:* blocks. Handler, view, script and test blocks carry a language (:ts, :py, ...).
+// Only TypeScript gets a working body today. Other languages get a one-line placeholder because
+// their handler contract is defined together with their generator.
+const termNeedsProject = source => /^[ \t]*\/\*[ \t]*@arkzen:term:project\b/m.test(source) ? null : 'Add @arkzen:term:project first (node mizumi.js block term:project --mode=cli), then the other terminal blocks.'
+const TERM = g => ({ group: 'Terminal (CLI / TUI)', needs: g.key === 'term:project' ? undefined : termNeedsProject, ...g })
+const TERM_LANGS = ['ts', 'py', 'rs', 'go', 'java', 'cs', 'php']
+const TERM_LANG_LABEL = {
+  ts: 'TypeScript (commander, Ink)', py: 'Python (Typer, Textual)', rs: 'Rust (clap, Ratatui)', go: 'Go (Cobra, Bubble Tea)',
+  java: 'Java', cs: 'C# (.NET)', php: 'PHP',
+}
+const termVariants = { list: TERM_LANGS, optional: false, labels: TERM_LANG_LABEL, question: 'ランタイム？ Which terminal runtime?' }
+const TERM_CLI_FRAMEWORK = { ts: 'commander', py: 'typer', rs: 'clap', go: 'cobra' }
+const TERM_TUI_FRAMEWORK = { ts: 'ink', py: 'textual', rs: 'ratatui', go: 'bubbletea' }
+const termFnName = n => { const w = words(n); return w.length ? w[0].toLowerCase() + w.slice(1).map(x => x[0].toUpperCase() + x.slice(1)).join('') : 'handler' }
+const termPlaceholder = (v, what) => todo(v, `${what}: write the ${v} version here`)
+const TERM_MODES = ['cli', 'tui', 'hybrid']
+
+add(TERM({ key: 'term:project', sub: 'tool name, binary, mode (--mode=cli|tui|hybrid), runtimes (required)', name: null, once: true,
+  tag: () => 'term:project',
+  build: ({ slug, flags }) => {
+    const mode = flags.mode ?? 'cli'
+    return shapeA('term:project', `name: ${slug}\nbinary: ${slug}\nmode: ${mode}\nruntimes: [ts]\nlicense: MIT${mode === 'cli' ? '' : '\nalt_screen: true'}`)
+  } }))
+add(TERM({ key: 'term:runtime', sub: 'framework and dependencies for one language (use a variant: --ts, --py, --rs, --go)', name: null, variants: termVariants,
+  tag: (n, v) => `term:runtime:${v}`,
+  build: ({ variant, flags }) => {
+    const fw = (flags.tui ? TERM_TUI_FRAMEWORK : TERM_CLI_FRAMEWORK)[variant]
+    return shapeA(`term:runtime:${variant}`, fw ? `framework: ${fw}` : 'bundle: none')
+  } }))
+add(TERM({ key: 'term:config', sub: 'config file, env prefix and defaults', name: null, once: true,
+  tag: () => 'term:config',
+  build: ({ slug }) => shapeA('term:config', `file: ${slug}.json\nformat: json\nlocation: xdg\nenv_prefix: ${snake(slug).toUpperCase()}_\nflags_override: true`) }))
+add(TERM({ key: 'term:theme', sub: 'palette, color roles and border style', name: null, once: true,
+  tag: () => 'term:theme',
+  build: () => shapeA('term:theme', `palette:\n  ink: "#e6e1d8"\n  accent: "#7a9a6d"\nroles:\n  primary: accent\n  muted: ink\nborder: rounded\nfallback:\n  accent: green\n  ink: white`) }))
+add(TERM({ key: 'term:keymap', sub: 'key bindings; a name is the screen scope, no name means global', name: { prompt: 'Keymap name (blank = global)', def: '', optional: true },
+  tag: n => n ? `term:keymap:${n}` : 'term:keymap',
+  build: ({ flags }) => shapeA(flags.name ? `term:keymap:${flags.name}` : 'term:keymap', 'actions:\n  quit: [q, ctrl+c]') }))
+add(TERM({ key: 'term:command', sub: 'a subcommand; use a dot for a nested one (db.migrate)', name: { prompt: 'Command name', def: 'run' },
+  tag: n => `term:command:${n}`,
+  build: ({ name }) => shapeA(`term:command:${name}`, `description: ${name}`) }))
+add(TERM({ key: 'term:prompt', sub: 'interactive question flow for a command', name: { prompt: 'Prompt name', def: 'setup' },
+  tag: n => `term:prompt:${n}`,
+  build: ({ name }) => shapeA(`term:prompt:${name}`, `steps:\n  - id: name\n    type: text\n    message: Name\n    required: true`) }))
+add(TERM({ key: 'term:screen', sub: 'one TUI screen: layout and panes', name: { prompt: 'Screen name', def: 'main' },
+  tag: n => `term:screen:${n}`,
+  build: ({ name, flags }) => shapeA(`term:screen:${name}`, flags.data
+    ? `title: ${pascal(name)}\nlayout: split\nsize: [2, 1]\npanes:\n  - widget: table\n    data: ${flags.data}\n    columns: [title, done]\n    keymap: ${name}\n    focus: 1\n  - widget: form\n    data: ${flags.data}\n    focus: 2`
+    : `title: ${pascal(name)}\nlayout: rows\npanes:\n  - widget: text\n    bind: message`) }))
+add(TERM({ key: 'term:data', sub: 'record schema for a TUI or CLI (json, jsonl, sqlite)', name: { prompt: 'Data name', def: 'items' },
+  tag: n => `term:data:${n}`,
+  build: ({ name }) => shapeA(`term:data:${name}`, `storage: json\nfile: ${name}.json\nlocation: xdg\nsort: title\nfields:\n  - name: title\n    type: string\n    required: true\n    searchable: true\n    sortable: true\n  - name: note\n    type: text\n  - name: done\n    type: bool\n    default: false`) }))
+add(TERM({ key: 'term:loop', sub: 'real-time game loop settings (needs a term:view with kind: loop)', name: { prompt: 'Loop name', def: 'game' },
+  tag: n => `term:loop:${n}`,
+  build: ({ name }) => shapeA(`term:loop:${name}`, `tick_rate: 10\nrender: diff\nsize:\n  width: 40\n  height: 20\ninput: events\nseed: random`) }))
+add(TERM({ key: 'term:assets', sub: 'files and templates bundled into the tool', name: null, once: true,
+  tag: () => 'term:assets',
+  build: () => shapeA('term:assets', `embed: true`) }))
+add(TERM({ key: 'term:export', sub: 'platforms, formats, completions', name: null, once: true,
+  tag: () => 'term:export',
+  build: () => shapeA('term:export', `platforms: [linux-x64]\nformats: [source, archive]`) }))
+add(TERM({ key: 'term:handler', sub: 'command body for one language (the name is the command, dots allowed)', name: { prompt: 'Command name', def: 'run' }, variants: termVariants,
+  tag: (n, v) => `term:handler:${v}:${n}`,
+  build: ({ name, variant }) => shapeC(`term:handler:${variant}:${name}`, variant === 'ts'
+    ? `export default async function ${termFnName(name)}({ args, flags, out }) {\n  out.line('${name}')\n}`
+    : termPlaceholder(variant, `${name} handler`)) }))
+add(TERM({ key: 'term:view', sub: 'custom screen, widget or loop code for one language', name: { prompt: 'View name', def: 'main' }, variants: termVariants,
+  tag: (n, v) => `term:view:${v}:${n}`,
+  build: ({ name, variant, flags }) => {
+    const tag = `term:view:${variant}:${name}`
+    if (variant !== 'ts') return shapeB(tag, `kind: ${flags.loop ? 'loop' : 'screen'}`, termPlaceholder(variant, `${name} view`))
+    return flags.loop
+      ? shapeB(tag, 'kind: loop', `export function init() {\n  return { tick: 0 }\n}\n\nexport function update(state, input, dt) {\n  return { ...state, tick: state.tick + 1 }\n}\n\nexport function draw(state, frame) {}`)
+      : shapeB(tag, 'kind: screen', `export default function ${pascal(name)}() {\n  return null\n}`)
+  } }))
+add(TERM({ key: 'term:script', sub: 'shared module for one language', name: { prompt: 'Script name', def: 'helpers' }, variants: termVariants,
+  tag: (n, v) => `term:script:${v}:${n}`,
+  build: ({ name, variant }) => shapeC(`term:script:${variant}:${name}`, variant === 'ts' ? 'export const example = 1' : termPlaceholder(variant, `${name} module`)) }))
+add(TERM({ key: 'term:test', sub: 'test file for one language', name: { prompt: 'Test name', def: 'smoke' }, variants: termVariants,
+  tag: (n, v) => `term:test:${v}:${n}`,
+  build: ({ name, variant }) => shapeC(`term:test:${variant}:${name}`, variant === 'ts'
+    ? `import test from 'node:test'\nimport assert from 'node:assert/strict'\n\ntest('${name}', () => {\n  assert.equal(1 + 1, 2)\n})`
+    : termPlaceholder(variant, `${name} test`)) }))
+add(TERM({ key: 'term:readme', sub: 'README body (markdown)', name: null, once: true,
+  tag: () => 'term:readme',
+  build: ({ slug }) => shapeC('term:readme', `# ${slug}\n\nDescribe what this tool does.`) }))
+
+
 // ---- Godot 4 ----
 const GODOT = g => ({ group: 'Godot 4', game: 'godot', ...g })
 add(GODOT({ key: 'godot:project', sub: 'project identity, renderer, display', name: null, once: true,
@@ -725,6 +814,14 @@ const TEMPLATES = {
     make: ({ slug }) => [metaBlock(slug, 'Unreal Engine scene tatemono'), make('unreal:project', null, { slug }), make('unreal:environment'), make('unreal:scene', 'main', { slug }), make('unreal:export')] },
   extension: { label: 'Browser extension', sub: 'meta + ext project + popup + export',
     make: ({ slug }) => [metaBlock(slug, 'Browser extension tatemono'), make('ext:project', null, { slug }), make('ext:popup', null, { slug }), make('ext:export')] },
+  cli:    { label: 'Command line tool', sub: 'meta + term project + ts runtime + one command and handler + export',
+    make: ({ slug }) => [metaBlock(slug, 'Command line tool tatemono'), make('term:project', null, { slug, flags: { mode: 'cli' } }), make('term:runtime', null, { slug, variant: 'ts' }), make('term:command', 'hello', { slug }), make('term:handler', 'hello', { slug, variant: 'ts' }), make('term:export')] },
+  tui:    { label: 'Terminal UI', sub: 'meta + term project (tui) + ts runtime + one screen + keymap',
+    make: ({ slug }) => [metaBlock(slug, 'Terminal UI tatemono'), make('term:project', null, { slug, flags: { mode: 'tui' } }), make('term:runtime', null, { slug, variant: 'ts', flags: { tui: true } }), make('term:screen', 'main', { slug }), make('term:keymap', 'main', { slug, flags: { name: 'main' } })] },
+  records: { label: 'Record manager (TUI)', sub: 'meta + term project (tui) + data + table/form screen + keymap + export',
+    make: ({ slug }) => [metaBlock(slug, 'Record manager tatemono'), make('term:project', null, { slug, flags: { mode: 'tui' } }), make('term:runtime', null, { slug, variant: 'ts', flags: { tui: true } }), make('term:data', 'items', { slug }), make('term:screen', 'main', { slug, flags: { data: 'items' } }), make('term:keymap', 'main', { slug, flags: { name: 'main' } }), make('term:export')] },
+  game:   { label: 'Terminal game', sub: 'meta + term project (tui) + ts runtime + loop and loop view + keymap',
+    make: ({ slug }) => [metaBlock(slug, 'Terminal game tatemono'), make('term:project', null, { slug, flags: { mode: 'tui' } }), make('term:runtime', null, { slug, variant: 'ts', flags: { tui: true } }), make('term:keymap', null, { slug }), make('term:loop', 'game', { slug }), make('term:view', 'game', { slug, variant: 'ts', flags: { loop: true } })] },
 }
 
 
@@ -740,6 +837,17 @@ const DECL_RE = /^(web:page:layout|native:page:layout|native:page:lynx:layout):(
 const EXT_YAML_FAMILIES = new Set(['ext:project', 'ext:commands', 'ext:menus', 'ext:rules', 'ext:locale', 'ext:export'])
 const EXT_CODE_FAMILIES = new Set(['ext:popup', 'ext:sidepanel', 'ext:page', 'ext:content', 'ext:background', 'ext:script'])
 const EXT_NAMED_FAMILIES = new Set(['ext:page', 'ext:content', 'ext:script', 'ext:locale'])
+// Terminal blocks (@arkzen:term:*). How many parts follow the family name:
+//   none: nothing   optname: an optional name   name: a name   lang: a language   langname: a language and a name
+const TERM_FAMILY_SHAPE = {
+  'term:project': 'none', 'term:config': 'none', 'term:theme': 'none', 'term:assets': 'none', 'term:export': 'none', 'term:readme': 'none',
+  'term:runtime': 'lang', 'term:keymap': 'optname',
+  'term:command': 'name', 'term:prompt': 'name', 'term:screen': 'name', 'term:data': 'name', 'term:loop': 'name',
+  'term:handler': 'langname', 'term:view': 'langname', 'term:script': 'langname', 'term:test': 'langname',
+}
+const TERM_CODE_FAMILIES = new Set(['term:handler', 'term:view', 'term:script', 'term:test', 'term:readme'])
+const TERM_YAML_FAMILIES = new Set(Object.keys(TERM_FAMILY_SHAPE).filter(f => !TERM_CODE_FAMILIES.has(f)))
+const TERM_LANG_SHAPES = new Set(['lang', 'langname'])
 
 function parseTag(tag) {
   const decl = tag.match(DECL_RE)
@@ -755,6 +863,11 @@ function parseTag(tag) {
   if (head === 'web') return { family: `web:${parts[1]}`, name: parts.slice(2).join(':') }
   if (head === 'desktop') return { family: `desktop:${parts[1]}`, name: parts.slice(2).join(':') }
   if (head === 'ext') return { family: `ext:${parts[1]}`, name: parts.slice(2).join(':') }
+  if (head === 'term') {
+    const family = `term:${parts[1]}`
+    if (TERM_LANG_SHAPES.has(TERM_FAMILY_SHAPE[family])) return { family, variant: parts[2] ?? null, name: parts.slice(3).join(':') }
+    return { family, name: parts.slice(2).join(':') }
+  }
   if (head === 'godot' || head === 'unity' || head === 'unreal') return { family: `${head}:${parts[1]}`, name: parts.slice(2).join(':') }
   if (head === 'native') {
     if (parts[2] === 'lynx' && (parts[1] === 'page' || parts[1] === 'layout' || parts[1] === 'components'))
@@ -808,7 +921,7 @@ export function scanSource(source) {
   const model = {
     src, openers: [], meta: null, metaLine: 0, apis: [], tables: [], routes: [], events: [],
     webPages: [], webLayouts: [], nativePages: [], nativeLayouts: [], lynxPages: [], lynxLayouts: [],
-    code: [], mixed: [], frames: [], fileBlocks: [], game: null, ends: new Set(), oauth: null, exts: [],
+    code: [], mixed: [], frames: [], fileBlocks: [], game: null, ends: new Set(), oauth: null, exts: [], terms: [],
   }
   const lineOf = idx => src.slice(0, idx).split('\n').length
   let lastWeb = null, lastNative = null, lastLynx = null
@@ -821,10 +934,11 @@ export function scanSource(source) {
     const sameLineClose = rest.includes('*/')
     let yaml = '', closed = true
     if (!sameLineClose) {
-      // ext blocks hold match patterns such as "https://*/*", which contain */ inside a string.
-      // Their header ends at a */ that starts its own line, the same rule the engine parser uses.
+      // ext blocks hold match patterns such as "https://*/*", and term blocks hold globs such as "**/*.txt",
+      // which contain */ inside a string. Their header ends at a */ that starts its own line,
+      // the same rule the engine parser uses.
       let end
-      if (tag.startsWith('ext:')) {
+      if (tag.startsWith('ext:') || tag.startsWith('term:')) {
         const own = /\n\*\//.exec(src.slice(afterOpen))
         end = own ? afterOpen + own.index + 1 : -1
       } else {
@@ -837,6 +951,7 @@ export function scanSource(source) {
     const o = { tag, ...parseTag(tag), line: lineOf(m.index), sameLineClose, closed, yaml, nextLine }
     model.openers.push(o)
     if (o.family.startsWith('ext:')) model.exts.push({ ...o, name: o.name, fields: yamlTop(yaml) })
+    if (o.family.startsWith('term:')) model.terms.push({ ...o, fields: yamlTop(yaml) })
 
     switch (o.family) {
       case 'meta': model.meta = { ...yamlTop(yaml), _raw: yaml }; model.metaLine = o.line; break
@@ -927,10 +1042,23 @@ export function lintSource(source, opts = {}) {
       else if (EXT_NAMED_FAMILIES.has(o.family) && !o.name) E(`@arkzen:${o.tag} needs a name: write @arkzen:${o.family}:<name>`, o.line)
       else if (!EXT_NAMED_FAMILIES.has(o.family) && o.name) E(`@arkzen:${o.family} takes no name (found "${o.name}")`, o.line)
     }
+    if (o.family.startsWith('term:')) {
+      const shape = TERM_FAMILY_SHAPE[o.family]
+      if (!shape) E(`Unknown terminal block @arkzen:${o.tag}. Known: ${Object.keys(TERM_FAMILY_SHAPE).map(f => '@arkzen:' + f).join(', ')}.${didYouMean(o.family, Object.keys(TERM_FAMILY_SHAPE))}`, o.line)
+      else {
+        if (TERM_LANG_SHAPES.has(shape)) {
+          if (!o.variant) E(`@arkzen:${o.tag} needs a language: write @arkzen:${o.family}:<lang>${shape === 'langname' ? ':<n>' : ''} (${TERM_LANGS.join(', ')})`, o.line)
+          else if (!TERM_LANGS.includes(o.variant)) E(`@arkzen:${o.tag}: unknown language "${o.variant}". Use one of: ${TERM_LANGS.join(', ')}.${didYouMean(o.variant, TERM_LANGS)}`, o.line)
+          else if (shape === 'langname' && !o.name) E(`@arkzen:${o.tag} needs a name: write @arkzen:${o.family}:${o.variant}:<n>`, o.line)
+          else if (shape === 'lang' && o.name) E(`@arkzen:${o.family}:${o.variant} takes no name (found "${o.name}")`, o.line)
+        } else if (shape === 'name' && !o.name) E(`@arkzen:${o.tag} needs a name: write @arkzen:${o.family}:<n>`, o.line)
+        else if (shape === 'none' && o.name) E(`@arkzen:${o.family} takes no name (found "${o.name}")`, o.line)
+      }
+    }
     const head = o.tag.split(':')[0]
-    const isA = SHAPE_A_TAGS.has(o.tag) || head === 'database' || head === 'api' || EXT_YAML_FAMILIES.has(o.family)
+    const isA = SHAPE_A_TAGS.has(o.tag) || head === 'database' || head === 'api' || EXT_YAML_FAMILIES.has(o.family) || TERM_YAML_FAMILIES.has(o.family)
     const isD = BACKEND_CODE.has(head) || o.family === 'module:rs'
-    const isC = (SHAPE_C_HEADS.has(head) && !SHAPE_A_TAGS.has(o.tag) && o.family !== 'native:meta') || o.family === 'desktop:frame' || EXT_CODE_FAMILIES.has(o.family)
+    const isC = (SHAPE_C_HEADS.has(head) && !SHAPE_A_TAGS.has(o.tag) && o.family !== 'native:meta') || o.family === 'desktop:frame' || EXT_CODE_FAMILIES.has(o.family) || TERM_CODE_FAMILIES.has(o.family)
     const needsEnd = () => { if (!m.ends.has(o.tag)) E(`@arkzen:${o.tag} is missing its closing /* @arkzen:${o.tag}:end */`, o.line) }
     if (isA) {
       if (o.sameLineClose) E(`@arkzen:${o.tag} is a YAML-only block: do not put */ on the opening line, close it with a bare */ line`, o.line)
@@ -941,7 +1069,7 @@ export function lintSource(source, opts = {}) {
       needsEnd()
     } else if (isC) {
       // Layouts and ext blocks may open with a multi-line YAML header (Shape B).
-      const layoutWithYaml = (o.family === 'web:layout' || o.family === 'native:layout' || o.family === 'native:layout:lynx' || EXT_CODE_FAMILIES.has(o.family)) && !o.sameLineClose && o.closed
+      const layoutWithYaml = (o.family === 'web:layout' || o.family === 'native:layout' || o.family === 'native:layout:lynx' || EXT_CODE_FAMILIES.has(o.family) || TERM_CODE_FAMILIES.has(o.family)) && !o.sameLineClose && o.closed
       if (!o.sameLineClose && !layoutWithYaml) E(`@arkzen:${o.tag} is a code block: put */ on the SAME line as the opening tag`, o.line)
       needsEnd()
     } else if (o.family === 'file') {
@@ -956,8 +1084,23 @@ export function lintSource(source, opts = {}) {
   const isGame = !!m.game
   const hasFiles = m.fileBlocks.length > 0
 
+  // terminal blocks: the cross-checks that need no YAML parser (the engine validator checks the rest)
+  if (m.terms.length) {
+    const proj = m.terms.find(o => o.family === 'term:project')
+    if (!proj) E('@arkzen:term:project is required when a tatemono has terminal blocks')
+    const listed = proj && /^runtimes:[ \t]*\[([^\]]*)\]/m.exec(proj.yaml)
+    const runtimes = listed ? listed[1].split(',').map(s => s.trim()).filter(Boolean) : null
+    const commands = new Set(m.terms.filter(o => o.family === 'term:command').map(o => o.name))
+    for (const o of m.terms) {
+      if (runtimes && o.variant && TERM_LANGS.includes(o.variant) && !runtimes.includes(o.variant))
+        E(`@arkzen:${o.tag}: "${o.variant}" is not listed in @arkzen:term:project runtimes (${runtimes.join(', ')})`, o.line)
+      if (o.family === 'term:handler' && o.name && !commands.has(o.name) && !/^command:/m.test(o.yaml))
+        W(`@arkzen:${o.tag}: no @arkzen:term:command:${o.name} exists for this handler.${didYouMean(o.name, [...commands])}`, o.line)
+    }
+  }
+
   // pages
-  if (!isGame && !hasFiles && !m.exts.length && !m.webPages.length && !m.nativePages.length && !m.lynxPages.length)
+  if (!isGame && !hasFiles && !m.exts.length && !m.terms.length && !m.webPages.length && !m.nativePages.length && !m.lynxPages.length)
     E('At least one @arkzen:web:page:<name>, @arkzen:native:page:<name> or @arkzen:native:page:lynx:<name> is required')
   for (const [list, label] of [[m.webPages, 'web'], [m.nativePages, 'native'], [m.lynxPages, 'Lynx']]) {
     const names = new Set()
@@ -1103,6 +1246,7 @@ const NAME_KIND = {
   endpoint: 'ident', handler: 'ident', policy: 'ident', middleware: 'ident',
   realtime: 'free', 'realtime:event': 'free', 'native:style:name': 'free', 'lynx:style:name': 'free',
   'native:script': 'free', 'lynx:script': 'free', 'ext:locale': 'free',
+  'term:command': 'dotted', 'term:handler': 'dotted',
 }
 
 function normalizeName(block, raw, flags) {
@@ -1127,6 +1271,13 @@ function normalizeName(block, raw, flags) {
     const w = words(input)
     const v = w.length ? w[0].toLowerCase() + w.slice(1).map(x => x[0].toUpperCase() + x.slice(1)).join('') : ''
     return /^[A-Za-z_]/.test(v) ? done(v) : { error: `"${input}" is not a valid ${block.key} name (letters, digits and _; not starting with a digit)` }
+  }
+  if (kind === 'dotted') {
+    // kebab-case parts joined by dots: db.migrate, tag.add
+    if (/^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)*$/.test(input)) return { value: input }
+    if (flags.exact) return { error: `"${input}" is not a valid ${block.key} name (lowercase kebab-case parts joined by dots, for example db.migrate)` }
+    const v = input.split('.').map(part => kebab(part)).filter(Boolean).join('.')
+    return /^[a-z]/.test(v) ? done(v) : { error: `"${input}" cannot be turned into a command name (it must start with a letter)` }
   }
   if (kind === 'free') return /^[A-Za-z0-9][A-Za-z0-9_.{}-]*$/.test(input) ? { value: input } : { error: `"${input}" is not a valid ${block.key} identifier (letters, digits, - _ . { })` }
   if (flags.exact) return /^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(input) ? { value: input } : { error: `"${input}" is not a valid name` }
@@ -1276,6 +1427,7 @@ function printBlockHelp() {
     --parent=<name> parent layout for web:layout / native:layout / lynx:layout
     --path=<file>   output path for file blocks
     --mode=scene    unity:project mode (Unreal is always scene mode)
+    --mode=<m>      term:project mode: cli (default), tui or hybrid
     --exact         keep the name as typed (no snake_case / kebab-case conversion)
     --force         write even if the result has new errors
     --dry           print the block, write nothing
@@ -1324,7 +1476,7 @@ function allowedFlagsFor(block) {
   if (['web:page', 'native:page', 'lynx:page'].includes(block.key)) ok.add('layout')
   if (['web:layout', 'native:layout', 'lynx:layout'].includes(block.key)) ok.add('parent')
   if (block.key === 'file') ok.add('path')
-  if (block.key === 'unity:project') ok.add('mode')
+  if (block.key === 'unity:project' || block.key === 'term:project') ok.add('mode')
   return ok
 }
 
@@ -1390,6 +1542,8 @@ export async function cmdBlock(ctx, args) {
   const bad = Object.keys(flags).filter(k => flags[k] !== false && !allowed.has(k) && k !== 'list')
   if (bad.length) { ctx.error(`${block.key} does not use ${bad.map(k => '--' + k).join(', ')}.${allowed.size > 5 ? ` It accepts: ${[...allowed].filter(k => !['dry', 'force', 'exact', 'quiet', 'help'].includes(k)).map(k => '--' + k).join(', ')}.` : ''}`); return fail() }
 
+  if (block.key === 'term:project' && flags.mode !== undefined && !TERM_MODES.includes(flags.mode)) { ctx.error(`--mode must be one of: ${TERM_MODES.join(', ')} (got "${flags.mode}")`); return fail() }
+
   // 4. variant (backend or native target)
   let variant = null
   if (block.variants) {
@@ -1402,7 +1556,7 @@ export async function cmdBlock(ctx, args) {
         const options = list.map(x => ({ label: `${x === active ? '→ ' : '  '}:${x}`, sub: labels[x], value: x }))
         if (optional) options.unshift({ label: '  shared', sub: 'YAML only, works on every backend', value: null })
         ctx.divider()
-        variant = (await ctx.picker(backend ? 'バックエンド？ Which backend variant?' : 'ターゲット？ Which native target?', options)).value
+        variant = (await ctx.picker(backend ? 'バックエンド？ Which backend variant?' : (block.variants.question ?? 'ターゲット？ Which native target?'), options)).value
       } else variant = list.includes(active) ? active : (optional ? null : list[0])
     } else variant = v.value
   }

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — EmptyRow
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:03:46.612Z
+// Generated: 2026-11-27T06:51:33.741Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

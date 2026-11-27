@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — ethereane/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:03:39.800Z
+// Generated: 2026-11-27T06:51:25.575Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

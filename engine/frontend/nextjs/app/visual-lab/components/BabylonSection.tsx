@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — BabylonSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:04:07.802Z
+// Generated: 2026-11-27T06:51:59.831Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

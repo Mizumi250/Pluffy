@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — kotoba
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:03:49.425Z
+// Generated: 2026-11-27T06:51:36.238Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

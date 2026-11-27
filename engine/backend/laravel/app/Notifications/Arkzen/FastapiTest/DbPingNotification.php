@@ -6,7 +6,7 @@
 // Channels: database
 // Broadcast channel type: private
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:03:42.855049Z
+// Generated: 2026-11-27T06:51:29.536434Z
 // ============================================================
 
 namespace App\Notifications\Arkzen\FastapiTest;

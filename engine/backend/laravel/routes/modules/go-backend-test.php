@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — go-backend-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:03:43.793301Z
+// Generated: 2026-11-27T06:51:30.563145Z
 // Resources: Note
 // Custom controllers: 
 // ============================================================

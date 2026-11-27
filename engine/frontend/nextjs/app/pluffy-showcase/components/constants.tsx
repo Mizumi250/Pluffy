@@ -2,12 +2,12 @@
 // ARKZEN GENERATED SHARED CONSTANTS — pluffy-showcase
 // Source: @arkzen:components (pluffy-showcase)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:18:24.113Z
+// Generated: 2026-11-27T06:51:47.975Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowUpRight, Building2, ChevronDown, CircleCheck, CodeXml, Copy, Download, Home, MessageSquare, Plus, Puzzle, Search, Settings, Terminal } from 'lucide-react'
+import { ArrowUpRight, Building2, ChevronDown, CircleCheck, CodeXml, Copy, Download, Home, MessageSquare, Plus, Puzzle, Search, Settings, Terminal, Upload } from 'lucide-react'
 
 
 export const REPO_URL = 'https://github.com/Mizumi250/Pluffy'
@@ -19,6 +19,8 @@ export const DOWNLOAD_URL = 'https://github.com/Mizumi250/Pluffy/releases/downlo
 export const CLONE_CMD = 'git clone https://github.com/Mizumi250/Pluffy.git'
 
 export const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap'
+
+export const IMG_BASE = '/tatemonos/pluffy-showcase/assets/images/'
 
 export const AZ = '@' + 'arkzen'
 
@@ -34,3 +36,5 @@ export const CODE: Array<Array<[string, string]>> = [
   [['t', '/* ' + AZ + ':web:page:index */']], [['t', '/* ' + AZ + ':web:page:layout:guest */']], [['', '']],
   [['', 'const IndexPage = () => (']], [['', '  <main className="menu">...</main>']], [['', ')']],
 ]
+
+export const ABLOCKS = [['database', 'one table, columns, seeder'], ['api', 'model-backed CRUD resource'], ['routes', 'custom routes with handlers'], ['crud', 'a table and its api resource in one step (database + api)']]

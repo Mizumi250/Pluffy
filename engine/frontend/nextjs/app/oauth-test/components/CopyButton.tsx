@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CopyButton
 // Source: @arkzen:components (oauth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:03:56.705Z
+// Generated: 2026-11-27T06:51:44.426Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

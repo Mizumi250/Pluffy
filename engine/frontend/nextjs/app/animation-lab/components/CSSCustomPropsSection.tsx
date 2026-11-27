@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CSSCustomPropsSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:03:31.556Z
+// Generated: 2026-11-27T06:51:16.690Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

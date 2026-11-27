@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — pay-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:03:58.606215Z
+// Generated: 2026-11-27T06:51:47.023726Z
 // Resources: Product, Order
 // Custom controllers: 
 // ============================================================

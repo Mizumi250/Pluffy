@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Service
 // Tatemono: a2ui-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-26T13:03:30.131420Z
+// Generated: 2026-11-27T06:51:15.413778Z
 // ============================================================
 
 namespace App\Models\Arkzen\A2uiLab;
