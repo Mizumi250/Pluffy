@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — AssistantController
 // Tatemono: ollama-studio
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:46.069320Z
+// Generated: 2026-11-27T10:15:00.557115Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\OllamaStudio;

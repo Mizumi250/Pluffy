@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-11-24T12:31:36.225Z",
+  "generatedAt": "2026-11-27T10:30:54.384Z",
   "backendReady": true,
   "webReady": true,
-  "selectedModule": "kairo",
+  "selectedModule": "pluffy-showcase",
   "settleMs": 8000,
   "webStack": "nextjs",
-  "appStack": "lynx",
-  "desktopStack": "tauri",
+  "appStack": "expo",
+  "desktopStack": "electron",
   "results": {
     "web": {
       "success": true,
       "captures": [
         {
-          "module": "kairo",
+          "module": "pluffy-showcase",
           "page": "index",
-          "path": "Shots\\web\\nextjs\\kairo\\index.png",
-          "url": "http://localhost:3000/kairo",
+          "path": "Shots\\web\\nextjs\\pluffy-showcase\\index.png",
+          "url": "http://localhost:3000/pluffy-showcase",
           "settleMs": 8000
         }
       ]

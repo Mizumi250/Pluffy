@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — ethan-pool
 // Source: @arkzen:components (ethan-pool)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:25.130Z
+// Generated: 2026-11-27T10:14:40.106Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

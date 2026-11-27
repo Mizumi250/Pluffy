@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — go-concurrency-lab/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:30.935Z
+// Generated: 2026-11-27T10:14:46.108Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

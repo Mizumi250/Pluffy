@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Ticket
 // Tatemono: express-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:26.592017Z
+// Generated: 2026-11-27T10:14:41.663812Z
 // ============================================================
 
 namespace App\Models\Arkzen\ExpressTest;

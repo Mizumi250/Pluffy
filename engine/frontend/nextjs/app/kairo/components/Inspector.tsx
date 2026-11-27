@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Inspector
 // Source: @arkzen:components (kairo)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:35.089Z
+// Generated: 2026-11-27T10:14:50.359Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'

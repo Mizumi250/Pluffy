@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Service
 // Tatemono: webmcp-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:52:00.519819Z
+// Generated: 2026-11-27T10:15:12.751934Z
 // ============================================================
 
 namespace App\Models\Arkzen\WebmcpLab;

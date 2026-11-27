@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — pluffy-showcase/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:48.134Z
+// Generated: 2026-11-27T10:24:16.405Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -47,18 +47,14 @@ const IndexPage = () => {
   }
   const PLAN = (f: string) => REPO_URL + '/blob/main/' + f
 
-  const rows = [
-    [AZ + ':database:lessons', '#b0642f', 'Database', 'SQLite or PostgreSQL'],
-    [AZ + ':api:lessons', '#6a4fb0', 'API', 'Seven backends to pick from'],
-    [AZ + ':web:page:index', '#c2415b', 'Web', 'Next.js, Vite and more'],
-    [AZ + ':native:page:index', '#2d7a58', 'Mobile', 'Expo, React Native, Lynx'],
-    [AZ + ':desktop:config', '#1f7a8c', 'Desktop', 'Electron or Tauri'],
+  const REAL: Array<[string | number, Array<[string, string]>]> = [
+    [1, [['t', '/* ' + AZ + ':meta']]], [2, [['k', 'name: '], ['v', 'kairo']]], [3, [['k', 'version: '], ['v', '1.0.0']]],
+    [4, [['k', 'description: '], ['v', 'Kairo, a 3D circuit board. Wire NAND gates, save the result as a chip, and reuse that chip as a part in bigger circuits.']]],
+    [5, [['k', 'auth: '], ['v', 'false']]], [6, [['', '*/']]], ['\u2026', []],
+    [15, [['t', '/* ' + AZ + ':database:chips']]], [16, [['k', 'table: '], ['v', 'chips']]], [17, [['k', 'timestamps: '], ['v', 'true']]],
+    [18, [['k', 'softDeletes: '], ['v', 'false']]], [19, [['k', 'columns:']]], [20, [['k', '  name:']]], [21, [['k', '    type: '], ['v', 'string']]], [22, [['k', '    length: '], ['v', '60']]],
   ]
-  const steps = [
-    ['One file', 'A tatemono is a single core.tsx. Tables, API, login, pages and the look all sit in tagged blocks.'],
-    ['Studio reads it', 'Blocks line up in a rail beside the code. Check lints the file without starting the engine.'],
-    ['The engine builds', 'Save, and it rebuilds the database, backend, web, mobile and desktop around your file.'],
-  ]
+  const BLOCKS = [['meta', 1, '#b0642f'], ['meta:web', 8, '#b0642f'], ['database:chips', 15, '#b0642f'], ['api:chips', 48, '#6a4fb0'], ['web:script', 75, '#c2415b'], ['web:style', 1389, '#c2415b'], ['web:components:board', 1507, '#c2415b'], ['web:page:index', 2294, '#c2415b']]
   const platforms = [
     { t: 'Web', n: 'Five stacks', c: [['nextjs', 'Next.js'], ['vite', 'React + Vite'], ['tanstack', 'TanStack Start'], ['astro', 'Astro'], ['inertia', 'React with Inertia']] },
     { t: 'Mobile', n: 'Three stacks', c: [['expo', 'Expo'], ['react', 'React Native'], ['lynx', 'Lynx']] },
@@ -114,24 +110,32 @@ const IndexPage = () => {
         </section>
       </div>
 
-      <section className="pf-story" id="story">
-        <div className="pf-wrap pf-stick">
-          <div>
-            <h2 className="pf-h2">Write the plan once. Watch the floors rise.</h2>
-            <ol className="pf-steps">
-              {steps.map((s, i) => (
-                <li key={s[0]} className={'pf-step' + (i === 0 ? ' on' : '')}><span className="pf-n">{i + 1}</span><div><h3>{s[0]}</h3><p>{s[1]}</p></div></li>
-              ))}
-            </ol>
+      <section className="pf-scene" id="scene-r">
+        <div className="pf-wrap pf-sc-stick">
+          <div className="pf-sc-head">
+            <h2 className="pf-h2">Here is a whole app, in one file.</h2>
+            <p className="pf-cs">
+              <span className="on">This is Kairo, a 3D circuit board. All 2,298 lines live in one core.tsx.</span>
+              <span>A database table, an API, the script, styles and the page sit in tagged blocks.</span>
+              <span>Save, and the engine builds the site on the right.</span>
+            </p>
           </div>
-          <div className="pf-card pf-file" aria-label="Sample tatemono blocks and what each one builds">
-            <div className="pf-file-top">core.tsx, sample blocks</div>
-            {rows.map((r) => (
-              <div className="pf-frow" key={r[0]}>
-                <code className="pf-tag"><i style={{ background: r[1] }} />{r[0]}</code>
-                <span className="pf-bar" style={{ background: r[1] + '24' }}><b>{r[2]}</b><span>{r[3]}</span></span>
+          <div className="pf-rc">
+            <div className="pf-card pf-rc-code" aria-label="The opening lines and block list of the Kairo tatemono">
+              <div className="pf-rc-bar">tatemonos/kairo/core.tsx, 2,298 lines</div>
+              <div>
+                {REAL.map((r, i) => (
+                  <div className={'pf-rl' + (i > 5 ? ' x' : '')} key={i}><u>{r[0]}</u>{r[1].map((p, j) => <span key={j} className={p[0]}>{p[1]}</span>)}</div>
+                ))}
               </div>
-            ))}
+              <div className="pf-rc-blocks">
+                {BLOCKS.map((b) => <div className="pf-rc-blk" key={String(b[0])}><i style={{ background: String(b[2]) }} /><b>{b[0]}</b><em>{b[1]}</em></div>)}
+              </div>
+            </div>
+            <figure className="pf-card pf-rc-shot">
+              <div className="pf-rc-img"><img src={IMG_BASE + 'built-kairo.webp'} alt="The Kairo site, built from that file" /><div className="pf-rc-cover" /></div>
+              <figcaption>Kairo, built from the file on the left.</figcaption>
+            </figure>
           </div>
         </div>
       </section>

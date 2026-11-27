@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — TermStack
 // Source: @arkzen:components (pluffy-showcase)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:48.041Z
+// Generated: 2026-11-27T10:24:16.344Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

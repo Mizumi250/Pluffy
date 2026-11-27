@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ProviderStatus
 // Source: @arkzen:components (oauth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:44.419Z
+// Generated: 2026-11-27T10:14:59.151Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

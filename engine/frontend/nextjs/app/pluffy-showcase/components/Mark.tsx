@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Mark
 // Source: @arkzen:components (pluffy-showcase)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:47.984Z
+// Generated: 2026-11-27T10:24:16.318Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

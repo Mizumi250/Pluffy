@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — AlertController
 // Tatemono: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:37.478849Z
+// Generated: 2026-11-27T10:14:53.065668Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Kotoba;

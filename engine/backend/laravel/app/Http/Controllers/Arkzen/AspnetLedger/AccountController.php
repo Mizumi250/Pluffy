@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — AccountController
 // Tatemono: aspnet-ledger
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:17.296709Z
+// Generated: 2026-11-27T10:14:31.994271Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\AspnetLedger;

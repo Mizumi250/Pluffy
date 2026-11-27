@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — a2ui-lab
 // Source: @arkzen:components (a2ui-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:15.058Z
+// Generated: 2026-11-27T10:14:27.749Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

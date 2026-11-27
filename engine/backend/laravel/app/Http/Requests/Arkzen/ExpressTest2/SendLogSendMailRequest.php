@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — SendLogSendMailRequest
 // Tatemono: express-test-2
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:27.577631Z
+// Generated: 2026-11-27T10:14:42.650180Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\ExpressTest2;

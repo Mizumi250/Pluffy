@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — HomeView
 // Source: @arkzen:components (pluffy-showcase)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:48.014Z
+// Generated: 2026-11-27T10:24:16.334Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

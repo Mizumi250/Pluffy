@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — UiReleaseStoreRequest
 // Tatemono: mobile-sdui
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:42.478909Z
+// Generated: 2026-11-27T10:14:57.641578Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\MobileSdui;

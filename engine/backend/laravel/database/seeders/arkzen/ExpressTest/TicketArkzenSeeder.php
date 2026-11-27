@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — TicketArkzenSeeder
 // Tatemono: express-test  |  Connection: express_test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:26.707008Z
+// Generated: 2026-11-27T10:14:41.817132Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\ExpressTest;

@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — pluffy-showcase
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:47.895Z
+// Generated: 2026-11-27T10:24:16.260Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -53,6 +53,7 @@ export const pluffyShowcaseAnimations = (pageRef: React.RefObject<HTMLDivElement
       gsap.set(q('.pf-v-home'), { autoAlpha: 0 }); gsap.set(q('.pf-v-ed, .pf-rail-i, .pf-code-l, .pf-t-l, .pf-side-new'), { autoAlpha: 1 }); gsap.set(q('.pf-dock'), { y: 0 }); setActive(hero, 'new')
     }
     root.querySelectorAll<HTMLElement>('.pf-scene .pf-win').forEach((w) => { const { q } = tools(w); gsap.set(q('.pf-to, .pf-rail-x, .pf-ex-cmd .x'), { autoAlpha: 1 }); q('.pf-tx').forEach((t) => { (t as HTMLElement).textContent = (t as HTMLElement).dataset.t ?? '' }); gsap.set(q('.pf-dock'), { y: 0 }) })
+    gsap.set('.pf-rl, .pf-rc-blk', { autoAlpha: 1 }); gsap.set('.pf-rc-cover', { autoAlpha: 0 })
     root.querySelectorAll('.pf-cs span').forEach((s, i, all) => s.classList.toggle('on', i === all.length - 1))
   })
 
@@ -95,7 +96,7 @@ export const pluffyShowcaseAnimations = (pageRef: React.RefObject<HTMLDivElement
     // Scenes: a sticky stage, and a timeline the scroll position drives. The caption follows the scroll.
     const scene = (id: string, build: (tl: gsap.core.Timeline, q: ReturnType<typeof gsap.utils.selector>, at: ReturnType<typeof tools>['at']) => void) => {
       const sec = root.querySelector<HTMLElement>('#scene-' + id)
-      const win = sec?.querySelector<HTMLElement>('.pf-win')
+      const win = sec?.querySelector<HTMLElement>('.pf-win') ?? sec
       if (!sec || !win) return
       const { q, at } = tools(win)
       const caps = Array.from(sec.querySelectorAll('.pf-cs span'))
@@ -154,16 +155,12 @@ export const pluffyShowcaseAnimations = (pageRef: React.RefObject<HTMLDivElement
       tl.to({}, { duration: 0.8 }, 8.6)
     })
 
-    // Story: one scrubbed timeline. The step text follows the scroll position.
-    gsap.timeline({
-      scrollTrigger: {
-        trigger: '.pf-story', start: 'top top', end: 'bottom bottom', scrub: 0.6, invalidateOnRefresh: true,
-        onUpdate: (self) => { const on = self.progress < 0.34 ? 0 : self.progress < 0.67 ? 1 : 2; root.querySelectorAll('.pf-step').forEach((s, i) => s.classList.toggle('on', i === on)) },
-      },
+    // Real app: Kairo's own file builds up on the left, then the site it made is revealed on the right.
+    scene('r', (tl, q) => {
+      tl.from(q('.pf-rl'), { autoAlpha: 0, stagger: 0.12, duration: 0.2, ease: 'none' }, 0.2)
+        .from(q('.pf-rc-blk'), { autoAlpha: 0, y: 8, stagger: 0.2, duration: 0.3 }, 2.2)
+        .to(q('.pf-rc-cover'), { scaleY: 0, duration: 1.4, ease: 'power3.inOut' }, 4.0).to({}, { duration: 1 }, 5.8)
     })
-      .from('.pf-file', { y: 80, opacity: 0, duration: 1 })
-      .from('.pf-tag', { opacity: 0.25, stagger: 0.15, duration: 0.3 }, 1.1)
-      .from('.pf-bar', { scaleX: 0, opacity: 0, stagger: 0.35, duration: 0.7, ease: 'power2.out' }, 2.2)
 
     // Platforms and roadmap rows arrive as they are reached.
     gsap.utils.toArray<HTMLElement>('.pf-plat-row, .pf-plan').forEach((el) => {

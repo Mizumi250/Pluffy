@@ -1,6 +1,6 @@
 /* @arkzen:meta
 name: pluffy-showcase
-version: 1.2.0
+version: 1.3.0
 description: Static portfolio site that tells the story of Pluffy and Pluffy Studio and links the v1.0.6 download
 auth: false
 */
@@ -23,7 +23,7 @@ twitter:
 */
 
 /* @arkzen:web:style */
-.pf-root { --ink:#212121; --ink-2:#4a3f3c; --surface:#fbfbfd; --sec:#f3ebe9; --sec-2:#ebe0dd; --primary:#f99e9e; --press:#f58a8a; --soft:#fde6e6; --muted:#6c625f; --faint:#a69a96; --sunk:#f8f3f1; --ok:#2d7a58; --shadow-1:0 1px 2px rgba(74,48,42,.05),0 6px 18px rgba(74,48,42,.07); --shadow-2:0 14px 40px rgba(74,48,42,.18); --r-sm:10px; --r:14px; --r-lg:22px; --ui:system-ui,-apple-system,"Segoe UI Variable Text","Segoe UI",sans-serif; --display:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic UI",system-ui,sans-serif; --mono:ui-monospace,"Cascadia Mono","SF Mono",Menlo,Consolas,monospace; font:16px/1.7 var(--ui); color:var(--ink); background:var(--sec); overflow-x:clip; }
+.pf-root { --ink:#212121; --ink-2:#4a3f3c; --surface:#fbfbfd; --sec:#f3ebe9; --sec-2:#ebe0dd; --primary:#f99e9e; --press:#f58a8a; --soft:#fde6e6; --muted:#6c625f; --faint:#a69a96; --sunk:#f8f3f1; --ok:#2d7a58; --shadow-1:0 1px 2px rgba(74,48,42,.05),0 6px 18px rgba(74,48,42,.07); --shadow-2:0 14px 40px rgba(74,48,42,.18); --r-sm:10px; --r:14px; --r-lg:22px; --ui:system-ui,-apple-system,"Segoe UI Variable Text","Segoe UI",sans-serif; --display:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic UI",system-ui,sans-serif; --mono:ui-monospace,"Cascadia Mono","SF Mono",Menlo,Consolas,monospace; font:16px/1.7 var(--ui); color:var(--ink); background:#ffffff; overflow-x:clip; }
 .pf-root * { box-sizing:border-box; }
 .pf-root h1, .pf-root h2, .pf-root h3, .pf-root h4, .pf-root p, .pf-root ol, .pf-root figure { margin:0; padding:0; }
 .pf-wrap { width:min(1160px,100% - 48px); margin-inline:auto; }
@@ -31,7 +31,7 @@ twitter:
 .pf-h2 { font:700 clamp(1.5rem,3vw,2rem)/1.25 var(--display); }
 .pf-h3 { font:700 1.25rem/1.3 var(--display); }
 .pf-muted { color:var(--muted); }
-.pf-card { background:var(--surface); border-radius:var(--r-lg); box-shadow:var(--shadow-1); }
+.pf-card { background:var(--sec); border-radius:var(--r-lg); box-shadow:var(--shadow-1); }
 .pf-btn { display:inline-flex; align-items:center; gap:10px; height:44px; padding:0 22px; border-radius:999px; border:0; font:700 16px var(--display); text-decoration:none; cursor:pointer; transition:background-color .2s ease; }
 .pf-btn svg { width:18px; height:18px; flex:none; }
 .pf-btn:focus-visible, .pf-root .pf-link:focus-visible { outline:none; box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--primary); }
@@ -134,20 +134,25 @@ twitter:
 .pf-ex-foot { display:flex; justify-content:flex-end; gap:8px; margin-top:6px; }
 .pf-cursor { position:absolute; left:0; top:0; width:22px; height:22px; display:none; pointer-events:none; z-index:9; filter:drop-shadow(0 2px 3px rgba(33,33,33,.28)); }
 .pf-win .pf-cursor { width:22px; height:22px; }
-.pf-story { height:320vh; margin-top:4vh; }
-.pf-stick { position:sticky; top:0; height:100vh; display:grid; grid-template-columns:1fr 1.1fr; gap:56px; align-items:center; }
-.pf-root .pf-steps { list-style:none; display:grid; gap:24px; margin-top:32px; }
-.pf-step { display:grid; grid-template-columns:32px 1fr; gap:16px; color:var(--muted); transition:color .3s ease; }
-.pf-n { display:grid; place-items:center; width:32px; height:32px; border-radius:50%; background:var(--sec-2); font:700 15px var(--display); color:var(--ink); transition:background-color .3s ease; }
-.pf-step.on { color:var(--ink); } .pf-step.on .pf-n { background:var(--primary); }
-.pf-step h3 { font:700 18px/1.3 var(--display); margin-bottom:4px; }
-.pf-file { padding:20px; }
-.pf-file-top { padding:0 4px 14px; font:500 13px var(--mono); color:var(--muted); }
-.pf-frow { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; align-items:center; padding:10px 4px; }
-.pf-tag { display:flex; align-items:center; gap:10px; font:500 13px/1.4 var(--mono); overflow-wrap:anywhere; }
-.pf-tag i { width:12px; height:12px; border-radius:50%; flex:none; }
-.pf-bar { display:block; padding:10px 14px; border-radius:var(--r-sm); transform-origin:0 50%; line-height:1.4; }
-.pf-bar b { display:block; font-family:var(--display); } .pf-bar span { font-size:14px; color:var(--ink-2); }
+.pf-n { display:grid; place-items:center; width:32px; height:32px; border-radius:50%; background:var(--sec-2); font:700 15px var(--display); color:var(--ink); }
+.pf-rc { display:grid; grid-template-columns:5fr 7fr; gap:24px; align-items:start; }
+.pf-rc-code { padding:18px 20px 20px; display:flex; flex-direction:column; gap:12px; min-width:0; }
+.pf-rc-bar { font:500 13px var(--mono); color:var(--muted); }
+.pf-rl { display:flex; font:13px/1.7 var(--mono); white-space:pre; overflow:hidden; }
+.pf-rl u { width:36px; text-decoration:none; color:var(--faint); flex:none; text-align:right; padding-right:14px; }
+.pf-rl span { flex:none; }
+.pf-rl span:last-child { flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.pf-rl .t { color:#b0642f; font-weight:700; } .pf-rl .k { color:#5a4a9c; } .pf-rl .v { color:var(--ok); }
+.pf-rc-blocks { display:grid; grid-template-columns:1fr 1fr; gap:2px 20px; margin-top:6px; }
+.pf-rc-blk { display:flex; align-items:center; gap:9px; padding:6px 0; font:500 12px var(--mono); min-width:0; }
+.pf-rc-blk b { font-weight:500; overflow:hidden; text-overflow:ellipsis; }
+.pf-rc-blk i { width:10px; height:10px; border-radius:50%; flex:none; }
+.pf-rc-blk em { margin-left:auto; font-style:normal; color:var(--faint); }
+.pf-rc-shot { padding:12px 12px 16px; display:flex; flex-direction:column; gap:12px; min-width:0; }
+.pf-rc-img { position:relative; overflow:hidden; border-radius:var(--r); }
+.pf-rc-img img { display:block; width:100%; }
+.pf-rc-cover { position:absolute; inset:0; background:var(--sec-2); transform-origin:50% 0; }
+.pf-rc-shot figcaption { padding:0 8px; font-size:14px; color:var(--muted); }
 .pf-scene { height:270vh; }
 .pf-sc-stick { position:sticky; top:0; height:100vh; display:flex; flex-direction:column; justify-content:center; gap:16px; padding:16px 0; }
 .pf-sc-head { display:flex; justify-content:space-between; align-items:flex-end; gap:12px 40px; flex-wrap:wrap; }
@@ -164,7 +169,7 @@ twitter:
 .pf-plat-row h3 { font:700 18px var(--display); }
 .pf-plat-row p { font-size:14px; color:var(--muted); line-height:1.5; }
 .pf-chips { display:flex; flex-wrap:wrap; gap:8px; }
-.pf-chip { display:inline-flex; align-items:center; gap:9px; height:36px; padding:0 14px 0 10px; border-radius:999px; background:var(--sec); font-size:15px; }
+.pf-chip { display:inline-flex; align-items:center; gap:9px; height:36px; padding:0 14px 0 10px; border-radius:999px; background:#ffffff; font-size:15px; }
 .pf-logo { width:20px; height:20px; display:block; }
 .pf-lm { display:grid; place-items:center; width:20px; height:20px; border-radius:6px; background:var(--ink-2); color:var(--surface); font:700 11px var(--display); }
 .pf-note { margin-top:20px; font-size:15px; color:var(--muted); }
@@ -198,9 +203,8 @@ twitter:
 .pf-toast.on { transform:translate(-50%,0); opacity:1; }
 @media (max-width:860px) {
   .pf-nav .pf-link { display:none; }
-  .pf-stick, .pf-get, .pf-next-grid { grid-template-columns:1fr; }
-  .pf-stick { gap:20px; align-content:start; padding-top:24px; }
-  .pf-steps { display:none; }
+  .pf-get, .pf-next-grid, .pf-rc { grid-template-columns:1fr; }
+  .pf-rl.x { display:none; }
   .pf-grid { grid-template-columns:1fr; } .pf-grid figure:first-child { grid-row:auto; }
   .pf-get { padding:32px 24px; }
   .pf-plat-row { grid-template-columns:1fr; gap:10px; padding:16px 0; } .pf-plat { padding:12px 20px; }
@@ -208,8 +212,7 @@ twitter:
   .pf-scene { height:220vh; } .pf-scene .pf-stage { width:100%; }
   .pf-sc-stick { justify-content:center; }
 }
-@media (max-width:560px) { .pf-frow { grid-template-columns:1fr; gap:6px; padding:6px 4px; } }
-@media (prefers-reduced-motion: reduce) { .pf-btn, .pf-step, .pf-n, .pf-toast, .pf-cs span { transition:none; } }
+@media (prefers-reduced-motion: reduce) { .pf-btn, .pf-toast, .pf-cs span { transition:none; } }
 /* @arkzen:web:style:end */
 
 /* @arkzen:web:components:shared */
@@ -220,8 +223,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Download, Copy, ArrowUpRight, Home, Puzzle, Settings, Plus, Search, Building2, CodeXml, Terminal, MessageSquare, ChevronDown, CircleCheck, Upload } from 'lucide-react'
 
 export const REPO_URL = 'https://github.com/Mizumi250/Pluffy'
-export const RELEASE_URL = 'https://github.com/Mizumi250/Pluffy/releases/tag/v1.0.6'
-export const DOWNLOAD_URL = 'https://github.com/Mizumi250/Pluffy/releases/download/v1.0.6/PluffyStudio-win-x64.zip'
+export const RELEASE_URL = 'https://github.com/Mizumi250/Pluffy/releases/tag/v1.0.7'
+export const DOWNLOAD_URL = 'https://github.com/Mizumi250/Pluffy/releases/download/v1.0.7/PluffyStudio-portable.exe'
 export const CLONE_CMD = 'git clone https://github.com/Mizumi250/Pluffy.git'
 export const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap'
 export const IMG_BASE = '/tatemonos/pluffy-showcase/assets/images/'
@@ -437,6 +440,7 @@ const pluffyShowcaseAnimations = (pageRef: React.RefObject<HTMLDivElement | null
       gsap.set(q('.pf-v-home'), { autoAlpha: 0 }); gsap.set(q('.pf-v-ed, .pf-rail-i, .pf-code-l, .pf-t-l, .pf-side-new'), { autoAlpha: 1 }); gsap.set(q('.pf-dock'), { y: 0 }); setActive(hero, 'new')
     }
     root.querySelectorAll<HTMLElement>('.pf-scene .pf-win').forEach((w) => { const { q } = tools(w); gsap.set(q('.pf-to, .pf-rail-x, .pf-ex-cmd .x'), { autoAlpha: 1 }); q('.pf-tx').forEach((t) => { (t as HTMLElement).textContent = (t as HTMLElement).dataset.t ?? '' }); gsap.set(q('.pf-dock'), { y: 0 }) })
+    gsap.set('.pf-rl, .pf-rc-blk', { autoAlpha: 1 }); gsap.set('.pf-rc-cover', { autoAlpha: 0 })
     root.querySelectorAll('.pf-cs span').forEach((s, i, all) => s.classList.toggle('on', i === all.length - 1))
   })
 
@@ -479,7 +483,7 @@ const pluffyShowcaseAnimations = (pageRef: React.RefObject<HTMLDivElement | null
     // Scenes: a sticky stage, and a timeline the scroll position drives. The caption follows the scroll.
     const scene = (id: string, build: (tl: gsap.core.Timeline, q: ReturnType<typeof gsap.utils.selector>, at: ReturnType<typeof tools>['at']) => void) => {
       const sec = root.querySelector<HTMLElement>('#scene-' + id)
-      const win = sec?.querySelector<HTMLElement>('.pf-win')
+      const win = sec?.querySelector<HTMLElement>('.pf-win') ?? sec
       if (!sec || !win) return
       const { q, at } = tools(win)
       const caps = Array.from(sec.querySelectorAll('.pf-cs span'))
@@ -538,16 +542,12 @@ const pluffyShowcaseAnimations = (pageRef: React.RefObject<HTMLDivElement | null
       tl.to({}, { duration: 0.8 }, 8.6)
     })
 
-    // Story: one scrubbed timeline. The step text follows the scroll position.
-    gsap.timeline({
-      scrollTrigger: {
-        trigger: '.pf-story', start: 'top top', end: 'bottom bottom', scrub: 0.6, invalidateOnRefresh: true,
-        onUpdate: (self) => { const on = self.progress < 0.34 ? 0 : self.progress < 0.67 ? 1 : 2; root.querySelectorAll('.pf-step').forEach((s, i) => s.classList.toggle('on', i === on)) },
-      },
+    // Real app: Kairo's own file builds up on the left, then the site it made is revealed on the right.
+    scene('r', (tl, q) => {
+      tl.from(q('.pf-rl'), { autoAlpha: 0, stagger: 0.12, duration: 0.2, ease: 'none' }, 0.2)
+        .from(q('.pf-rc-blk'), { autoAlpha: 0, y: 8, stagger: 0.2, duration: 0.3 }, 2.2)
+        .to(q('.pf-rc-cover'), { scaleY: 0, duration: 1.4, ease: 'power3.inOut' }, 4.0).to({}, { duration: 1 }, 5.8)
     })
-      .from('.pf-file', { y: 80, opacity: 0, duration: 1 })
-      .from('.pf-tag', { opacity: 0.25, stagger: 0.15, duration: 0.3 }, 1.1)
-      .from('.pf-bar', { scaleX: 0, opacity: 0, stagger: 0.35, duration: 0.7, ease: 'power2.out' }, 2.2)
 
     // Platforms and roadmap rows arrive as they are reached.
     gsap.utils.toArray<HTMLElement>('.pf-plat-row, .pf-plan').forEach((el) => {
@@ -591,18 +591,14 @@ const IndexPage = () => {
   }
   const PLAN = (f: string) => REPO_URL + '/blob/main/' + f
 
-  const rows = [
-    [AZ + ':database:lessons', '#b0642f', 'Database', 'SQLite or PostgreSQL'],
-    [AZ + ':api:lessons', '#6a4fb0', 'API', 'Seven backends to pick from'],
-    [AZ + ':web:page:index', '#c2415b', 'Web', 'Next.js, Vite and more'],
-    [AZ + ':native:page:index', '#2d7a58', 'Mobile', 'Expo, React Native, Lynx'],
-    [AZ + ':desktop:config', '#1f7a8c', 'Desktop', 'Electron or Tauri'],
+  const REAL: Array<[string | number, Array<[string, string]>]> = [
+    [1, [['t', '/* ' + AZ + ':meta']]], [2, [['k', 'name: '], ['v', 'kairo']]], [3, [['k', 'version: '], ['v', '1.0.0']]],
+    [4, [['k', 'description: '], ['v', 'Kairo, a 3D circuit board. Wire NAND gates, save the result as a chip, and reuse that chip as a part in bigger circuits.']]],
+    [5, [['k', 'auth: '], ['v', 'false']]], [6, [['', '*/']]], ['\u2026', []],
+    [15, [['t', '/* ' + AZ + ':database:chips']]], [16, [['k', 'table: '], ['v', 'chips']]], [17, [['k', 'timestamps: '], ['v', 'true']]],
+    [18, [['k', 'softDeletes: '], ['v', 'false']]], [19, [['k', 'columns:']]], [20, [['k', '  name:']]], [21, [['k', '    type: '], ['v', 'string']]], [22, [['k', '    length: '], ['v', '60']]],
   ]
-  const steps = [
-    ['One file', 'A tatemono is a single core.tsx. Tables, API, login, pages and the look all sit in tagged blocks.'],
-    ['Studio reads it', 'Blocks line up in a rail beside the code. Check lints the file without starting the engine.'],
-    ['The engine builds', 'Save, and it rebuilds the database, backend, web, mobile and desktop around your file.'],
-  ]
+  const BLOCKS = [['meta', 1, '#b0642f'], ['meta:web', 8, '#b0642f'], ['database:chips', 15, '#b0642f'], ['api:chips', 48, '#6a4fb0'], ['web:script', 75, '#c2415b'], ['web:style', 1389, '#c2415b'], ['web:components:board', 1507, '#c2415b'], ['web:page:index', 2294, '#c2415b']]
   const platforms = [
     { t: 'Web', n: 'Five stacks', c: [['nextjs', 'Next.js'], ['vite', 'React + Vite'], ['tanstack', 'TanStack Start'], ['astro', 'Astro'], ['inertia', 'React with Inertia']] },
     { t: 'Mobile', n: 'Three stacks', c: [['expo', 'Expo'], ['react', 'React Native'], ['lynx', 'Lynx']] },
@@ -658,24 +654,32 @@ const IndexPage = () => {
         </section>
       </div>
 
-      <section className="pf-story" id="story">
-        <div className="pf-wrap pf-stick">
-          <div>
-            <h2 className="pf-h2">Write the plan once. Watch the floors rise.</h2>
-            <ol className="pf-steps">
-              {steps.map((s, i) => (
-                <li key={s[0]} className={'pf-step' + (i === 0 ? ' on' : '')}><span className="pf-n">{i + 1}</span><div><h3>{s[0]}</h3><p>{s[1]}</p></div></li>
-              ))}
-            </ol>
+      <section className="pf-scene" id="scene-r">
+        <div className="pf-wrap pf-sc-stick">
+          <div className="pf-sc-head">
+            <h2 className="pf-h2">Here is a whole app, in one file.</h2>
+            <p className="pf-cs">
+              <span className="on">This is Kairo, a 3D circuit board. All 2,298 lines live in one core.tsx.</span>
+              <span>A database table, an API, the script, styles and the page sit in tagged blocks.</span>
+              <span>Save, and the engine builds the site on the right.</span>
+            </p>
           </div>
-          <div className="pf-card pf-file" aria-label="Sample tatemono blocks and what each one builds">
-            <div className="pf-file-top">core.tsx, sample blocks</div>
-            {rows.map((r) => (
-              <div className="pf-frow" key={r[0]}>
-                <code className="pf-tag"><i style={{ background: r[1] }} />{r[0]}</code>
-                <span className="pf-bar" style={{ background: r[1] + '24' }}><b>{r[2]}</b><span>{r[3]}</span></span>
+          <div className="pf-rc">
+            <div className="pf-card pf-rc-code" aria-label="The opening lines and block list of the Kairo tatemono">
+              <div className="pf-rc-bar">tatemonos/kairo/core.tsx, 2,298 lines</div>
+              <div>
+                {REAL.map((r, i) => (
+                  <div className={'pf-rl' + (i > 5 ? ' x' : '')} key={i}><u>{r[0]}</u>{r[1].map((p, j) => <span key={j} className={p[0]}>{p[1]}</span>)}</div>
+                ))}
               </div>
-            ))}
+              <div className="pf-rc-blocks">
+                {BLOCKS.map((b) => <div className="pf-rc-blk" key={String(b[0])}><i style={{ background: String(b[2]) }} /><b>{b[0]}</b><em>{b[1]}</em></div>)}
+              </div>
+            </div>
+            <figure className="pf-card pf-rc-shot">
+              <div className="pf-rc-img"><img src={IMG_BASE + 'built-kairo.webp'} alt="The Kairo site, built from that file" /><div className="pf-rc-cover" /></div>
+              <figcaption>Kairo, built from the file on the left.</figcaption>
+            </figure>
           </div>
         </div>
       </section>

@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/aspnet-test/auth')->gro
 // ============================================================
 // ARKZEN GENERATED ROUTES — aspnet-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:18.283837Z
+// Generated: 2026-11-27T10:14:32.877112Z
 // Resources: Check, AuditLog, AuditLog, AuditLog
 // Custom controllers: ProbeController
 // ============================================================

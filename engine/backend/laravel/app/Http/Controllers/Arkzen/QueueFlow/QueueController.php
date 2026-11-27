@@ -5,7 +5,7 @@
 // Tatemono: queue-flow
 // Type: Custom Route Controller (no model/resource)
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:routes block in the tatemono instead.
-// Generated: 2026-11-27T06:51:50.813545Z
+// Generated: 2026-11-27T10:15:03.245535Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\QueueFlow;

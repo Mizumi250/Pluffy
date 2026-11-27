@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Footer
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:39.448Z
+// Generated: 2026-11-27T10:14:55.001Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

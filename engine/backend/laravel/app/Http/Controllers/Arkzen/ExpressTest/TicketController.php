@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — TicketController
 // Tatemono: express-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:26.614951Z
+// Generated: 2026-11-27T10:14:41.688304Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\ExpressTest;

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — AnnounceBadge
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:50.279Z
+// Generated: 2026-11-27T10:15:02.993Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

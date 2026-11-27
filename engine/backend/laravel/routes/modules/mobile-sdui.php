@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — mobile-sdui
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:42.486667Z
+// Generated: 2026-11-27T10:14:57.654112Z
 // Resources: UiRelease
 // Custom controllers: 
 // ============================================================

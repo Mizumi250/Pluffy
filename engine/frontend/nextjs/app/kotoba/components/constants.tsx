@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — kotoba
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T06:51:36.232Z
+// Generated: 2026-11-27T10:14:51.682Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
