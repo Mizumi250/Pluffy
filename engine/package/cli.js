@@ -3,6 +3,7 @@
 // PLUFF PACKAGE CLI v1.0
 //
 //   node engine/package/cli.js build <tatemono> [--id=<package-id>] [--target=<registry>] [--no-verify]
+//                                     [--stack=<frontend>] [--backend=<name>] [--api-url=<url>]   (derived kinds)
 //   node engine/package/cli.js deps          install the tools (npm install in engine/package)
 //   node engine/package/cli.js status        which tools are installed
 //
@@ -23,6 +24,8 @@ const flag = name => args.find(a => a.startsWith(`--${name}=`))?.slice(name.leng
 const positional = args.slice(1).filter(a => !a.startsWith('--'))
 const paint = (code, text) => (process.stdout.isTTY ? `\x1b[${code}m${text}\x1b[0m` : text)
 const ICON = { passed: paint(32, 'PASS'), failed: paint(31, 'FAIL'), unverified: paint(33, 'UNVERIFIED'), skipped: paint(90, 'skip') }
+
+const DERIVED_KINDS = ['sdk', 'types', 'validators', 'openapi']
 
 const GENERATORS = {
   npm: async () => (await import('./npm/generator.js')).buildNpmPackage,
@@ -58,13 +61,25 @@ async function build() {
     if (pkg.project.workspace_only === true) { console.log(`  skip ${pkg.id}: workspace_only`); continue }
     const registries = (Array.isArray(pkg.project.targets) ? pkg.project.targets : []).filter(r => !wantedTarget || r === wantedTarget)
     if (registries.length === 0) { console.error(`[pkg] Package "${pkg.id}" has no target${wantedTarget ? ` "${wantedTarget}"` : ''}`); exit = 2; continue }
+    // sdk, types, validators and openapi are generated from the api and database blocks (read once per package)
+    let derived
+    if (registries.includes('npm') && DERIVED_KINDS.includes(pkg.project.kind)) {
+      try {
+        const { derivePackage } = await import('./derive/index.js')
+        derived = derivePackage({ kind: pkg.project.kind, rootDir: ROOT_DIR, tatName: name, pkg, version: tatemono.meta.version, stack: flag('stack'), backend: flag('backend'), apiUrl: flag('api-url') })
+      } catch (error) {
+        console.error(`\n  ${paint(31, 'ERROR')} ${pkg.id}: ${error.message}`)
+        exit = 1
+        continue
+      }
+    }
     for (const registry of registries) {
       const generator = GENERATORS[registry]
       if (!generator) { console.log(`\n  ${pkg.id} (${registry}): ${paint(33, 'not implemented yet')} (npm is the only registry in this phase)`); continue }
       const outDir = path.join(ROOT_DIR, 'projects', 'package', name, pkg.id, registry)
       try {
         const buildPackage = await generator()
-        const report = buildPackage({ tatemono, pkg, outDir, verify: !args.includes('--no-verify'), log: m => console.log(`  ${paint(90, m)}`) })
+        const report = buildPackage({ tatemono, pkg, outDir, derived, verify: !args.includes('--no-verify'), log: m => console.log(`  ${paint(90, m)}`) })
         printReport(report)
         console.log(`  ${paint(90, 'output')}  ${path.relative(ROOT_DIR, outDir)}`)
         if (report.verified === 'failed') exit = 1
