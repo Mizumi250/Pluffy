@@ -562,6 +562,12 @@ function cmdSetup() {
   })
 }
 
+// Package tools (engine/package): build, pack and verify packages for npm (more registries later).
+function runPackageCli(cliArgs) {
+  const child = spawn(process.execPath, [path.join(ROOT_DIR, 'engine', 'package', 'cli.js'), ...cliArgs], { cwd: ROOT_DIR, stdio: 'inherit' })
+  child.on('exit', code => { process.exitCode = code ?? 1 })
+}
+
 async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg, openapiFlag = false, apiUrlArg) {
   const config = readConfig()
   if (stackArg === 'extension') stackArg = 'wxt'   // `export <tat> extension` builds with the wxt stack
@@ -987,6 +993,7 @@ function cmdStacks() {
 }
 
 async function cmdDeps(actionArg, stackArg) {
+  if (actionArg === 'install' && stackArg === 'package') { runPackageCli(['deps']); return }
   const config = readConfig()
   const active = new Set([config.activeStack, config.activeAppStack, config.activeDesktopStack, resolveBackend(config)].filter(Boolean))
   const stackOptions = Object.keys(ALL_STACKS).map(key => ({
@@ -1425,6 +1432,8 @@ function printHelp() {
     ['mizumi deps',              '→ Install / uninstall deps (frontend + backend)'],
     ['mizumi deps prune',        '→ Delete deps of unused stacks'],
     ['mizumi deps install <stack>', '→ Install one stack (e.g. nextjs, laravel)'],
+    ['mizumi deps install package', '→ Install the package tools (tsdown, typescript, tsx) used by `export <tat> package`'],
+    ['mizumi export <tat> package', '→ Build, pack and verify the tatemono\'s packages (--id=<package-id> --target=npm --no-verify)'],
     ['mizumi deps uninstall <stack>', '→ Remove one stack\'s node_modules / vendor'],
     ['mizumi stack',             '→ Show active web + app + desktop stacks'],
     ['mizumi stacks',            '→ List all stacks'],
@@ -1468,6 +1477,10 @@ switch (command) {
     const backendArg = backendFlag ? backendFlag.slice('--backend='.length) : undefined
     const apiUrlFlag = args.find(a => a.startsWith('--api-url='))
     const apiUrlArg = apiUrlFlag ? apiUrlFlag.slice('--api-url='.length) : undefined
+    if (positional[1] === 'package') {
+      runPackageCli(['build', ...(positional[0] ? [positional[0]] : []), ...args.slice(1).filter(a => a.startsWith('--') && a !== '--docker')])
+      break
+    }
     cmdExport(positional[0], positional[1], args.includes('--docker'), backendArg, args.includes('--openapi'), apiUrlArg)
     break
   }

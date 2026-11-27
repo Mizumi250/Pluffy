@@ -892,6 +892,8 @@ function validatePkg(parsed: ParsedTatemono, filePath: string): { errors: string
     if (last) apiNames.add(last.toLowerCase())
   }
   const dbNames = new Set(parsed.databases.map(d => d.table.toLowerCase()))
+  // the generated auth routes (login, register, me, logout) can be included in sdk / openapi packages
+  if (parsed.meta.auth) apiNames.add('auth')
   const knownIds = [...new Set([...apiNames, ...dbNames])]
   for (const kind of PKG_DERIVED_BLOCKS) {
     for (const b of blocks.filter(x => x.kind === kind)) {

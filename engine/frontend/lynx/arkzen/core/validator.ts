@@ -16,6 +16,7 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
+import { spawnSync } from 'child_process'
 import { parsePageLayoutDecl, parseTatemono, findMissingBackendVariants } from './parser'
 import { activeBackendVariant, resolveActiveBackend } from './backends'
 import { hasFileBlocks, validateFileBlocks } from './file-writer'
@@ -891,6 +892,8 @@ function validatePkg(parsed: ParsedTatemono, filePath: string): { errors: string
     if (last) apiNames.add(last.toLowerCase())
   }
   const dbNames = new Set(parsed.databases.map(d => d.table.toLowerCase()))
+  // the generated auth routes (login, register, me, logout) can be included in sdk / openapi packages
+  if (parsed.meta.auth) apiNames.add('auth')
   const knownIds = [...new Set([...apiNames, ...dbNames])]
   for (const kind of PKG_DERIVED_BLOCKS) {
     for (const b of blocks.filter(x => x.kind === kind)) {
@@ -987,6 +990,1023 @@ function validatePkg(parsed: ParsedTatemono, filePath: string): { errors: string
     const d = b.data
     if (!isMap(d)) { errors.push(`${tag} must be a YAML mapping`); continue }
     if (!isText(d.host)) errors.push(`${tag} needs host: (vite, eslint, tailwind, laravel, maven, gradle, ...)`)
+  }
+
+  return { errors, warnings }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// TERMINAL BLOCKS (v19.0)
+// @arkzen:term:project, runtime:<lang>, config, theme, keymap[:name], command:<name>,
+// prompt:<name>, screen:<name>, data:<name>, loop:<name>, assets, export,
+// handler/view/script/test:<lang>:<name>, readme.
+// The parser reads the structure. This checks the contract of each block, so a bad value
+// is reported here and not later by the terminal build. Only Tatemonos that declare a
+// term block are checked.
+//
+// Header keys the plan left open (decided here, one place):
+//   keymap.scope       defaults to the block name, or "global" for an unnamed keymap
+//   prompt.when        mapping of an earlier step id to the value it must have
+//   prompt.fallback    mapping of a step id to { flag: --long-flag, env: UPPER_NAME }
+//   screen.size        list of positive weights, one per pane
+//   screen.pane.focus  positive integer focus order, unique per screen
+//   view kind: screen  `screen:` is optional (names a declared screen the view replaces)
+//   view kind: widget  `screen:` is required (the screen the widget lives in)
+//   view kind: loop    the view name is the term:loop name
+// A command needs no handler when it has a builtin, or when it has a prompt and the
+// project declares assets.templates (the generated action runs the prompt and writes the
+// templates).
+// ────────────────────────────────────────────────────────────────────────────
+
+const TERM_LANGS_ALL       = ['ts', 'py', 'rs', 'go', 'java', 'cs', 'php']
+const TERM_MODES           = ['cli', 'tui', 'hybrid']
+const TERM_COLOR_MODES     = ['auto', '16', '256', 'truecolor', 'none']
+const TERM_UNICODE_MODES   = ['auto', 'ascii']
+const TERM_BORDERS         = ['rounded', 'single', 'double', 'ascii']
+const TERM_ROLES           = ['primary', 'secondary', 'muted', 'success', 'warning', 'error', 'border', 'focus', 'selection']
+const TERM_ANSI_NAMES      = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'gray', 'grey', 'default']
+const TERM_CONFIG_FORMATS  = ['toml', 'json', 'yaml']
+const TERM_LOCATIONS       = ['xdg', 'home', 'cwd']
+const TERM_VALUE_TYPES     = ['string', 'int', 'float', 'bool', 'path', 'choice']
+const TERM_OUTPUTS         = ['text', 'json', 'table', 'lines']
+const TERM_BUILTINS        = ['help', 'version', 'completion', 'none']
+const TERM_PROMPT_TYPES    = ['text', 'password', 'number', 'confirm', 'select', 'multiselect', 'path', 'autocomplete', 'editor']
+const TERM_LAYOUTS         = ['rows', 'columns', 'grid', 'split', 'stack', 'tabs']
+const TERM_WIDGETS         = ['table', 'list', 'text', 'input', 'form', 'tabs', 'progress', 'gauge', 'log', 'tree', 'markdown', 'modal', 'status']
+const TERM_STORAGES        = ['json', 'jsonl', 'sqlite']
+const TERM_FIELD_TYPES     = ['string', 'text', 'int', 'float', 'bool', 'date', 'choice', 'tags']
+const TERM_LOOP_RENDERS    = ['full', 'diff']
+const TERM_LOOP_INPUTS     = ['events', 'poll']
+const TERM_VIEW_KINDS      = ['screen', 'widget', 'loop']
+const TERM_BUNDLES         = ['none', 'single_binary', 'zipapp']
+const TERM_PLATFORMS       = ['linux-x64', 'linux-arm64', 'macos-x64', 'macos-arm64', 'windows-x64']
+const TERM_FORMATS         = ['source', 'single_binary', 'archive', 'npm_bin', 'pip', 'cargo_install', 'go_install']
+const TERM_COMPLETIONS     = ['bash', 'zsh', 'fish', 'powershell']
+const TERM_FRAMEWORKS: Record<string, { tui: string[]; cli: string[] }> = {
+  ts: { tui: ['ink'],       cli: ['commander'] },
+  py: { tui: ['textual'],   cli: ['typer', 'click'] },
+  rs: { tui: ['ratatui'],   cli: ['clap'] },
+  go: { tui: ['bubbletea'], cli: ['cobra'] },
+}
+// Go and Rust build for other platforms from one machine. The other runtimes need the target OS.
+const TERM_CROSS_COMPILE   = ['go', 'rs']
+// Which export format needs which runtime.
+const TERM_FORMAT_RUNTIME: Record<string, string> = { npm_bin: 'ts', pip: 'py', cargo_install: 'rs', go_install: 'go' }
+const TERM_TOOLCHAIN: Record<string, { cmd: string; args: string[]; label: string }> = {
+  ts:   { cmd: 'node',   args: ['--version'], label: 'Node.js' },
+  py:   { cmd: 'python3', args: ['--version'], label: 'Python 3' },
+  rs:   { cmd: 'cargo',  args: ['--version'], label: 'Rust (cargo)' },
+  go:   { cmd: 'go',     args: ['version'],   label: 'Go' },
+  java: { cmd: 'java',   args: ['-version'],  label: 'Java' },
+  cs:   { cmd: 'dotnet', args: ['--version'], label: '.NET' },
+  php:  { cmd: 'php',    args: ['--version'], label: 'PHP' },
+}
+// Common SPDX license ids. An id outside this list is reported as a warning, not an error,
+// because the full SPDX list is not bundled.
+const TERM_SPDX_COMMON = [
+  '0BSD', 'AGPL-3.0-only', 'AGPL-3.0-or-later', 'Apache-2.0', 'Artistic-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'BSL-1.0',
+  'CC-BY-4.0', 'CC-BY-SA-4.0', 'CC0-1.0', 'EPL-2.0', 'GPL-2.0-only', 'GPL-2.0-or-later', 'GPL-3.0-only', 'GPL-3.0-or-later',
+  'ISC', 'LGPL-2.1-only', 'LGPL-2.1-or-later', 'LGPL-3.0-only', 'LGPL-3.0-or-later', 'MIT', 'MIT-0', 'MPL-2.0',
+  'MS-PL', 'Unlicense', 'WTFPL', 'Zlib', 'UNLICENSED',
+]
+const TERM_NAME_RE      = /^[a-z][a-z0-9-]*$/
+const TERM_COMMAND_RE   = /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)*$/
+const TERM_IDENT_RE     = /^[a-z][a-z0-9_]*$/
+const TERM_BINARY_RE    = /^[a-z][a-z0-9_-]*$/
+const TERM_SEMVER_RE    = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/
+const TERM_ENV_RE       = /^[A-Z][A-Z0-9_]*$/
+const TERM_LONG_FLAG_RE = /^--[a-z][a-z0-9-]*$/
+const TERM_HEX_RE       = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
+// A pointer to Pluffy from code that will be generated into a standalone program (rule 1).
+const TERM_PLUFFY_IMPORT: Record<string, RegExp> = {
+  ts:   /(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*)['"][^'"\n]*(?:@\/arkzen|arkzen\/core|@arkzen\/|\bpluffy\b)[^'"\n]*['"]/i,
+  py:   /^[ \t]*(?:from|import)[ \t]+(?:arkzen|pluffy)\b/im,
+  rs:   /^[ \t]*(?:pub[ \t]+)?(?:use|extern[ \t]+crate)[ \t]+(?:arkzen|pluffy)\b/im,
+  go:   /^[ \t]*(?:import[ \t]+)?(?:[A-Za-z_.][A-Za-z0-9_]*[ \t]+)?"[^"\n]*(?:\/|^)(?:arkzen|pluffy)(?:\/[^"\n]*)?"[ \t]*$/im,
+  java: /^[ \t]*import[ \t]+(?:static[ \t]+)?[\w.]*\b(?:arkzen|pluffy)\b[\w.*]*[ \t]*;/im,
+  cs:   /^[ \t]*using[ \t]+(?:static[ \t]+)?[\w.]*\b(?:arkzen|pluffy)\b[\w.]*[ \t]*;/im,
+  php:  /^[ \t]*use[ \t]+[\\\w]*\b(?:arkzen|pluffy)\b[\\\w]*/im,
+}
+
+const termToolchainCache = new Map<string, boolean>()
+function termToolchainInstalled(lang: string): boolean {
+  const spec = TERM_TOOLCHAIN[lang]
+  if (!spec) return true
+  const key = lang === 'py' ? 'py' : lang
+  const cached = termToolchainCache.get(key)
+  if (cached !== undefined) return cached
+  const tries = lang === 'py' ? [spec, { ...spec, cmd: 'python' }] : [spec]
+  let ok = false
+  for (const t of tries) {
+    try {
+      const r = spawnSync(t.cmd, t.args, { stdio: 'ignore', timeout: 4000, windowsHide: true })
+      if (!r.error && r.status === 0) { ok = true; break }
+    } catch { /* treated as not installed */ }
+  }
+  termToolchainCache.set(key, ok)
+  return ok
+}
+
+function termTypeOk(type: string, value: unknown): boolean {
+  switch (type) {
+    case 'string': case 'path': case 'text': case 'date': case 'choice': return typeof value === 'string'
+    case 'int':    return typeof value === 'number' && Number.isInteger(value)
+    case 'float':  return typeof value === 'number' && Number.isFinite(value)
+    case 'bool':   return typeof value === 'boolean'
+    case 'tags':   return Array.isArray(value) && value.every(v => typeof v === 'string')
+    default:       return true
+  }
+}
+
+function validateTerm(parsed: ParsedTatemono, filePath: string): { errors: string[]; warnings: string[] } {
+  const errors:   string[] = []
+  const warnings: string[] = []
+  const term = parsed.term
+  if (!term) return { errors, warnings }
+
+  const E = (msg: string): void => { errors.push(msg) }
+  const W = (msg: string): void => { warnings.push(msg) }
+
+  const assetsDir = path.join(path.dirname(filePath), 'assets')
+  const listAssets = (): string[] => {
+    const out: string[] = []
+    const walk = (dir: string, rel: string): void => {
+      let entries: fs.Dirent[] = []
+      try { entries = fs.readdirSync(dir, { withFileTypes: true }) } catch { return }
+      for (const entry of entries) {
+        const r = rel ? `${rel}/${entry.name}` : entry.name
+        if (entry.isDirectory()) walk(path.join(dir, entry.name), r)
+        else out.push(r)
+      }
+    }
+    walk(assetsDir, '')
+    return out
+  }
+  const cleanAsset = (rel: string): string => rel.replace(/\\/g, '/').replace(/^(?:\.\/)?\/?(?:assets\/)?/, '')
+  const globToRe = (glob: string): RegExp => {
+    let re = ''
+    for (let i = 0; i < glob.length; i++) {
+      const c = glob[i]
+      if (c === '*') {
+        if (glob[i + 1] === '*') { re += '.*'; i++; if (glob[i + 1] === '/') i++ } else re += '[^/]*'
+      } else if (c === '?') re += '[^/]'
+      else re += c.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    }
+    return new RegExp(`^${re}$`)
+  }
+
+  const checkKeys = (label: string, map: Record<string, unknown>, known: string[]): void => {
+    for (const key of Object.keys(map)) {
+      if (!known.includes(key)) W(`${label}: unknown key "${key}" (known: ${known.join(', ')}). A misspelled key is ignored by the build.`)
+    }
+  }
+  const checkEnum = (label: string, value: unknown, allowed: string[]): void => {
+    if (value !== undefined && !(typeof value === 'string' && allowed.includes(value))) {
+      E(`${label} must be one of: ${allowed.join(', ')} (got ${JSON.stringify(value)})`)
+    }
+  }
+  const checkBool = (label: string, value: unknown): void => {
+    if (value !== undefined && typeof value !== 'boolean') E(`${label} must be true or false`)
+  }
+  const checkText = (label: string, value: unknown): void => {
+    if (value !== undefined && !isText(value)) E(`${label} must be a non-empty string`)
+  }
+  const checkPosNumber = (label: string, value: unknown): void => {
+    if (value !== undefined && !(typeof value === 'number' && Number.isFinite(value) && value > 0)) E(`${label} must be a positive number`)
+  }
+  const checkSize = (label: string, value: unknown): void => {
+    if (value === undefined) return
+    if (!isMap(value)) { E(`${label} must be a mapping with width and height`); return }
+    for (const key of ['width', 'height']) {
+      if (value[key] !== undefined && !isPosInt(value[key])) E(`${label}.${key} must be a positive integer`)
+    }
+    checkKeys(label, value, ['width', 'height'])
+  }
+  const checkMapOrList = (label: string, value: unknown): void => {
+    if (value === undefined) return
+    if (isMap(value)) return
+    if (isTexts(value)) return
+    E(`${label} must be a mapping (name: version) or a list of names`)
+  }
+  const checkRegex = (label: string, value: unknown): void => {
+    if (!isText(value)) { E(`${label} must be a non-empty regular expression`); return }
+    try { new RegExp(value) } catch (e) { E(`${label} is not a valid regular expression: ${e instanceof Error ? e.message : String(e)}`) }
+  }
+  const checkValidate = (label: string, value: unknown): void => {
+    if (value === undefined) return
+    if (!isMap(value)) { E(`${label} must be a mapping (regex, min, max, length)`); return }
+    if (value.regex !== undefined) checkRegex(`${label}.regex`, value.regex)
+    for (const key of ['min', 'max', 'length']) {
+      if (value[key] !== undefined && !(typeof value[key] === 'number' && Number.isFinite(value[key]))) E(`${label}.${key} must be a number`)
+    }
+    if (typeof value.min === 'number' && typeof value.max === 'number' && value.min > value.max) E(`${label}: min cannot exceed max`)
+    checkKeys(label, value, ['regex', 'min', 'max', 'length'])
+  }
+  const checkNames = (kind: string, blocks: { name: string }[], re: RegExp, style: string): void => {
+    const seen = new Set<string>()
+    for (const block of blocks) {
+      if (!re.test(block.name)) E(`@arkzen:term:${kind}:${block.name}: the name must be ${style}`)
+      if (seen.has(block.name)) E(`Duplicate @arkzen:term:${kind}:${block.name}`)
+      seen.add(block.name)
+    }
+  }
+  // A YAML block must hold a mapping. Returns the mapping, or {} after reporting.
+  const mapOf = (label: string, data: unknown): Record<string, unknown> => {
+    if (isMap(data)) return data
+    E(`${label} must be a YAML mapping`)
+    return {}
+  }
+  const checkColor = (label: string, value: unknown, palette: Set<string>, allowPalette: boolean): void => {
+    if (!isText(value)) { E(`${label} must be a color (hex like #aabbcc, an ANSI name${allowPalette ? ' or a palette name' : ''})`); return }
+    const v = value.trim()
+    const ansi = v.replace(/^bright-/, '')
+    if (TERM_HEX_RE.test(v) || TERM_ANSI_NAMES.includes(ansi)) return
+    if (/^(?:[0-9]{1,3})$/.test(v) && Number(v) <= 255) return
+    if (allowPalette && palette.has(v)) return
+    E(`${label}: "${v}" is not a valid color (hex like #aabbcc, an ANSI name such as red or bright-blue, a 0-255 index${allowPalette ? ', or a palette name' : ''})`)
+  }
+
+  // ── project ───────────────────────────────────
+  const project = mapOf('@arkzen:term:project', term.project?.data)
+  if (!term.project) {
+    E('@arkzen:term:project is required when a tatemono has terminal blocks (it holds the name, binary, mode and runtimes)')
+  } else {
+    checkKeys('@arkzen:term:project', project, [
+      'name', 'binary', 'version', 'description', 'author', 'license', 'homepage', 'mode', 'runtimes', 'default_command',
+      'alt_screen', 'mouse', 'min_size', 'color', 'unicode', 'title', 'tui_flag',
+    ])
+    if (!isText(project.name)) E('@arkzen:term:project needs a name:')
+    for (const key of ['author', 'homepage', 'description', 'title']) checkText(`@arkzen:term:project ${key}`, project[key])
+    if (!isText(project.binary)) E('@arkzen:term:project needs a binary: (the executable name)')
+    else if (!TERM_BINARY_RE.test(project.binary)) E(`@arkzen:term:project binary "${project.binary}" must be lowercase with no spaces (letters, digits, - and _, starting with a letter)`)
+    const version = project.version ?? parsed.meta.version
+    if (project.version !== undefined && !isText(project.version)) E('@arkzen:term:project version must be a string like 1.0.0')
+    else if (typeof version === 'string' && !TERM_SEMVER_RE.test(version)) E(`@arkzen:term:project version "${version}" is not semver (use MAJOR.MINOR.PATCH, for example 1.0.0)`)
+    if (project.license !== undefined) {
+      if (!isText(project.license)) E('@arkzen:term:project license must be an SPDX id such as MIT')
+      else {
+        const ids = project.license.split(/\s+(?:AND|OR|WITH)\s+/).map(s => s.trim().replace(/^\(|\)$/g, ''))
+        for (const id of ids) {
+          if (!/^[A-Za-z0-9.+-]+$/.test(id)) E(`@arkzen:term:project license "${project.license}" is not a valid SPDX expression`)
+          else if (!TERM_SPDX_COMMON.includes(id) && !/^LicenseRef-/.test(id)) {
+            W(`@arkzen:term:project license "${id}" is not in the common SPDX list this validator knows. Check the spelling against https://spdx.org/licenses/`)
+          }
+        }
+      }
+    }
+    if (!isText(project.mode)) E(`@arkzen:term:project needs mode: ${TERM_MODES.join(' | ')}`)
+    else checkEnum('@arkzen:term:project mode', project.mode, TERM_MODES)
+    if (!isTexts(project.runtimes) || project.runtimes.length === 0) E(`@arkzen:term:project needs runtimes: a non-empty list of languages (${TERM_LANGS_ALL.join(', ')})`)
+    else {
+      const seenLang = new Set<string>()
+      for (const lang of project.runtimes) {
+        if (!TERM_LANGS_ALL.includes(lang)) E(`@arkzen:term:project runtimes: unknown language "${lang}". Valid: ${TERM_LANGS_ALL.join(', ')}`)
+        if (seenLang.has(lang)) E(`@arkzen:term:project runtimes lists "${lang}" twice`)
+        seenLang.add(lang)
+      }
+    }
+    for (const key of ['alt_screen', 'mouse']) checkBool(`@arkzen:term:project ${key}`, project[key])
+    checkSize('@arkzen:term:project min_size', project.min_size)
+    checkEnum('@arkzen:term:project color', project.color !== undefined ? String(project.color) : undefined, TERM_COLOR_MODES)
+    checkEnum('@arkzen:term:project unicode', project.unicode, TERM_UNICODE_MODES)
+    if (project.tui_flag !== undefined) {
+      if (!isText(project.tui_flag) || !TERM_LONG_FLAG_RE.test(project.tui_flag)) E('@arkzen:term:project tui_flag must be a long flag like --tui')
+      else if (project.mode !== 'hybrid') W('@arkzen:term:project tui_flag only matters when mode is hybrid')
+    }
+    if (project.mode === 'cli') {
+      for (const key of ['alt_screen', 'mouse', 'min_size']) {
+        if (project[key] !== undefined) W(`@arkzen:term:project ${key} only applies to a TUI (mode is cli)`)
+      }
+    }
+  }
+  const mode     = typeof project.mode === 'string' ? project.mode : ''
+  const runtimeList = isTexts(project.runtimes) ? project.runtimes.filter(l => TERM_LANGS_ALL.includes(l)) : []
+  const isTui    = mode === 'tui' || mode === 'hybrid'
+  const hasCli   = mode === 'cli' || mode === 'hybrid'
+
+  // ── runtime:<lang> ────────────────────────────
+  const seenRuntime = new Set<string>()
+  for (const rt of term.runtimes) {
+    const label = `@arkzen:term:runtime:${rt.lang}`
+    if (seenRuntime.has(rt.lang)) E(`Duplicate ${label}`)
+    seenRuntime.add(rt.lang)
+    if (term.project && !runtimeList.includes(rt.lang)) E(`${label}: "${rt.lang}" is not listed in @arkzen:term:project runtimes`)
+    const data = mapOf(label, rt.data)
+    checkKeys(label, data, ['framework', 'tui', 'dependencies', 'dev_dependencies', 'min_version', 'bundle', 'edition', 'features', 'module_path', 'package_name'])
+    checkBool(`${label} tui`, data.tui)
+    if (data.framework !== undefined) {
+      if (!isText(data.framework)) E(`${label} framework must be a non-empty string`)
+      else {
+        const known = TERM_FRAMEWORKS[rt.lang]
+        const framework = data.framework
+        if (!known) W(`${label} framework "${framework}" is not verified: only ts, py, rs and go have a checked framework list`)
+        else if (known.tui.includes(framework)) {
+          if (data.tui === false) E(`${label}: framework "${framework}" is a TUI framework but tui is false`)
+          if (mode === 'cli') E(`${label}: framework "${framework}" draws a terminal UI, but @arkzen:term:project mode is cli. Use ${known.cli.join(' or ')}`)
+        } else if (known.cli.includes(framework)) {
+          if (data.tui === true) E(`${label}: framework "${framework}" only parses commands, but tui is true. Use ${known.tui.join(' or ')} for a TUI`)
+          if (mode === 'tui') E(`${label}: framework "${framework}" only parses commands, but @arkzen:term:project mode is tui. Use ${known.tui.join(' or ')}`)
+        } else {
+          W(`${label} framework "${framework}" is not one of the verified choices (${[...known.cli, ...known.tui].join(', ')})`)
+        }
+      }
+    }
+    if (mode === 'cli' && data.tui === true) E(`${label}: tui is true but @arkzen:term:project mode is cli`)
+    if (mode === 'tui' && data.tui === false) E(`${label}: tui is false but @arkzen:term:project mode is tui`)
+    checkMapOrList(`${label} dependencies`, data.dependencies)
+    checkMapOrList(`${label} dev_dependencies`, data.dev_dependencies)
+    checkText(`${label} min_version`, data.min_version !== undefined ? String(data.min_version) : undefined)
+    checkEnum(`${label} bundle`, data.bundle, TERM_BUNDLES)
+    if (data.bundle === 'single_binary' && !TERM_CROSS_COMPILE.includes(rt.lang)) W(`${label} bundle: single_binary is untested for ${rt.lang}. Go and Rust produce native binaries; the others need a bundler.`)
+    if (data.bundle === 'zipapp' && rt.lang !== 'py') E(`${label} bundle: zipapp only applies to py`)
+    if (data.edition !== undefined) {
+      if (rt.lang !== 'rs') W(`${label} edition only applies to rs`)
+      else if (!/^20[0-9]{2}$/.test(String(data.edition))) E(`${label} edition must be a year such as 2021`)
+    }
+    if (data.features !== undefined) {
+      if (rt.lang !== 'rs') W(`${label} features only applies to rs`)
+      else if (!isTexts(data.features)) E(`${label} features must be a list of strings`)
+    }
+    if (data.module_path !== undefined) {
+      if (rt.lang !== 'go') W(`${label} module_path only applies to go`)
+      else checkText(`${label} module_path`, data.module_path)
+    }
+    checkText(`${label} package_name`, data.package_name)
+  }
+
+  // ── gather names used by cross checks ─────────
+  const commandNames = new Set(term.commands.map(c => c.name))
+  const promptNames  = new Set(term.prompts.map(p => p.name))
+  const screenNames  = new Set(term.screens.map(s => s.name))
+  const dataNames    = new Set(term.data.map(d => d.name))
+  const loopNames    = new Set(term.loops.map(l => l.name))
+  const viewNames    = new Set(term.views.map(v => v.name))
+  const handlerNames = new Set(term.handlers.map(h => h.name))
+  const keymapScopes = new Set<string>()
+  const keymapNames  = new Set<string>()
+
+  // ── config ────────────────────────────────────
+  if (term.config) {
+    const label = '@arkzen:term:config'
+    const cfg = mapOf(label, term.config.data)
+    checkKeys(label, cfg, ['file', 'format', 'location', 'env_prefix', 'defaults', 'schema', 'flags_override'])
+    checkText(`${label} file`, cfg.file)
+    checkEnum(`${label} format`, cfg.format, TERM_CONFIG_FORMATS)
+    checkEnum(`${label} location`, cfg.location, TERM_LOCATIONS)
+    if (cfg.env_prefix !== undefined && !(isText(cfg.env_prefix) && TERM_ENV_RE.test(cfg.env_prefix))) E(`${label} env_prefix must be UPPER_SNAKE_CASE, for example TODO_`)
+    if (cfg.defaults !== undefined && !isMap(cfg.defaults)) E(`${label} defaults must be a mapping`)
+    if (cfg.schema !== undefined) {
+      if (!isMap(cfg.schema)) E(`${label} schema must be a mapping of field to type`)
+      else {
+        for (const [field, type] of Object.entries(cfg.schema)) {
+          if (!isText(type) || !TERM_VALUE_TYPES.concat(['text', 'date', 'tags']).includes(type)) E(`${label} schema.${field} must be a type (${TERM_VALUE_TYPES.join(', ')})`)
+        }
+        if (isMap(cfg.defaults)) {
+          for (const key of Object.keys(cfg.defaults)) {
+            if (!(key in cfg.schema)) W(`${label} defaults.${key} has no entry in schema`)
+          }
+        }
+      }
+    }
+    checkBool(`${label} flags_override`, cfg.flags_override)
+  }
+
+  // ── theme ─────────────────────────────────────
+  if (term.theme) {
+    const label = '@arkzen:term:theme'
+    const theme = mapOf(label, term.theme.data)
+    checkKeys(label, theme, ['palette', 'roles', 'border', 'fallback'])
+    const palette = new Set<string>()
+    if (theme.palette !== undefined) {
+      if (!isMap(theme.palette)) E(`${label} palette must be a mapping of name to color`)
+      else {
+        for (const [name, value] of Object.entries(theme.palette)) {
+          palette.add(name)
+          checkColor(`${label} palette.${name}`, value, palette, false)
+        }
+      }
+    }
+    if (theme.roles !== undefined) {
+      if (!isMap(theme.roles)) E(`${label} roles must be a mapping of role to color`)
+      else {
+        for (const [role, value] of Object.entries(theme.roles)) {
+          if (!TERM_ROLES.includes(role)) { E(`${label} roles: unknown role "${role}". Valid: ${TERM_ROLES.join(', ')}`); continue }
+          if (isMap(value)) {
+            checkKeys(`${label} roles.${role}`, value, ['color', 'bold', 'dim', 'underline'])
+            checkColor(`${label} roles.${role}.color`, value.color, palette, true)
+            for (const key of ['bold', 'dim', 'underline']) checkBool(`${label} roles.${role}.${key}`, value[key])
+          } else {
+            checkColor(`${label} roles.${role}`, value, palette, true)
+          }
+        }
+      }
+    }
+    checkEnum(`${label} border`, theme.border, TERM_BORDERS)
+    if (theme.fallback !== undefined) {
+      if (!isMap(theme.fallback)) E(`${label} fallback must be a mapping of palette name or role to a 16-color ANSI name`)
+      else {
+        for (const [key, value] of Object.entries(theme.fallback)) {
+          if (!palette.has(key) && !TERM_ROLES.includes(key)) W(`${label} fallback.${key} is neither a palette name nor a role`)
+          if (!isText(value) || !TERM_ANSI_NAMES.includes(value.replace(/^bright-/, ''))) E(`${label} fallback.${key} must be one of the 16 ANSI names (for example red or bright-blue)`)
+        }
+      }
+    }
+  }
+
+  // ── keymap ────────────────────────────────────
+  for (const km of term.keymaps) {
+    const label = `@arkzen:term:keymap${km.name ? `:${km.name}` : ''}`
+    const data = mapOf(label, km.data)
+    checkKeys(label, data, ['scope', 'actions', 'vim', 'mouse', 'help'])
+    if (km.name !== undefined && !TERM_NAME_RE.test(km.name)) E(`${label}: the name must be lowercase kebab-case`)
+    if (km.name !== undefined) {
+      if (keymapNames.has(km.name)) E(`Duplicate ${label}`)
+      keymapNames.add(km.name)
+    }
+    if (data.scope !== undefined && !isText(data.scope)) E(`${label} scope must be a screen name or global`)
+    const scope = isText(data.scope) ? data.scope : (km.name ?? 'global')
+    if (keymapScopes.has(scope)) E(`${label}: scope "${scope}" is already used by another keymap`)
+    keymapScopes.add(scope)
+    if (scope !== 'global' && !screenNames.has(scope) && screenNames.size > 0) {
+      E(`${label}: scope "${scope}" is neither "global" nor a declared @arkzen:term:screen (declared: ${[...screenNames].join(', ')})`)
+    } else if (scope !== 'global' && screenNames.size === 0) {
+      E(`${label}: scope "${scope}" has no @arkzen:term:screen to attach to. Use scope: global or declare the screen`)
+    }
+    if (data.actions === undefined) E(`${label} needs actions: (a map of action id to key list)`)
+    else if (!isMap(data.actions)) E(`${label} actions must be a mapping of action id to key list`)
+    else {
+      const bound = new Map<string, string>()
+      for (const [action, keys] of Object.entries(data.actions)) {
+        if (!TERM_IDENT_RE.test(action)) E(`${label} actions: "${action}" must be snake_case letters, digits and _`)
+        const list = typeof keys === 'string' ? [keys] : keys
+        if (!isTexts(list) || (list as string[]).length === 0) { E(`${label} actions.${action} must be a key or a non-empty list of keys`); continue }
+        for (const key of list as string[]) {
+          const k = key.toLowerCase()
+          const prev = bound.get(k)
+          if (prev && prev !== action) E(`${label}: key "${key}" is bound to both "${prev}" and "${action}"`)
+          bound.set(k, action)
+        }
+      }
+    }
+    checkBool(`${label} vim`, data.vim)
+    checkBool(`${label} help`, data.help)
+    if (data.mouse !== undefined) {
+      if (!isMap(data.mouse)) E(`${label} mouse must be a mapping of click, scroll and drag toggles`)
+      else {
+        checkKeys(`${label} mouse`, data.mouse, ['click', 'scroll', 'drag'])
+        for (const key of ['click', 'scroll', 'drag']) checkBool(`${label} mouse.${key}`, (data.mouse as Record<string, unknown>)[key])
+      }
+    }
+  }
+
+  // ── prompt ────────────────────────────────────
+  checkNames('prompt', term.prompts, TERM_NAME_RE, 'lowercase kebab-case (letters, digits, hyphens, starting with a letter)')
+  const promptsUsed = new Set<string>()
+  for (const pr of term.prompts) {
+    const label = `@arkzen:term:prompt:${pr.name}`
+    const data = mapOf(label, pr.data)
+    checkKeys(label, data, ['steps', 'result', 'fallback'])
+    if (data.result !== undefined && !(isText(data.result) && TERM_IDENT_RE.test(data.result))) E(`${label} result must be a snake_case name`)
+    const stepIds: string[] = []
+    if (!Array.isArray(data.steps) || data.steps.length === 0) E(`${label} needs steps: a non-empty list`)
+    else {
+      for (const [i, raw] of data.steps.entries()) {
+        const where = `${label} steps[${i}]`
+        if (!isMap(raw)) { E(`${where} must be a mapping`); continue }
+        checkKeys(where, raw, ['id', 'type', 'message', 'default', 'choices', 'required', 'validate', 'when'])
+        if (!isText(raw.id) || !TERM_IDENT_RE.test(raw.id)) E(`${where} needs an id: in snake_case`)
+        else {
+          if (stepIds.includes(raw.id)) E(`${label}: duplicate step id "${raw.id}"`)
+          stepIds.push(raw.id)
+        }
+        const id = isText(raw.id) ? raw.id : `#${i}`
+        if (!isText(raw.type) || !TERM_PROMPT_TYPES.includes(raw.type)) E(`${where} (${id}) type must be one of: ${TERM_PROMPT_TYPES.join(', ')}`)
+        if (!isText(raw.message)) E(`${where} (${id}) needs a message:`)
+        checkBool(`${where} (${id}) required`, raw.required)
+        const needsChoices = raw.type === 'select' || raw.type === 'multiselect'
+        if (raw.choices !== undefined) {
+          if (!isTexts(raw.choices) || raw.choices.length === 0) E(`${where} (${id}) choices must be a non-empty list of strings`)
+          else if (!needsChoices && raw.type !== 'autocomplete') W(`${where} (${id}) choices only apply to select, multiselect and autocomplete`)
+        } else if (needsChoices) E(`${where} (${id}) needs choices: for type ${String(raw.type)}`)
+        if (raw.default !== undefined) {
+          const t = String(raw.type)
+          const ok = t === 'confirm' ? typeof raw.default === 'boolean'
+            : t === 'number' ? typeof raw.default === 'number'
+            : t === 'multiselect' ? isTexts(raw.default)
+            : typeof raw.default === 'string'
+          if (!ok) E(`${where} (${id}) default does not match type ${t}`)
+          else if (t === 'select' && isTexts(raw.choices) && !raw.choices.includes(raw.default as string)) E(`${where} (${id}) default "${String(raw.default)}" is not one of the choices`)
+        }
+        checkValidate(`${where} (${id}) validate`, raw.validate)
+        if (raw.when !== undefined) {
+          if (!isMap(raw.when)) E(`${where} (${id}) when must be a mapping of an earlier step id to its value`)
+          else {
+            for (const ref of Object.keys(raw.when)) {
+              if (!stepIds.slice(0, -1).includes(ref) && ref !== id) E(`${where} (${id}) when: "${ref}" is not an earlier step id`)
+              else if (ref === id) E(`${where} (${id}) when cannot refer to its own step`)
+            }
+          }
+        }
+      }
+    }
+    if (data.fallback !== undefined) {
+      if (!isMap(data.fallback)) E(`${label} fallback must be a mapping of step id to { flag, env }`)
+      else {
+        for (const [stepId, spec] of Object.entries(data.fallback)) {
+          if (!stepIds.includes(stepId)) E(`${label} fallback: "${stepId}" is not a step id`)
+          if (!isMap(spec) || (spec.flag === undefined && spec.env === undefined)) { E(`${label} fallback.${stepId} needs a flag: and/or an env:`); continue }
+          checkKeys(`${label} fallback.${stepId}`, spec, ['flag', 'env'])
+          if (spec.flag !== undefined && !(isText(spec.flag) && TERM_LONG_FLAG_RE.test(spec.flag))) E(`${label} fallback.${stepId} flag must be a long flag like --name`)
+          if (spec.env !== undefined && !(isText(spec.env) && TERM_ENV_RE.test(spec.env))) E(`${label} fallback.${stepId} env must be UPPER_SNAKE_CASE`)
+        }
+      }
+    }
+  }
+
+  // ── assets ────────────────────────────────────
+  let hasTemplates = false
+  if (term.assets) {
+    const label = '@arkzen:term:assets'
+    const assets = mapOf(label, term.assets.data)
+    checkKeys(label, assets, ['include', 'embed', 'dest', 'templates'])
+    const files = listAssets()
+    if (assets.include !== undefined) {
+      if (!isTexts(assets.include)) E(`${label} include must be a list of globs under tatemonos/${parsed.meta.name}/assets/`)
+      else {
+        for (const glob of assets.include) {
+          if (glob.includes('..')) { E(`${label} include "${glob}" must stay inside the assets folder`); continue }
+          const re = globToRe(cleanAsset(glob))
+          if (!files.some(f => re.test(f))) E(`${label} include "${glob}" matches no file under tatemonos/${parsed.meta.name}/assets/`)
+        }
+      }
+    }
+    checkBool(`${label} embed`, assets.embed)
+    checkText(`${label} dest`, assets.dest)
+    if (assets.templates !== undefined) {
+      if (!Array.isArray(assets.templates)) E(`${label} templates must be a list`)
+      else {
+        hasTemplates = assets.templates.length > 0
+        for (const [i, raw] of assets.templates.entries()) {
+          const where = `${label} templates[${i}]`
+          if (!isMap(raw)) { E(`${where} must be a mapping`); continue }
+          checkKeys(where, raw, ['source', 'target', 'variables'])
+          if (!isText(raw.source)) E(`${where} needs a source: file under tatemonos/${parsed.meta.name}/assets/`)
+          else if (raw.source.includes('..') || !files.includes(cleanAsset(raw.source))) E(`${where} source "${raw.source}" does not exist under tatemonos/${parsed.meta.name}/assets/`)
+          if (!isText(raw.target)) E(`${where} needs a target: path (placeholders are written {{name}})`)
+          const vars = raw.variables === undefined ? [] : isTexts(raw.variables) ? raw.variables : null
+          if (vars === null) E(`${where} variables must be a list of names`)
+          else {
+            for (const v of vars) {
+              if (!TERM_IDENT_RE.test(v)) E(`${where} variables: "${v}" must be a snake_case name`)
+            }
+            if (isText(raw.target)) {
+              for (const used of raw.target.matchAll(/\{\{\s*([A-Za-z0-9_]+)\s*\}\}/g)) {
+                if (!vars.includes(used[1])) E(`${where} target uses {{${used[1]}}} but variables does not list it`)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // ── command ───────────────────────────────────
+  checkNames('command', term.commands, TERM_COMMAND_RE, 'lowercase kebab-case, with dots for nested subcommands (letters, digits, hyphens, for example db.migrate)')
+  const commandIsGenerated = new Map<string, boolean>()
+  const aliasOwner = new Map<string, string>()
+  for (const cmd of term.commands) {
+    const label = `@arkzen:term:command:${cmd.name}`
+    const data = mapOf(label, cmd.data)
+    checkKeys(label, data, ['description', 'aliases', 'hidden', 'deprecated', 'args', 'flags', 'stdin', 'output', 'prompt', 'exit_codes', 'examples', 'builtin'])
+    const dot = cmd.name.lastIndexOf('.')
+    if (dot > 0) {
+      const parent = cmd.name.slice(0, dot)
+      if (!commandNames.has(parent)) E(`${label}: parent command "${parent}" is not declared. Add @arkzen:term:command:${parent}`)
+    }
+    checkText(`${label} description`, data.description)
+    if (data.aliases !== undefined) {
+      if (!isTexts(data.aliases)) E(`${label} aliases must be a list of names`)
+      else {
+        for (const alias of data.aliases) {
+          if (!TERM_NAME_RE.test(alias)) E(`${label} alias "${alias}" must be lowercase kebab-case`)
+          const owner = aliasOwner.get(alias)
+          if (owner && owner !== cmd.name) E(`${label} alias "${alias}" is already an alias of "${owner}"`)
+          if (commandNames.has(alias)) E(`${label} alias "${alias}" collides with the command of the same name`)
+          aliasOwner.set(alias, cmd.name)
+        }
+      }
+    }
+    checkBool(`${label} hidden`, data.hidden)
+    if (data.deprecated !== undefined && typeof data.deprecated !== 'boolean' && !isText(data.deprecated)) E(`${label} deprecated must be true or a message`)
+    checkBool(`${label} stdin`, data.stdin)
+    checkEnum(`${label} output`, data.output, TERM_OUTPUTS)
+    checkEnum(`${label} builtin`, data.builtin, TERM_BUILTINS)
+    if (data.prompt !== undefined) {
+      if (!isText(data.prompt)) E(`${label} prompt must be the name of a @arkzen:term:prompt`)
+      else if (!promptNames.has(data.prompt)) E(`${label} prompt "${data.prompt}" is not declared. Add @arkzen:term:prompt:${data.prompt}`)
+      else promptsUsed.add(data.prompt)
+    }
+    if (data.exit_codes !== undefined) {
+      if (!isMap(data.exit_codes)) E(`${label} exit_codes must be a mapping of code to meaning`)
+      else {
+        for (const [code, meaning] of Object.entries(data.exit_codes)) {
+          if (!/^[0-9]{1,3}$/.test(code) || Number(code) > 255) E(`${label} exit_codes: "${code}" must be 0-255`)
+          if (!isText(meaning)) E(`${label} exit_codes.${code} must describe the code`)
+        }
+      }
+    }
+
+    const argNames = new Set<string>()
+    let seenOptional = false
+    let seenVariadic = false
+    if (data.args !== undefined) {
+      if (!Array.isArray(data.args)) E(`${label} args must be a list`)
+      else {
+        for (const [i, raw] of data.args.entries()) {
+          const where = `${label} args[${i}]`
+          if (!isMap(raw)) { E(`${where} must be a mapping`); continue }
+          checkKeys(where, raw, ['name', 'type', 'required', 'variadic', 'choices', 'default', 'description'])
+          if (!isText(raw.name) || !TERM_IDENT_RE.test(raw.name) && !TERM_NAME_RE.test(raw.name)) E(`${where} needs a name: (letters, digits, - and _, starting with a letter)`)
+          else {
+            if (argNames.has(raw.name)) E(`${label}: duplicate arg "${raw.name}"`)
+            argNames.add(raw.name)
+          }
+          const type = raw.type === undefined ? 'string' : raw.type
+          if (typeof type !== 'string' || !TERM_VALUE_TYPES.includes(type)) E(`${where} type must be one of: ${TERM_VALUE_TYPES.join(', ')}`)
+          checkBool(`${where} required`, raw.required)
+          checkBool(`${where} variadic`, raw.variadic)
+          checkText(`${where} description`, raw.description)
+          if (seenVariadic) E(`${where}: no argument may follow the variadic argument`)
+          const required = raw.required === true
+          if (required && seenOptional) E(`${where}: a required argument cannot follow an optional one`)
+          if (!required) seenOptional = true
+          if (raw.variadic === true) seenVariadic = true
+          checkChoicesAndDefault(where, type, raw.choices, raw.default)
+        }
+      }
+    }
+    const flagNames = new Set<string>()
+    const shortNames = new Set<string>()
+    if (data.flags !== undefined) {
+      if (!Array.isArray(data.flags)) E(`${label} flags must be a list`)
+      else {
+        for (const [i, raw] of data.flags.entries()) {
+          const where = `${label} flags[${i}]`
+          if (!isMap(raw)) { E(`${where} must be a mapping`); continue }
+          checkKeys(where, raw, ['name', 'short', 'type', 'default', 'env', 'required', 'repeatable', 'choices', 'description'])
+          if (!isText(raw.name) || !TERM_NAME_RE.test(raw.name)) E(`${where} needs a name: in lowercase kebab-case`)
+          else {
+            if (raw.name === 'help') E(`${where}: "help" is reserved for the generated help flag`)
+            if (flagNames.has(raw.name)) E(`${label}: duplicate flag "--${raw.name}"`)
+            flagNames.add(raw.name)
+            if (argNames.has(raw.name)) W(`${where}: "${raw.name}" is both an argument and a flag`)
+          }
+          if (raw.short !== undefined) {
+            if (!isText(raw.short) || !/^[A-Za-z]$/.test(raw.short)) E(`${where} short must be a single letter`)
+            else {
+              if (raw.short === 'h') E(`${where}: "-h" is reserved for the generated help flag`)
+              if (shortNames.has(raw.short)) E(`${label}: duplicate short flag "-${raw.short}"`)
+              shortNames.add(raw.short)
+            }
+          }
+          const type = raw.type === undefined ? 'string' : raw.type
+          if (typeof type !== 'string' || !TERM_VALUE_TYPES.includes(type)) E(`${where} type must be one of: ${TERM_VALUE_TYPES.join(', ')}`)
+          if (raw.env !== undefined && !(isText(raw.env) && TERM_ENV_RE.test(raw.env))) E(`${where} env must be UPPER_SNAKE_CASE`)
+          checkBool(`${where} required`, raw.required)
+          checkBool(`${where} repeatable`, raw.repeatable)
+          checkText(`${where} description`, raw.description)
+          if (raw.required === true && raw.default !== undefined) W(`${where}: a required flag with a default is never missing`)
+          checkChoicesAndDefault(where, type, raw.choices, raw.default)
+        }
+      }
+    }
+    if (data.examples !== undefined) {
+      if (!Array.isArray(data.examples)) E(`${label} examples must be a list`)
+      else {
+        for (const [i, raw] of data.examples.entries()) {
+          const where = `${label} examples[${i}]`
+          if (!isMap(raw)) { E(`${where} must be a mapping`); continue }
+          checkKeys(where, raw, ['cmd', 'expect_exit', 'expect_stdout', 'expect_stderr'])
+          if (!isText(raw.cmd)) E(`${where} needs a cmd: (the arguments after the binary name)`)
+          if (raw.expect_exit !== undefined && !(typeof raw.expect_exit === 'number' && Number.isInteger(raw.expect_exit) && raw.expect_exit >= 0 && raw.expect_exit <= 255)) E(`${where} expect_exit must be 0-255`)
+          checkText(`${where} expect_stdout`, raw.expect_stdout)
+          checkText(`${where} expect_stderr`, raw.expect_stderr)
+        }
+      }
+    }
+    const builtin = typeof data.builtin === 'string' && data.builtin !== 'none'
+    const generated = builtin || (isText(data.prompt) && promptNames.has(data.prompt) && hasTemplates)
+    commandIsGenerated.set(cmd.name, generated)
+  }
+
+  // choices and default agree with the declared type (args and flags)
+  function checkChoicesAndDefault(where: string, type: unknown, choices: unknown, def: unknown): void {
+    const t = typeof type === 'string' ? type : 'string'
+    if (choices !== undefined) {
+      if (t !== 'choice') E(`${where}: choices only apply to type choice`)
+      else if (!isTexts(choices) || choices.length === 0) E(`${where} choices must be a non-empty list of strings`)
+    } else if (t === 'choice') E(`${where} is type choice and needs choices:`)
+    if (def !== undefined) {
+      if (!termTypeOk(t, def)) E(`${where} default does not match type ${t}`)
+      else if (t === 'choice' && isTexts(choices) && !choices.includes(def as string)) E(`${where} default "${String(def)}" is not one of the choices`)
+    }
+  }
+
+  // ── data ──────────────────────────────────────
+  checkNames('data', term.data, TERM_NAME_RE, 'lowercase kebab-case (letters, digits, hyphens, starting with a letter)')
+  const dataFields = new Map<string, Set<string>>()
+  for (const d of term.data) {
+    const label = `@arkzen:term:data:${d.name}`
+    const data = mapOf(label, d.data)
+    checkKeys(label, data, ['storage', 'file', 'location', 'fields', 'id', 'sort', 'soft_delete', 'seed'])
+    checkEnum(`${label} storage`, data.storage, TERM_STORAGES)
+    checkText(`${label} file`, data.file)
+    checkEnum(`${label} location`, data.location, TERM_LOCATIONS)
+    checkBool(`${label} soft_delete`, data.soft_delete)
+    if (data.storage === 'sqlite') W(`${label} storage: sqlite needs a database library in each runtime and is unverified. Choose the library in @arkzen:term:runtime:<lang> dependencies.`)
+    const fields = new Map<string, { type: string; required: boolean; hasDefault: boolean }>()
+    if (!Array.isArray(data.fields) || data.fields.length === 0) E(`${label} needs fields: a non-empty list`)
+    else {
+      for (const [i, raw] of data.fields.entries()) {
+        const where = `${label} fields[${i}]`
+        if (!isMap(raw)) { E(`${where} must be a mapping`); continue }
+        checkKeys(where, raw, ['name', 'type', 'required', 'default', 'choices', 'searchable', 'sortable', 'display', 'validate'])
+        if (!isText(raw.name) || !TERM_IDENT_RE.test(raw.name)) { E(`${where} needs a name: in snake_case`); continue }
+        if (fields.has(raw.name)) E(`${label}: duplicate field "${raw.name}"`)
+        const type = typeof raw.type === 'string' ? raw.type : ''
+        if (!TERM_FIELD_TYPES.includes(type)) E(`${where} (${raw.name}) type must be one of: ${TERM_FIELD_TYPES.join(', ')}`)
+        checkBool(`${where} (${raw.name}) required`, raw.required)
+        checkBool(`${where} (${raw.name}) searchable`, raw.searchable)
+        checkBool(`${where} (${raw.name}) sortable`, raw.sortable)
+        if (type === 'choice') {
+          if (!isTexts(raw.choices) || raw.choices.length === 0) E(`${where} (${raw.name}) is type choice and needs choices:`)
+        } else if (raw.choices !== undefined) E(`${where} (${raw.name}) choices only apply to type choice`)
+        if (raw.default !== undefined) {
+          if (!termTypeOk(type, raw.default)) E(`${where} (${raw.name}) default does not match type ${type}`)
+          else if (type === 'choice' && isTexts(raw.choices) && !raw.choices.includes(raw.default as string)) E(`${where} (${raw.name}) default "${String(raw.default)}" is not one of the choices`)
+        }
+        if (raw.display !== undefined) {
+          if (!isMap(raw.display)) E(`${where} (${raw.name}) display must be a mapping (label, width, format)`)
+          else {
+            checkKeys(`${where} (${raw.name}) display`, raw.display, ['label', 'width', 'format'])
+            checkText(`${where} (${raw.name}) display.label`, raw.display.label)
+            checkText(`${where} (${raw.name}) display.format`, raw.display.format)
+            if (raw.display.width !== undefined && !isPosInt(raw.display.width)) E(`${where} (${raw.name}) display.width must be a positive integer`)
+          }
+        }
+        checkValidate(`${where} (${raw.name}) validate`, raw.validate)
+        fields.set(raw.name, { type, required: raw.required === true, hasDefault: raw.default !== undefined })
+      }
+    }
+    dataFields.set(d.name, new Set(fields.keys()))
+    if (data.id !== undefined) {
+      if (!isText(data.id)) E(`${label} id must be auto or a field name`)
+      else if (data.id !== 'auto' && !fields.has(data.id)) E(`${label} id "${data.id}" is not a declared field`)
+    }
+    if ((data.id === undefined || data.id === 'auto') && fields.has('id')) E(`${label}: a field named "id" collides with the generated id. Set id: id to use it as the key`)
+    if (data.sort !== undefined) {
+      if (!isText(data.sort)) E(`${label} sort must be a field name, or -field for descending`)
+      else if (!fields.has(data.sort.replace(/^-/, ''))) E(`${label} sort "${data.sort}" is not a declared field`)
+    }
+    if (data.seed !== undefined) {
+      if (!Array.isArray(data.seed)) E(`${label} seed must be a list of records`)
+      else {
+        for (const [i, rec] of data.seed.entries()) {
+          const where = `${label} seed[${i}]`
+          if (!isMap(rec)) { E(`${where} must be a mapping`); continue }
+          for (const [k, v] of Object.entries(rec)) {
+            const f = fields.get(k)
+            if (!f) E(`${where}: "${k}" is not a declared field`)
+            else if (!termTypeOk(f.type, v)) E(`${where}: "${k}" does not match type ${f.type}`)
+          }
+          for (const [k, f] of fields) {
+            if (f.required && !f.hasDefault && rec[k] === undefined) E(`${where}: required field "${k}" is missing`)
+          }
+        }
+      }
+    }
+  }
+
+  // ── screen ────────────────────────────────────
+  checkNames('screen', term.screens, TERM_NAME_RE, 'lowercase kebab-case (letters, digits, hyphens, starting with a letter)')
+  const hookExists = (name: string): boolean => viewNames.has(name) || handlerNames.has(name)
+  for (const sc of term.screens) {
+    const label = `@arkzen:term:screen:${sc.name}`
+    const data = mapOf(label, sc.data)
+    checkKeys(label, data, ['title', 'layout', 'size', 'panes', 'on_start', 'on_key'])
+    checkText(`${label} title`, data.title)
+    checkEnum(`${label} layout`, data.layout, TERM_LAYOUTS)
+    for (const hook of ['on_start', 'on_key']) {
+      if (data[hook] !== undefined) {
+        if (!isText(data[hook])) E(`${label} ${hook} must name a @arkzen:term:view or handler`)
+        else if (!hookExists(data[hook] as string)) E(`${label} ${hook} "${String(data[hook])}" matches no @arkzen:term:view or @arkzen:term:handler name`)
+      }
+    }
+    const paneCount = Array.isArray(data.panes) ? data.panes.length : 0
+    if (!Array.isArray(data.panes) || data.panes.length === 0) E(`${label} needs panes: a non-empty list`)
+    else {
+      const focusSeen = new Set<number>()
+      for (const [i, raw] of data.panes.entries()) {
+        const where = `${label} panes[${i}]`
+        if (!isMap(raw)) { E(`${where} must be a mapping`); continue }
+        checkKeys(where, raw, ['widget', 'data', 'columns', 'bind', 'focus', 'keymap', 'refresh'])
+        if (!isText(raw.widget) || !TERM_WIDGETS.includes(raw.widget)) E(`${where} widget must be one of: ${TERM_WIDGETS.join(', ')}`)
+        const widget = isText(raw.widget) ? raw.widget : ''
+        const isData = isText(raw.data) && dataNames.has(raw.data)
+        if (raw.data !== undefined && !isText(raw.data)) E(`${where} data must be a @arkzen:term:data name or a state key`)
+        if ((widget === 'table' || widget === 'form') && !isData) {
+          E(`${where}: a ${widget} widget needs data: naming a declared @arkzen:term:data${dataNames.size ? ` (declared: ${[...dataNames].join(', ')})` : ''}`)
+        }
+        if (raw.columns !== undefined) {
+          if (!isTexts(raw.columns) || raw.columns.length === 0) E(`${where} columns must be a non-empty list of field names`)
+          else if (widget !== 'table' && widget !== 'list') W(`${where} columns only apply to table and list widgets`)
+          else if (isData) {
+            const known = dataFields.get(raw.data as string) ?? new Set<string>()
+            for (const col of raw.columns) if (!known.has(col)) E(`${where} columns: "${col}" is not a field of @arkzen:term:data:${String(raw.data)}`)
+          }
+        }
+        checkText(`${where} bind`, raw.bind)
+        if (raw.focus !== undefined) {
+          if (!isPosInt(raw.focus)) E(`${where} focus must be a positive integer (the focus order)`)
+          else {
+            if (focusSeen.has(raw.focus)) E(`${label}: focus order ${raw.focus} is used by more than one pane`)
+            focusSeen.add(raw.focus)
+          }
+        }
+        if (raw.keymap !== undefined) {
+          if (!isText(raw.keymap)) E(`${where} keymap must name a keymap scope`)
+          else if (!keymapScopes.has(raw.keymap) && !keymapNames.has(raw.keymap)) E(`${where} keymap "${raw.keymap}" matches no @arkzen:term:keymap${keymapScopes.size ? ` (declared: ${[...keymapScopes].join(', ')})` : ''}`)
+        }
+        checkPosNumber(`${where} refresh`, raw.refresh)
+      }
+    }
+    if (data.size !== undefined) {
+      if (!Array.isArray(data.size) || !data.size.every(n => typeof n === 'number' && n > 0)) E(`${label} size must be a list of positive weights`)
+      else if (paneCount > 0 && data.size.length !== paneCount) E(`${label} size lists ${data.size.length} weights for ${paneCount} pane(s)`)
+    }
+  }
+
+  // ── loop ──────────────────────────────────────
+  checkNames('loop', term.loops, TERM_NAME_RE, 'lowercase kebab-case (letters, digits, hyphens, starting with a letter)')
+  for (const lp of term.loops) {
+    const label = `@arkzen:term:loop:${lp.name}`
+    const data = mapOf(label, lp.data)
+    checkKeys(label, data, ['tick_rate', 'render', 'size', 'input', 'seed', 'pause_key', 'save_file', 'fixed_timestep'])
+    if (data.tick_rate === undefined) E(`${label} needs tick_rate: (updates per second)`)
+    else checkPosNumber(`${label} tick_rate`, data.tick_rate)
+    checkEnum(`${label} render`, data.render, TERM_LOOP_RENDERS)
+    checkSize(`${label} size`, data.size)
+    checkEnum(`${label} input`, data.input, TERM_LOOP_INPUTS)
+    if (data.seed !== undefined && data.seed !== 'random' && !(typeof data.seed === 'number' && Number.isFinite(data.seed))) E(`${label} seed must be a number or random`)
+    checkText(`${label} pause_key`, data.pause_key)
+    checkText(`${label} save_file`, data.save_file)
+    checkBool(`${label} fixed_timestep`, data.fixed_timestep)
+    if (!isTui) E(`${label}: a loop draws to the terminal, so @arkzen:term:project mode must be tui or hybrid`)
+    for (const lang of runtimeList) {
+      const view = term.views.find(v => v.lang === lang && v.name === lp.name && v.header.kind === 'loop')
+      if (!view) E(`${label} has no @arkzen:term:view:${lang}:${lp.name} with kind: loop for runtime "${lang}"`)
+    }
+  }
+
+  // ── view ──────────────────────────────────────
+  const viewKey = new Set<string>()
+  for (const v of term.views) {
+    const label = `@arkzen:term:view:${v.lang}:${v.name}`
+    if (!TERM_NAME_RE.test(v.name)) E(`${label}: the name must be lowercase kebab-case`)
+    if (viewKey.has(`${v.lang}:${v.name}`)) E(`Duplicate ${label}`)
+    viewKey.add(`${v.lang}:${v.name}`)
+    checkKeys(label, v.header, ['kind', 'screen'])
+    const kind = v.header.kind
+    if (!isText(kind) || !TERM_VIEW_KINDS.includes(kind)) { E(`${label} needs kind: ${TERM_VIEW_KINDS.join(' | ')}`); continue }
+    if (v.header.screen !== undefined) {
+      if (!isText(v.header.screen)) E(`${label} screen must name a @arkzen:term:screen`)
+      else if (!screenNames.has(v.header.screen)) E(`${label} screen "${v.header.screen}" is not declared. Add @arkzen:term:screen:${v.header.screen}`)
+    }
+    if (kind === 'widget' && !isText(v.header.screen)) E(`${label} kind: widget needs screen: (the screen it lives in)`)
+    if (kind === 'loop') {
+      if (!loopNames.has(v.name)) E(`${label} kind: loop has no @arkzen:term:loop:${v.name}`)
+      if (v.lang === 'ts') {
+        for (const fn of ['init', 'update', 'draw']) {
+          if (!new RegExp(`export\\s+(?:async\\s+)?(?:function\\s*\\*?|const|let)\\s+${fn}\\b`).test(v.raw)) E(`${label} (loop) must export \`${fn}\` (the loop contract is init, update, draw)`)
+        }
+      }
+    } else if (v.lang === 'ts' && !/export\s+default\b/.test(v.raw)) {
+      E(`${label} (${kind}) must \`export default\` a component`)
+    }
+    if ((kind === 'screen' || kind === 'widget') && !isTui) E(`${label}: a ${kind} view needs @arkzen:term:project mode tui or hybrid`)
+  }
+
+  // ── handler / script / test ───────────────────
+  const handlerKey = new Set<string>()
+  for (const h of term.handlers) {
+    const label = `@arkzen:term:handler:${h.lang}:${h.name}`
+    checkKeys(label, h.header, ['command', 'async'])
+    checkBool(`${label} async`, h.header.async)
+    if (handlerKey.has(`${h.lang}:${h.name}`)) E(`Duplicate ${label}`)
+    handlerKey.add(`${h.lang}:${h.name}`)
+    const target = isText(h.header.command) ? h.header.command : h.name
+    if (h.header.command !== undefined && !isText(h.header.command)) E(`${label} command must be a command name`)
+    if (!commandNames.has(target)) E(`${label}: no @arkzen:term:command:${target} exists for this handler${h.header.command === undefined ? ' (the command defaults to the handler name; set command: to point elsewhere)' : ''}`)
+    else {
+      const cmd = term.commands.find(c => c.name === target)
+      const builtin = isMap(cmd?.data) && typeof cmd?.data.builtin === 'string' && cmd?.data.builtin !== 'none'
+      if (builtin) W(`${label}: command "${target}" has builtin: ${String((cmd?.data as Record<string, unknown>).builtin)}, so the handler is never called`)
+    }
+    if (h.lang === 'ts' && !/export\s+default\b/.test(h.raw)) E(`${label} must \`export default\` the handler function`)
+  }
+  for (const group of [['script', term.scripts], ['test', term.tests]] as const) {
+    const [kind, blocks] = group
+    const seen = new Set<string>()
+    for (const b of blocks) {
+      const label = `@arkzen:term:${kind}:${b.lang}:${b.name}`
+      if (!TERM_NAME_RE.test(b.name)) E(`${label}: the name must be lowercase kebab-case`)
+      if (seen.has(`${b.lang}:${b.name}`)) E(`Duplicate ${label}`)
+      seen.add(`${b.lang}:${b.name}`)
+      if (Object.keys(b.header).length > 0) W(`${label}: a ${kind} block takes no header keys (found ${Object.keys(b.header).join(', ')})`)
+    }
+  }
+
+  // every code block's <lang> must be a listed runtime; no code may import Pluffy
+  const codeBlocks: { label: string; lang: string; raw: string }[] = [
+    ...term.handlers.map(b => ({ label: `@arkzen:term:handler:${b.lang}:${b.name}`, lang: b.lang, raw: b.raw })),
+    ...term.views.map(b    => ({ label: `@arkzen:term:view:${b.lang}:${b.name}`,    lang: b.lang, raw: b.raw })),
+    ...term.scripts.map(b  => ({ label: `@arkzen:term:script:${b.lang}:${b.name}`,  lang: b.lang, raw: b.raw })),
+    ...term.tests.map(b    => ({ label: `@arkzen:term:test:${b.lang}:${b.name}`,    lang: b.lang, raw: b.raw })),
+  ]
+  for (const b of codeBlocks) {
+    if (term.project && !runtimeList.includes(b.lang)) E(`${b.label}: "${b.lang}" is not listed in @arkzen:term:project runtimes (listed: ${runtimeList.join(', ') || 'none'})`)
+    const rule = TERM_PLUFFY_IMPORT[b.lang]
+    if (rule && rule.test(b.raw)) E(`${b.label} imports from Pluffy. Generated terminal programs must stay standalone and never depend on Pluffy`)
+  }
+
+  // ── readme ────────────────────────────────────
+  if (term.readme && Object.keys(term.readme.header).length > 0) W(`@arkzen:term:readme takes no header keys (found ${Object.keys(term.readme.header).join(', ')})`)
+
+  // ── project-level cross checks ────────────────
+  if (term.project && mode) {
+    if (term.screens.length > 0 && mode === 'cli') E('@arkzen:term:screen blocks need @arkzen:term:project mode tui or hybrid')
+    if (isTui) {
+      const hasScreenView = term.views.some(v => v.header.kind === 'screen')
+      if (term.screens.length === 0 && !hasScreenView && term.loops.length === 0) E(`mode ${mode} needs at least one @arkzen:term:screen, a @arkzen:term:view with kind: screen, or a @arkzen:term:loop`)
+    }
+    if (hasCli && term.commands.length === 0) E(`mode ${mode} needs at least one @arkzen:term:command`)
+    if (mode === 'tui' && term.commands.length > 0) W('mode tui with @arkzen:term:command blocks: the commands are not reachable. Use mode: hybrid for a CLI and a TUI in one program')
+    if (isText(project.default_command) && !commandNames.has(project.default_command)) E(`@arkzen:term:project default_command "${project.default_command}" is not a declared @arkzen:term:command`)
+    for (const [name, generated] of commandIsGenerated) {
+      if (generated) continue
+      for (const lang of runtimeList) {
+        if (!term.handlers.some(h => h.lang === lang && (isText(h.header.command) ? h.header.command : h.name) === name)) {
+          E(`@arkzen:term:command:${name} has no @arkzen:term:handler:${lang}:${name} for runtime "${lang}". Add the handler, set builtin:, or give the command a prompt with assets templates so it can be generated`)
+        }
+      }
+    }
+  }
+  for (const pr of term.prompts) {
+    if (!promptsUsed.has(pr.name)) W(`@arkzen:term:prompt:${pr.name} is not used by any @arkzen:term:command (set prompt: ${pr.name} on a command)`)
+  }
+
+  // ── export ────────────────────────────────────
+  if (term.export) {
+    const label = '@arkzen:term:export'
+    const exp = mapOf(label, term.export.data)
+    checkKeys(label, exp, ['platforms', 'formats', 'completions', 'man_page', 'embed_version'])
+    if (exp.platforms !== undefined) {
+      if (!isTexts(exp.platforms) || exp.platforms.length === 0) E(`${label} platforms must be a non-empty list (${TERM_PLATFORMS.join(', ')})`)
+      else {
+        for (const p of exp.platforms) if (!TERM_PLATFORMS.includes(p)) E(`${label} platforms: unknown platform "${p}". Valid: ${TERM_PLATFORMS.join(', ')}`)
+        if (exp.platforms.length > 1) {
+          const noCross = runtimeList.filter(l => !TERM_CROSS_COMPILE.includes(l))
+          if (noCross.length > 0) W(`${label} lists ${exp.platforms.length} platforms, but ${noCross.join(', ')} cannot cross-compile. Those runtimes can only be built on the target OS.`)
+        }
+      }
+    }
+    if (exp.formats !== undefined) {
+      if (!isTexts(exp.formats) || exp.formats.length === 0) E(`${label} formats must be a non-empty list (${TERM_FORMATS.join(', ')})`)
+      else {
+        for (const f of exp.formats) {
+          if (!TERM_FORMATS.includes(f)) { E(`${label} formats: unknown format "${f}". Valid: ${TERM_FORMATS.join(', ')}`); continue }
+          const need = TERM_FORMAT_RUNTIME[f]
+          if (need && term.project && !runtimeList.includes(need)) E(`${label} formats: "${f}" needs the "${need}" runtime, which @arkzen:term:project does not list`)
+          if (f === 'single_binary' && runtimeList.length > 0 && !runtimeList.some(l => TERM_CROSS_COMPILE.includes(l))) W(`${label} formats: single_binary is untested for ${runtimeList.join(', ')}. Go and Rust produce native binaries.`)
+        }
+      }
+    }
+    if (exp.completions !== undefined) {
+      if (!isTexts(exp.completions)) E(`${label} completions must be a list (${TERM_COMPLETIONS.join(', ')})`)
+      else {
+        for (const c of exp.completions) if (!TERM_COMPLETIONS.includes(c)) E(`${label} completions: unknown shell "${c}". Valid: ${TERM_COMPLETIONS.join(', ')}`)
+        if (exp.completions.length > 0 && !hasCli) W(`${label} completions only apply to a program with commands (mode is ${mode || 'not set'})`)
+      }
+    }
+    checkBool(`${label} man_page`, exp.man_page)
+    checkBool(`${label} embed_version`, exp.embed_version)
+  }
+
+  // ── toolchains ────────────────────────────────
+  for (const lang of runtimeList) {
+    if (!termToolchainInstalled(lang)) {
+      W(`${TERM_TOOLCHAIN[lang]?.label ?? lang} is not installed here, so the "${lang}" runtime can only be generated, not built. It will verify as UNVERIFIED.`)
+    }
   }
 
   return { errors, warnings }
@@ -1095,11 +2115,18 @@ export function validateTatemono(filePath: string): ValidationResult {
     warnings.push(...pkgResult.warnings)
   }
 
+  // v19.0: terminal blocks (opt-in)
+  if (parsed.term) {
+    const termResult = validateTerm(parsed, filePath)
+    errors.push(...termResult.errors)
+    warnings.push(...termResult.warnings)
+  }
+
   const hasFreeFiles = hasFileBlocks(fs.readFileSync(filePath, 'utf-8'))
 
   // v14.1: @arkzen:file blocks are valid without any page
   // v17.0: @arkzen:ext blocks are valid without any page (validateExt checks the ext contracts)
-  if (!hasFreeFiles && !parsed.ext && !parsed.pkg && parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0) {
+  if (!hasFreeFiles && !parsed.ext && !parsed.pkg && !parsed.term && parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0) {
     errors.push('At least one @arkzen:web:page:name, @arkzen:native:page:name, or @arkzen:native:page:lynx:name section is required')
   }
 
@@ -1108,7 +2135,7 @@ export function validateTatemono(filePath: string): ValidationResult {
     catch (e) { errors.push(e instanceof Error ? e.message : String(e)) }
   }
 
-  const extOnly = (!!parsed.ext || !!parsed.pkg) && parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0
+  const extOnly = (!!parsed.ext || !!parsed.pkg || !!parsed.term) && parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0
   if (!hasFreeFiles && !extOnly && parsed.components.length === 0 && parsed.nativeComponents.length === 0 && parsed.nativeLynxComponents.length === 0) {
     warnings.push('No @arkzen:components or @arkzen:native:components found – consider adding shared UI components.')
   }
