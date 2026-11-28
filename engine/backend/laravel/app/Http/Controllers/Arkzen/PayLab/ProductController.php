@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — ProductController
 // Tatemono: pay-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T10:15:01.287228Z
+// Generated: 2026-11-28T05:54:02.870489Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\PayLab;

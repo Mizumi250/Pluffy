@@ -11,7 +11,7 @@
         "index"
       ],
       "registered": "2026-05-13T10:51:31.044Z",
-      "lastUpdated": "2026-11-27T10:14:31.283Z",
+      "lastUpdated": "2026-11-28T05:53:37.701Z",
       "auth": false
     },
     {
@@ -23,7 +23,7 @@
         "index"
       ],
       "registered": "2026-11-02T13:33:08.955Z",
-      "lastUpdated": "2026-11-27T10:14:32.295Z",
+      "lastUpdated": "2026-11-28T05:53:38.410Z",
       "auth": false
     },
     {
@@ -35,7 +35,7 @@
         "index"
       ],
       "registered": "2026-11-02T13:33:09.280Z",
-      "lastUpdated": "2026-11-27T10:14:33.568Z",
+      "lastUpdated": "2026-11-28T05:53:39.560Z",
       "auth": true
     },
     {
@@ -47,7 +47,7 @@
         "index"
       ],
       "registered": "2026-05-14T16:18:56.852Z",
-      "lastUpdated": "2026-11-27T10:14:33.896Z",
+      "lastUpdated": "2026-11-28T05:53:39.881Z",
       "auth": false
     },
     {
@@ -61,7 +61,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:51.656Z",
-      "lastUpdated": "2026-11-27T10:14:34.372Z",
+      "lastUpdated": "2026-11-28T05:53:40.338Z",
       "auth": true
     },
     {
@@ -73,7 +73,7 @@
         "index"
       ],
       "registered": "2026-05-01T09:26:52.276Z",
-      "lastUpdated": "2026-11-27T10:14:35.186Z",
+      "lastUpdated": "2026-11-28T05:53:40.996Z",
       "auth": false
     },
     {
@@ -87,7 +87,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:52.924Z",
-      "lastUpdated": "2026-11-27T10:14:36.321Z",
+      "lastUpdated": "2026-11-28T05:53:42.105Z",
       "auth": true
     },
     {
@@ -101,7 +101,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:53.210Z",
-      "lastUpdated": "2026-11-27T10:14:36.928Z",
+      "lastUpdated": "2026-11-28T05:53:42.623Z",
       "auth": true
     },
     {
@@ -113,7 +113,7 @@
         "index"
       ],
       "registered": "2026-06-19T13:19:27.642Z",
-      "lastUpdated": "2026-11-27T10:14:37.286Z",
+      "lastUpdated": "2026-11-28T05:53:42.927Z",
       "auth": false
     },
     {
@@ -125,7 +125,7 @@
         "index"
       ],
       "registered": "2026-05-01T09:26:53.480Z",
-      "lastUpdated": "2026-11-27T10:14:38.037Z",
+      "lastUpdated": "2026-11-28T05:53:43.566Z",
       "auth": false
     },
     {
@@ -138,7 +138,7 @@
         "admin"
       ],
       "registered": "2026-05-01T09:26:53.848Z",
-      "lastUpdated": "2026-11-27T10:14:39.291Z",
+      "lastUpdated": "2026-11-28T05:53:44.700Z",
       "auth": false
     },
     {
@@ -150,7 +150,7 @@
         "index"
       ],
       "registered": "2026-05-01T09:26:54.054Z",
-      "lastUpdated": "2026-11-27T10:14:39.773Z",
+      "lastUpdated": "2026-11-28T05:53:45.105Z",
       "auth": false
     },
     {
@@ -162,7 +162,7 @@
         "index"
       ],
       "registered": "2026-06-19T13:19:30.434Z",
-      "lastUpdated": "2026-11-27T10:14:40.172Z",
+      "lastUpdated": "2026-11-28T05:53:45.406Z",
       "auth": false
     },
     {
@@ -174,7 +174,7 @@
         "index"
       ],
       "registered": "2026-06-19T13:19:30.750Z",
-      "lastUpdated": "2026-11-27T10:14:40.655Z",
+      "lastUpdated": "2026-11-28T05:53:45.770Z",
       "auth": false
     },
     {
@@ -186,7 +186,7 @@
         "index"
       ],
       "registered": "2026-05-01T09:26:54.306Z",
-      "lastUpdated": "2026-11-27T10:14:41.229Z",
+      "lastUpdated": "2026-11-28T05:53:46.206Z",
       "auth": false
     },
     {
@@ -198,7 +198,7 @@
         "index"
       ],
       "registered": "2026-10-31T12:45:13.398Z",
-      "lastUpdated": "2026-11-27T10:14:42.112Z",
+      "lastUpdated": "2026-11-28T05:53:46.965Z",
       "auth": true
     },
     {
@@ -210,7 +210,7 @@
         "index"
       ],
       "registered": "2026-11-01T01:25:40.704Z",
-      "lastUpdated": "2026-11-27T10:14:43.186Z",
+      "lastUpdated": "2026-11-28T05:53:47.896Z",
       "auth": true
     },
     {
@@ -222,7 +222,7 @@
         "index"
       ],
       "registered": "2026-11-01T03:47:30.828Z",
-      "lastUpdated": "2026-11-27T10:14:44.818Z",
+      "lastUpdated": "2026-11-28T05:53:49.031Z",
       "auth": true
     },
     {
@@ -234,7 +234,7 @@
         "index"
       ],
       "registered": "2026-11-03T09:21:15.619Z",
-      "lastUpdated": "2026-11-27T10:14:45.847Z",
+      "lastUpdated": "2026-11-28T05:53:49.882Z",
       "auth": false
     },
     {
@@ -246,7 +246,7 @@
         "index"
       ],
       "registered": "2026-11-03T10:18:48.920Z",
-      "lastUpdated": "2026-11-27T10:14:46.248Z",
+      "lastUpdated": "2026-11-28T05:53:50.304Z",
       "auth": false
     },
     {
@@ -266,7 +266,7 @@
       "filePath": "tatemonos/hello-native/core.tsx",
       "pages": [],
       "registered": "2026-05-29T11:51:25.727Z",
-      "lastUpdated": "2026-11-27T10:14:47.582Z",
+      "lastUpdated": "2026-11-28T05:53:51.555Z",
       "auth": false
     },
     {
@@ -278,7 +278,7 @@
         "index"
       ],
       "registered": "2026-06-19T13:19:31.891Z",
-      "lastUpdated": "2026-11-27T10:14:47.919Z",
+      "lastUpdated": "2026-11-28T05:53:51.855Z",
       "auth": false
     },
     {
@@ -290,7 +290,7 @@
         "index"
       ],
       "registered": "2026-05-01T09:26:54.554Z",
-      "lastUpdated": "2026-11-27T10:14:48.421Z",
+      "lastUpdated": "2026-11-28T05:53:52.267Z",
       "auth": false
     },
     {
@@ -308,7 +308,7 @@
         "payslip"
       ],
       "registered": "2026-05-01T09:26:54.808Z",
-      "lastUpdated": "2026-11-27T10:14:49.498Z",
+      "lastUpdated": "2026-11-28T05:53:53.217Z",
       "auth": false
     },
     {
@@ -320,7 +320,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:55.121Z",
-      "lastUpdated": "2026-11-27T10:14:49.927Z",
+      "lastUpdated": "2026-11-28T05:53:53.632Z",
       "auth": false
     },
     {
@@ -343,7 +343,7 @@
         "profile"
       ],
       "registered": "2026-10-27T08:12:55.386Z",
-      "lastUpdated": "2026-11-27T10:14:54.608Z",
+      "lastUpdated": "2026-11-28T05:53:57.530Z",
       "auth": true,
       "desktopConfig": {
         "window": {
@@ -366,7 +366,7 @@
         "index"
       ],
       "registered": "2026-10-09T13:26:12.241Z",
-      "lastUpdated": "2026-11-27T10:14:55.075Z",
+      "lastUpdated": "2026-11-28T05:53:57.925Z",
       "auth": false
     },
     {
@@ -384,7 +384,7 @@
         "chain-guest"
       ],
       "registered": "2026-06-19T13:19:34.412Z",
-      "lastUpdated": "2026-11-27T10:14:55.429Z",
+      "lastUpdated": "2026-11-28T05:53:58.213Z",
       "auth": false
     },
     {
@@ -398,7 +398,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:55.397Z",
-      "lastUpdated": "2026-11-27T10:14:56.338Z",
+      "lastUpdated": "2026-11-28T05:53:58.948Z",
       "auth": true
     },
     {
@@ -410,7 +410,7 @@
         "index"
       ],
       "registered": "2026-05-01T09:26:55.644Z",
-      "lastUpdated": "2026-11-27T10:14:56.958Z",
+      "lastUpdated": "2026-11-28T05:53:59.509Z",
       "auth": false
     },
     {
@@ -420,7 +420,7 @@
       "filePath": "tatemonos/mobile-sdui/core.tsx",
       "pages": [],
       "registered": "2026-11-04T02:14:03.254Z",
-      "lastUpdated": "2026-11-27T10:14:57.868Z",
+      "lastUpdated": "2026-11-28T05:54:00.346Z",
       "auth": false
     },
     {
@@ -434,7 +434,7 @@
         "features"
       ],
       "registered": "2026-05-01T09:26:55.808Z",
-      "lastUpdated": "2026-11-27T10:14:58.251Z",
+      "lastUpdated": "2026-11-28T05:54:00.685Z",
       "auth": false
     },
     {
@@ -448,7 +448,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:56.063Z",
-      "lastUpdated": "2026-11-27T10:14:58.824Z",
+      "lastUpdated": "2026-11-28T05:54:01.115Z",
       "auth": true
     },
     {
@@ -460,7 +460,7 @@
         "index"
       ],
       "registered": "2026-11-01T11:17:42.101Z",
-      "lastUpdated": "2026-11-27T10:15:00.574Z",
+      "lastUpdated": "2026-11-28T05:54:02.467Z",
       "auth": false
     },
     {
@@ -472,7 +472,7 @@
         "index"
       ],
       "registered": "2026-05-01T09:26:56.225Z",
-      "lastUpdated": "2026-11-27T10:15:02.594Z",
+      "lastUpdated": "2026-11-28T05:54:03.877Z",
       "auth": false
     },
     {
@@ -486,7 +486,7 @@
         "admin"
       ],
       "registered": "2026-05-03T02:23:38.494Z",
-      "lastUpdated": "2026-11-27T10:15:03.521Z",
+      "lastUpdated": "2026-11-28T05:54:04.710Z",
       "auth": false
     },
     {
@@ -500,7 +500,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:57.192Z",
-      "lastUpdated": "2026-11-27T10:15:04.590Z",
+      "lastUpdated": "2026-11-28T05:54:05.644Z",
       "auth": true
     },
     {
@@ -512,7 +512,7 @@
         "index"
       ],
       "registered": "2026-11-03T09:21:23.738Z",
-      "lastUpdated": "2026-11-27T10:15:05.629Z",
+      "lastUpdated": "2026-11-28T05:54:06.443Z",
       "auth": false
     },
     {
@@ -524,7 +524,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:57.499Z",
-      "lastUpdated": "2026-11-27T10:15:06.235Z",
+      "lastUpdated": "2026-11-28T05:54:06.856Z",
       "auth": false
     },
     {
@@ -536,7 +536,7 @@
         "index"
       ],
       "registered": "2026-05-29T04:43:14.326Z",
-      "lastUpdated": "2026-11-27T10:15:06.684Z",
+      "lastUpdated": "2026-11-28T05:54:07.220Z",
       "auth": false
     },
     {
@@ -548,7 +548,7 @@
         "index"
       ],
       "registered": "2026-11-02T04:53:51.000Z",
-      "lastUpdated": "2026-11-27T10:15:07.337Z",
+      "lastUpdated": "2026-11-28T05:54:07.848Z",
       "auth": false
     },
     {
@@ -560,7 +560,7 @@
         "index"
       ],
       "registered": "2026-11-02T04:18:12.313Z",
-      "lastUpdated": "2026-11-27T10:15:08.028Z",
+      "lastUpdated": "2026-11-28T05:54:08.383Z",
       "auth": false
     },
     {
@@ -572,7 +572,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:57.754Z",
-      "lastUpdated": "2026-11-27T10:15:11.715Z",
+      "lastUpdated": "2026-11-28T05:54:11.877Z",
       "auth": false
     },
     {
@@ -584,7 +584,7 @@
         "index"
       ],
       "registered": "2026-05-23T08:36:31.379Z",
-      "lastUpdated": "2026-11-27T10:15:12.284Z",
+      "lastUpdated": "2026-11-28T05:54:12.434Z",
       "auth": false
     },
     {
@@ -596,7 +596,7 @@
         "index"
       ],
       "registered": "2026-11-11T07:26:35.530Z",
-      "lastUpdated": "2026-11-27T10:14:45.129Z",
+      "lastUpdated": "2026-11-28T05:53:49.310Z",
       "auth": false
     },
     {
@@ -606,7 +606,7 @@
       "filePath": "tatemonos/free-demo/core.tsx",
       "pages": [],
       "registered": "2026-11-11T07:26:36.172Z",
-      "lastUpdated": "2026-11-27T10:14:45.411Z",
+      "lastUpdated": "2026-11-28T05:53:49.553Z",
       "auth": false
     },
     {
@@ -618,7 +618,7 @@
         "index"
       ],
       "registered": "2026-11-23T12:27:18.753Z",
-      "lastUpdated": "2026-11-27T10:14:30.473Z",
+      "lastUpdated": "2026-11-28T05:53:37.037Z",
       "auth": false
     },
     {
@@ -630,7 +630,7 @@
         "index"
       ],
       "registered": "2026-11-23T12:27:44.245Z",
-      "lastUpdated": "2026-11-27T10:14:50.855Z",
+      "lastUpdated": "2026-11-28T05:53:54.456Z",
       "auth": false
     },
     {
@@ -645,7 +645,7 @@
         "dashboard"
       ],
       "registered": "2026-11-23T12:27:54.589Z",
-      "lastUpdated": "2026-11-27T10:15:00.131Z",
+      "lastUpdated": "2026-11-28T05:54:02.125Z",
       "auth": true,
       "desktopConfig": {
         "window": {
@@ -668,7 +668,7 @@
         "thanks"
       ],
       "registered": "2026-11-23T12:27:56.146Z",
-      "lastUpdated": "2026-11-27T10:15:01.588Z",
+      "lastUpdated": "2026-11-28T05:54:03.064Z",
       "auth": false
     },
     {
@@ -680,7 +680,7 @@
         "index"
       ],
       "registered": "2026-11-23T12:27:59.499Z",
-      "lastUpdated": "2026-11-27T10:15:05.107Z",
+      "lastUpdated": "2026-11-28T05:54:06.101Z",
       "auth": false
     },
     {
@@ -692,7 +692,7 @@
         "index"
       ],
       "registered": "2026-11-23T12:28:16.302Z",
-      "lastUpdated": "2026-11-27T10:15:12.983Z",
+      "lastUpdated": "2026-11-28T05:54:13.221Z",
       "auth": false
     },
     {
@@ -702,7 +702,7 @@
       "filePath": "tatemonos/ext-tab-notes/core.tsx",
       "pages": [],
       "registered": "2026-11-26T03:48:35.779Z",
-      "lastUpdated": "2026-11-27T10:14:43.777Z",
+      "lastUpdated": "2026-11-28T05:53:48.375Z",
       "auth": false
     },
     {
@@ -714,7 +714,7 @@
         "index"
       ],
       "registered": "2026-11-26T03:48:52.489Z",
-      "lastUpdated": "2026-11-27T10:24:16.642Z",
+      "lastUpdated": "2026-11-28T05:54:03.613Z",
       "auth": false
     },
     {
@@ -724,7 +724,7 @@
       "filePath": "tatemonos/ext-page-overlay/core.tsx",
       "pages": [],
       "registered": "2026-11-27T03:17:30.560Z",
-      "lastUpdated": "2026-11-27T10:14:43.501Z",
+      "lastUpdated": "2026-11-28T05:53:48.154Z",
       "auth": false
     },
     {
@@ -738,7 +738,7 @@
         "projects"
       ],
       "registered": "2026-11-27T06:51:41.913Z",
-      "lastUpdated": "2026-11-27T10:14:57.272Z",
+      "lastUpdated": "2026-11-28T05:54:55.961Z",
       "auth": false
     },
     {
@@ -748,7 +748,7 @@
       "filePath": "tatemonos/term-create-site/core.tsx",
       "pages": [],
       "registered": "2026-11-27T09:00:23.758Z",
-      "lastUpdated": "2026-11-27T10:15:08.349Z",
+      "lastUpdated": "2026-11-28T05:54:08.875Z",
       "auth": false
     },
     {
@@ -758,7 +758,7 @@
       "filePath": "tatemonos/term-shelf/core.tsx",
       "pages": [],
       "registered": "2026-11-27T09:00:24.087Z",
-      "lastUpdated": "2026-11-27T10:15:08.620Z",
+      "lastUpdated": "2026-11-28T05:54:09.110Z",
       "auth": false
     },
     {
@@ -768,7 +768,7 @@
       "filePath": "tatemonos/term-snake/core.tsx",
       "pages": [],
       "registered": "2026-11-27T09:00:24.449Z",
-      "lastUpdated": "2026-11-27T10:15:08.877Z",
+      "lastUpdated": "2026-11-28T05:54:09.347Z",
       "auth": false
     },
     {
@@ -778,7 +778,17 @@
       "filePath": "tatemonos/term-todo-cli/core.tsx",
       "pages": [],
       "registered": "2026-11-27T09:00:24.789Z",
-      "lastUpdated": "2026-11-27T10:15:09.140Z",
+      "lastUpdated": "2026-11-28T05:54:09.574Z",
+      "auth": false
+    },
+    {
+      "name": "term-cli-features",
+      "version": "2.1.0",
+      "status": "active",
+      "filePath": "tatemonos/term-cli-features/core.tsx",
+      "pages": [],
+      "registered": "2026-11-28T05:54:08.644Z",
+      "lastUpdated": "2026-11-28T05:54:08.644Z",
       "auth": false
     }
   ]

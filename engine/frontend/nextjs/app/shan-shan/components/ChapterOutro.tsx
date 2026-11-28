@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ChapterOutro
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T10:15:06.592Z
+// Generated: 2026-11-28T05:54:07.156Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

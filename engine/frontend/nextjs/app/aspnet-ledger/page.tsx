@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — aspnet-ledger/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T10:14:31.649Z
+// Generated: 2026-11-28T05:53:37.980Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

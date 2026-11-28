@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — ChipStoreRequest
 // Tatemono: kairo
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T10:14:50.607332Z
+// Generated: 2026-11-28T05:53:54.209664Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\Kairo;

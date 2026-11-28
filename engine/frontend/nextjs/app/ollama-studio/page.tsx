@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — ollama-studio/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T10:15:00.405Z
+// Generated: 2026-11-28T05:54:02.359Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

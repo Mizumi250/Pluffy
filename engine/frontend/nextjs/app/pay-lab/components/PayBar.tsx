@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — PayBar
 // Source: @arkzen:components (pay-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T10:15:00.921Z
+// Generated: 2026-11-28T05:54:02.715Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

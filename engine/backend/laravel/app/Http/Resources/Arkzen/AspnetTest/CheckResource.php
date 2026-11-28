@@ -4,7 +4,7 @@
 // ARKZEN GENERATED RESOURCE — CheckResource
 // Tatemono: aspnet-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T10:14:32.867652Z
+// Generated: 2026-11-28T05:53:38.881764Z
 // ============================================================
 
 namespace App\Http\Resources\Arkzen\AspnetTest;

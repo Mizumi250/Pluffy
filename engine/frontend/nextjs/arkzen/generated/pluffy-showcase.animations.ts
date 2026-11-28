@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — pluffy-showcase
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T10:24:16.260Z
+// Generated: 2026-11-28T05:54:03.323Z
 // ============================================================
 
 import { gsap } from 'gsap'

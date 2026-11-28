@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — webmcp-lab/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T10:15:12.632Z
+// Generated: 2026-11-28T05:54:12.732Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

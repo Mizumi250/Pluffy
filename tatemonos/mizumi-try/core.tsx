@@ -34,7 +34,7 @@ const AboutPage = () => {
 const ProjectsPage = () => {
   return (
     <div>
-      <h1>Project</h1>
+      <h1>Projectsss</h1>
     </div>
   )
 }

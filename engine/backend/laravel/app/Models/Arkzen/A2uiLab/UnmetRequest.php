@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — UnmetRequest
 // Tatemono: a2ui-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T10:14:29.300317Z
+// Generated: 2026-11-28T05:53:35.879208Z
 // ============================================================
 
 namespace App\Models\Arkzen\A2uiLab;

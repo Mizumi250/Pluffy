@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — DemoCard
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T10:14:31.007Z
+// Generated: 2026-11-28T05:53:37.502Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

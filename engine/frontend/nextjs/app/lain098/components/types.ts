@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — lain098
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T10:14:54.942Z
+// Generated: 2026-11-28T05:53:57.831Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

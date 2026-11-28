@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — RepairStatus
 // Source: @arkzen:components (a2ui-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T10:14:27.789Z
+// Generated: 2026-11-28T05:53:34.534Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

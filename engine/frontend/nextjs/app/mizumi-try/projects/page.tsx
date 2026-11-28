@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — mizumi-try/projects
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-27T10:14:57.260Z
+// Generated: 2026-11-28T05:54:55.951Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
@@ -14,7 +14,7 @@ import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 const ProjectsPage = () => {
   return (
     <div>
-      <h1>Project</h1>
+      <h1>Projectsss</h1>
     </div>
   )
 }
