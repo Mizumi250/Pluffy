@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — scheduler-test
 // Visiting /scheduler-test redirects to /scheduler-test/dashboard
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:54:06.691Z
+// Generated: 2026-11-28T11:14:44.259Z
 // ============================================================
 
 import { redirect } from 'next/navigation'

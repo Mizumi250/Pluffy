@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — pluffy-showcase
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:54:03.323Z
+// Generated: 2026-11-28T11:31:48.000Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -20,8 +20,12 @@ export const pluffyShowcaseAnimations = (pageRef: React.RefObject<HTMLDivElement
   const stages = Array.from(root.querySelectorAll<HTMLElement>('.pf-stage'))
   const fit = () => stages.forEach((st) => { st.querySelector<HTMLElement>('.pf-win')?.style.setProperty('--s', String(st.clientWidth / 1120)); st.setAttribute('data-ready', '1') })
   fit()
-  const ro = new ResizeObserver(fit)
+  const pstages = Array.from(root.querySelectorAll<HTMLElement>('.pf-pstage'))
+  const fitPhones = () => pstages.forEach((st) => { st.querySelector<HTMLElement>('.pf-phone')?.style.setProperty('--s', String(st.clientWidth / 320)); st.setAttribute('data-ready', '1') })
+  fitPhones()
+  const ro = new ResizeObserver(() => { fit(); fitPhones() })
   stages.forEach((st) => ro.observe(st))
+  pstages.forEach((st) => ro.observe(st))
   const late = window.setTimeout(() => ScrollTrigger.refresh(), 900)
 
   const mm = gsap.matchMedia(root)
@@ -55,6 +59,10 @@ export const pluffyShowcaseAnimations = (pageRef: React.RefObject<HTMLDivElement
     root.querySelectorAll<HTMLElement>('.pf-scene .pf-win').forEach((w) => { const { q } = tools(w); gsap.set(q('.pf-to, .pf-rail-x, .pf-ex-cmd .x'), { autoAlpha: 1 }); q('.pf-tx').forEach((t) => { (t as HTMLElement).textContent = (t as HTMLElement).dataset.t ?? '' }); gsap.set(q('.pf-dock'), { y: 0 }) })
     gsap.set('.pf-rl, .pf-rc-blk', { autoAlpha: 1 }); gsap.set('.pf-rc-cover', { autoAlpha: 0 })
     root.querySelectorAll('.pf-cs span').forEach((s, i, all) => s.classList.toggle('on', i === all.length - 1))
+    // Pairing: show the finished state, the phone already on its Tasks screen.
+    const pr = root.querySelector<HTMLElement>('#pair-phone'), pt = root.querySelector<HTMLElement>('#pair-term')
+    if (pr) { const pq = gsap.utils.selector(pr); gsap.set(pq('.pf-hid'), { autoAlpha: 1 }); gsap.set(pq('.pf-ph-c, .pf-ph-on'), { autoAlpha: 0 }) }
+    if (pt) { gsap.set(gsap.utils.selector(pt)('.pf-hid'), { autoAlpha: 1 }); const c = pt.querySelector<HTMLElement>('.pf-ptx'); if (c) c.textContent = c.dataset.t ?? '' }
   })
 
   mm.add('(prefers-reduced-motion: no-preference)', () => {
@@ -92,6 +100,48 @@ export const pluffyShowcaseAnimations = (pageRef: React.RefObject<HTMLDivElement
       ScrollTrigger.create({ trigger: '#hero-win', start: 'top bottom', end: 'bottom top', onToggle: (s) => tl.paused(!s.isActive) })
     }
     gsap.from('#hero-win', { y: 36, opacity: 0, duration: 0.9, ease: 'power3.out' })
+
+    // Pairing: the laptop prints a PIN, the phone types it, then the phone drives the laptop. Loops, and pauses off screen.
+    const phone = root.querySelector<HTMLElement>('#pair-phone'), pterm = root.querySelector<HTMLElement>('#pair-term')
+    if (phone && pterm) {
+      const scr = phone.querySelector<HTMLElement>('.pf-ph-scr')!
+      const pq = gsap.utils.selector(phone), tq = gsap.utils.selector(pterm)
+      const spot = (sel: string, fx = 0.5, fy = 0.5) => {
+        const el = phone.querySelector<HTMLElement>(sel)
+        if (!el) return { x: 0, y: 0 }
+        const r = el.getBoundingClientRect(), w = scr.getBoundingClientRect(), k = w.width / 300
+        return { x: (r.left - w.left + r.width * fx) / k, y: (r.top - w.top + r.height * fy) / k }
+      }
+      const a = spot('.pf-ph-addr-f', 0.88), p = spot('.pf-ph-pin-f', 0.88), b = spot('.pf-ph-btn', 0.7)
+      const cmd = pterm.querySelector<HTMLElement>('.pf-ptx'), addr = phone.querySelector<HTMLElement>('.pf-ph-addr'), pin = phone.querySelector<HTMLElement>('.pf-ph-pinv')
+      const tap = () => gsap.to(pq('.pf-tap'), { scale: 0.7, duration: 0.1, yoyo: true, repeat: 1 })
+      const tl = gsap.timeline({ repeat: -1, repeatDelay: 1.8, defaults: { ease: 'power2.inOut' } })
+      tl.set(pq('.pf-hid'), { autoAlpha: 0 }, 0).set(tq('.pf-hid'), { autoAlpha: 0 }, 0)
+        .set(pq('.pf-ph-c, .pf-ph-on'), { autoAlpha: 1 }, 0)
+        .set(pq('.pf-tap'), { autoAlpha: 0, x: 170, y: 540, scale: 1 }, 0)
+        .call(() => { [cmd, addr, pin].forEach((e) => { if (e) e.textContent = '' }) }, [], 0)
+      typeTo(tl, cmd ?? undefined, 0.4, 1.4)
+      tl.to(tq('.pf-pl-a'), { autoAlpha: 1, stagger: 0.25, duration: 0.2, ease: 'none' }, 2.0)
+        .to(pq('.pf-tap'), { autoAlpha: 1, x: a.x, y: a.y, duration: 0.7 }, 3.2)
+        .add(tap, 3.95)
+      typeTo(tl, addr ?? undefined, 4.1, 1.4)
+      tl.to(pq('.pf-ph-probe'), { autoAlpha: 1, duration: 0.25 }, 5.6)
+        .to(pq('.pf-tap'), { x: p.x, y: p.y, duration: 0.6 }, 5.9)
+        .add(tap, 6.55)
+      typeTo(tl, pin ?? undefined, 6.7, 1.0)
+      tl.to(pq('.pf-tap'), { x: b.x, y: b.y, duration: 0.6 }, 7.9)
+        .add(() => press(pq('.pf-ph-btn')), 8.55)
+        .to(tq('.pf-pl-b'), { autoAlpha: 1, duration: 0.2 }, 9.0)
+        .to(pq('.pf-ph-c'), { autoAlpha: 0, duration: 0.35 }, 9.1).to(pq('.pf-ph-t'), { autoAlpha: 1, duration: 0.35 }, 9.1)
+        .to(pq('.pf-tap'), { autoAlpha: 0, duration: 0.2 }, 9.1)
+        .to(pq('.pf-ph-r1'), { autoAlpha: 1, duration: 0.3 }, 9.7)
+        .to(pq('.pf-ph-r2'), { autoAlpha: 1, duration: 0.3 }, 10.2)
+        .to(pq('.pf-ph-tl'), { autoAlpha: 1, stagger: 0.55, duration: 0.2, ease: 'none' }, 10.8)
+        .to(pq('.pf-ph-on'), { autoAlpha: 0, duration: 0.2 }, 12.6).to(pq('.pf-ph-fin'), { autoAlpha: 1, duration: 0.2 }, 12.6)
+        .to({}, { duration: 1.2 }, 13.0)
+      const st = ScrollTrigger.create({ trigger: '#pair-phone', start: 'top bottom', end: 'bottom top', onToggle: (s) => tl.paused(!s.isActive) })
+      tl.paused(!st.isActive)
+    }
 
     // Scenes: a sticky stage, and a timeline the scroll position drives. The caption follows the scroll.
     const scene = (id: string, build: (tl: gsap.core.Timeline, q: ReturnType<typeof gsap.utils.selector>, at: ReturnType<typeof tools>['at']) => void) => {
@@ -166,7 +216,10 @@ export const pluffyShowcaseAnimations = (pageRef: React.RefObject<HTMLDivElement
     gsap.utils.toArray<HTMLElement>('.pf-plat-row, .pf-plan').forEach((el) => {
       gsap.from(el, { y: 28, opacity: 0, duration: 0.7, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%', once: true } })
     })
-    gsap.from('.pf-fig', { y: 40, opacity: 0, duration: 0.8, stagger: 0.12, ease: 'power3.out', scrollTrigger: { trigger: '.pf-grid', start: 'top 80%', once: true } })
+    // Each screenshot card arrives on its own, when you scroll to it.
+    gsap.utils.toArray<HTMLElement>('.pf-fig').forEach((el) => {
+      gsap.from(el, { y: 56, opacity: 0, scale: 0.97, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 88%', once: true } })
+    })
   })
 
   return () => { window.clearTimeout(late); ro.disconnect(); mm.revert() }

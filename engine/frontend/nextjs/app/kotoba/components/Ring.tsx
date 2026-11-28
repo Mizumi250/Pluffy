@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Ring
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:53:55.168Z
+// Generated: 2026-11-28T11:14:26.788Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

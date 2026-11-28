@@ -2,19 +2,19 @@
 // ARKZEN GENERATED SHARED CONSTANTS — pluffy-showcase
 // Source: @arkzen:components (pluffy-showcase)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:54:03.334Z
+// Generated: 2026-11-28T11:31:48.079Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowUpRight, Building2, ChevronDown, CircleCheck, CodeXml, Copy, Download, Home, MessageSquare, Plus, Puzzle, Search, Settings, Terminal, Upload } from 'lucide-react'
+import { ArrowUpRight, Building2, ChevronDown, CircleCheck, CodeXml, Copy, Download, Home, Laptop, ListChecks, MessageSquare, Plus, Puzzle, RefreshCw, Search, Settings, Terminal, Upload } from 'lucide-react'
 
 
 export const REPO_URL = 'https://github.com/Mizumi250/Pluffy'
 
-export const RELEASE_URL = 'https://github.com/Mizumi250/Pluffy/releases/tag/v1.0.7'
+export const RELEASE_URL = 'https://github.com/Mizumi250/Pluffy/releases/tag/v1.0.8'
 
-export const DOWNLOAD_URL = 'https://github.com/Mizumi250/Pluffy/releases/download/v1.0.7/PluffyStudio-portable.exe'
+export const DOWNLOAD_URL = 'https://github.com/Mizumi250/Pluffy/releases/download/v1.0.8/PluffyStudio-portable.exe'
 
 export const CLONE_CMD = 'git clone https://github.com/Mizumi250/Pluffy.git'
 

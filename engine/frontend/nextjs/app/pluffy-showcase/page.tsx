@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — pluffy-showcase/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:54:03.376Z
+// Generated: 2026-11-28T11:31:48.191Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -17,13 +17,15 @@ import { Frame } from './components/Frame'
 import { HomeView } from './components/HomeView'
 import { Logo } from './components/Logo'
 import { Mark } from './components/Mark'
+import { PairPhone } from './components/PairPhone'
+import { PairTerm } from './components/PairTerm'
 import { TermExport } from './components/TermExport'
 import { TermHero } from './components/TermHero'
 import { TermStack } from './components/TermStack'
 import { AZ, CLONE_CMD, DOWNLOAD_URL, FONTS_URL, IMG_BASE, RELEASE_URL, REPO_URL } from './components/constants'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { pageVariants, pluffyShowcaseAnimations } from '@/arkzen/generated/pluffy-showcase.animations'
-import { ArrowUpRight, Building2, ChevronDown, CircleCheck, CodeXml, Copy, Download, Home, MessageSquare, Plus, Puzzle, Search, Settings, Terminal, Upload } from 'lucide-react'
+import { ArrowUpRight, Building2, ChevronDown, CircleCheck, CodeXml, Copy, Download, Home, Laptop, ListChecks, MessageSquare, Plus, Puzzle, RefreshCw, Search, Settings, Terminal, Upload } from 'lucide-react'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {
@@ -102,7 +104,7 @@ const IndexPage = () => {
               <a className="pf-btn pf-primary" href={DOWNLOAD_URL} onClick={() => { copyClone('Download started. Clone command copied too.') }}><Download />Download for Windows</a>
               <button type="button" className="pf-btn pf-ghost" onClick={() => copyClone('Clone command copied. Paste it in a terminal.')}><Copy />Copy clone command</button>
             </div>
-            <p className="pf-fine">v1.0.6, Windows x64, about 246 MB. Unzip the whole folder and run it.</p>
+            <p className="pf-fine">v1.0.8, Windows x64, about 246 MB. Unzip the whole folder and run it.</p>
           </div>
           <div className="pf-stage" id="hero-win">
             <Frame dock={<TermHero />}><HomeView /><EditorView /></Frame>
@@ -170,6 +172,26 @@ const IndexPage = () => {
               <p className="pf-note"><a className="pf-link" href={PLAN('BACKEND_PARITY_CHECKLIST.md')} target="_blank" rel="noreferrer">Read the backend parity checklist<ArrowUpRight /></a></p>
             </section>
           )}
+
+          {n === 2 && (
+            <section className="pf-wrap pf-section" id="pair">
+              <div className="pf-pair">
+                <div className="pf-pair-l">
+                  <h2 className="pf-h2">Pair your phone. Run it from across the room.</h2>
+                  <p className="pf-muted">Pluffy Mobile is a remote. The engine and your tatemonos stay on the laptop. The phone starts commands there and watches them run.</p>
+                  <ol className="pf-pair-steps">
+                    <li><span className="pf-n">1</span><span>On the laptop, run <code>node mizumi.js bridge</code>. It prints an address and a 6 digit PIN.</span></li>
+                    <li><span className="pf-n">2</span><span>Type the address and the PIN into the app. The PIN works once and expires after 10 minutes.</span></li>
+                    <li><span className="pf-n">3</span><span>Start commands from the phone. Output streams back as it runs, and Stop works.</span></li>
+                  </ol>
+                  <PairTerm />
+                  <p className="pf-fine">The link is plain HTTP, so stay on your own Wi-Fi or a private network such as Tailscale.</p>
+                  <a className="pf-link" href={REPO_URL + '/tree/main/mobile'} target="_blank" rel="noreferrer">How to build the app<ArrowUpRight /></a>
+                </div>
+                <div className="pf-pstage" id="pair-phone"><PairPhone /></div>
+              </div>
+            </section>
+          )}
         </React.Fragment>
       ))}
 
@@ -195,15 +217,11 @@ const IndexPage = () => {
         </div>
       </section>
 
-      <section className="pf-built pf-wrap" id="built">
-        <div className="pf-built-head">
-          <h2 className="pf-h2">Buildings already standing.</h2>
-          <a className="pf-btn pf-ghost" href={REPO_URL + '/tree/main/tatemonos'} target="_blank" rel="noreferrer">Browse the 66 tatemonos<ArrowUpRight /></a>
-        </div>
+      <section className="pf-built pf-wrap" id="built" aria-label="Apps built with Pluffy">
         <div className="pf-grid">
-          <figure className="pf-card pf-fig"><img src={IMG_BASE + 'built-kotoba.webp'} alt="Kotoba homepage, built with Pluffy" loading="lazy" /><figcaption><b>Kotoba</b><span>A social language-learning app, Next.js</span></figcaption></figure>
-          <figure className="pf-card pf-fig"><img src={IMG_BASE + 'built-kairo.webp'} alt="Kairo homepage, built with Pluffy" loading="lazy" /><figcaption><b>Kairo</b><span>Next.js</span></figcaption></figure>
-          <figure className="pf-card pf-fig"><img src={IMG_BASE + 'built-rubik.webp'} alt="Rubik Solver, built with Pluffy" loading="lazy" /><figcaption><b>Rubik Solver</b><span>React and Vite</span></figcaption></figure>
+          <figure className="pf-card pf-fig"><img src={IMG_BASE + 'built-kotoba.webp'} alt="Kotoba homepage, built with Pluffy" loading="lazy" /></figure>
+          <figure className="pf-card pf-fig"><img src={IMG_BASE + 'built-kairo.webp'} alt="Kairo homepage, built with Pluffy" loading="lazy" /></figure>
+          <figure className="pf-card pf-fig"><img src={IMG_BASE + 'built-rubik.webp'} alt="Rubik Solver, built with Pluffy" loading="lazy" /></figure>
         </div>
       </section>
 
@@ -218,7 +236,7 @@ const IndexPage = () => {
             </ol>
             <div className="pf-cta-row" style={{ justifyContent: 'flex-start' }}>
               <a className="pf-btn pf-primary" href={DOWNLOAD_URL} onClick={() => { copyClone('Download started. Clone command copied too.') }}><Download />Download for Windows</a>
-              <a className="pf-link" style={{ alignSelf: 'center' }} href={RELEASE_URL} target="_blank" rel="noreferrer">Release v1.0.6 notes<ArrowUpRight /></a>
+              <a className="pf-link" style={{ alignSelf: 'center' }} href={RELEASE_URL} target="_blank" rel="noreferrer">Release v1.0.8 notes<ArrowUpRight /></a>
             </div>
           </div>
           <div>

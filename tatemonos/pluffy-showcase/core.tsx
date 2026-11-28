@@ -1,23 +1,23 @@
 /* @arkzen:meta
 name: pluffy-showcase
-version: 1.3.0
-description: Static portfolio site that tells the story of Pluffy and Pluffy Studio and links the v1.0.6 download
+version: 1.4.3
+description: Static portfolio site that tells the story of Pluffy and Pluffy Studio and links the v1.0.8 download
 auth: false
 */
 
 /* @arkzen:meta:web
-title: Pluffy | One file in, a whole building out
+title: Pluffy. One file in, a whole building out
 label: Pluffy
 description: Pluffy turns one core.tsx into a database, backend, web pages, mobile screens and a desktop shell. Download Pluffy Studio for Windows.
 favicon: /tatemonos/pluffy-showcase/assets/images/favicon.svg
 og:
-  title: Pluffy | One file in, a whole building out
+  title: Pluffy. One file in, a whole building out
   description: A single tatemono grows into a complete app. Meet Pluffy Studio.
   image: /tatemonos/pluffy-showcase/assets/images/studio-home.webp
   type: website
 twitter:
   card: summary_large_image
-  title: Pluffy | One file in, a whole building out
+  title: Pluffy. One file in, a whole building out
   description: A single tatemono grows into a complete app. Meet Pluffy Studio.
   image: /tatemonos/pluffy-showcase/assets/images/studio-home.webp
 */
@@ -152,7 +152,7 @@ twitter:
 .pf-rc-img { position:relative; overflow:hidden; border-radius:var(--r); }
 .pf-rc-img img { display:block; width:100%; }
 .pf-rc-cover { position:absolute; inset:0; background:var(--sec-2); transform-origin:50% 0; }
-.pf-rc-shot figcaption { padding:0 8px; font-size:14px; color:var(--muted); }
+.pf-rc-shot figcaption { padding:0 8px; font-size:14px; color:var(--muted); text-align:center; }
 .pf-scene { height:270vh; }
 .pf-sc-stick { position:sticky; top:0; height:100vh; display:flex; flex-direction:column; justify-content:center; gap:16px; padding:16px 0; }
 .pf-sc-head { display:flex; justify-content:space-between; align-items:flex-end; gap:12px 40px; flex-wrap:wrap; }
@@ -181,13 +181,10 @@ twitter:
 .pf-plan p { color:var(--muted); }
 .pf-plan-foot { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
 .pf-built { padding:12vh 0 12vh; }
-.pf-built-head { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap; margin-bottom:40px; }
 .pf-grid { display:grid; grid-template-columns:5fr 7fr; grid-template-rows:auto auto; gap:24px; align-items:start; }
 .pf-grid figure:first-child { grid-row:span 2; }
-.pf-fig { padding:12px 12px 16px; }
+.pf-fig { padding:12px; }
 .pf-fig img { display:block; width:100%; border-radius:var(--r); }
-.pf-fig figcaption { padding:14px 8px 0; }
-.pf-fig b { font:700 16px var(--display); margin-right:8px; } .pf-fig span { font-size:14px; color:var(--muted); }
 .pf-get { background:var(--ink); color:var(--surface); display:grid; grid-template-columns:1.1fr 1fr; gap:48px; padding:56px; align-items:start; }
 .pf-get .pf-muted, .pf-get .pf-fine { color:#cdbcb7; }
 .pf-root .pf-get-steps { list-style:none; display:grid; gap:14px; margin:24px 0 32px; }
@@ -201,9 +198,60 @@ twitter:
 .pf-foot nav { display:flex; gap:24px; }
 .pf-toast { position:fixed; left:50%; bottom:24px; transform:translate(-50%,24px); opacity:0; background:var(--ink); color:var(--surface); padding:12px 20px; border-radius:var(--r); box-shadow:var(--shadow-2); font-size:15px; z-index:80; transition:transform .3s ease, opacity .3s ease; pointer-events:none; max-width:92vw; }
 .pf-toast.on { transform:translate(-50%,0); opacity:1; }
+.pf-hid { visibility:hidden; opacity:0; }
+.pf-get > div { min-width:0; }
+.pf-pair { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:64px; align-items:center; }
+.pf-pair-l { display:flex; flex-direction:column; align-items:flex-start; gap:14px; min-width:0; }
+.pf-root .pf-pair-steps { list-style:none; display:grid; gap:14px; margin:8px 0 6px; }
+.pf-pair-steps li { display:grid; grid-template-columns:32px minmax(0,1fr); gap:16px; align-items:start; }
+.pf-pair-steps code { font:600 .92em var(--mono); background:var(--sec); padding:1px 7px; border-radius:6px; overflow-wrap:anywhere; }
+.pf-pterm { width:100%; min-height:176px; background:#2c2523; border-radius:var(--r); padding:16px 20px; font:13px/1.8 var(--mono); color:#e8dcd8; overflow-x:auto; }
+.pf-pterm .ln { white-space:pre; }
+.pf-pterm .m { color:#b8a8a3; } .pf-pterm .pin { color:var(--primary); font-weight:700; } .pf-pterm .ok { color:#7fd3a8; font-weight:700; } .pf-pterm b { font-weight:700; }
+.pf-pstage { position:relative; width:min(100%,320px); aspect-ratio:1/2; margin-inline:auto; }
+.pf-pstage:not([data-ready]) .pf-phone { visibility:hidden; }
+.pf-phone { position:absolute; left:0; top:0; width:320px; height:640px; transform-origin:0 0; transform:scale(var(--s,1)); background:var(--ink); border-radius:46px; padding:10px; box-shadow:var(--shadow-2); }
+.pf-ph-scr { position:relative; width:300px; height:620px; border-radius:36px; overflow:hidden; background:var(--sec); font:14px/1.5 var(--ui); color:var(--ink); text-align:left; }
+.pf-ph-cam { position:absolute; top:12px; left:50%; width:10px; height:10px; margin-left:-5px; border-radius:50%; background:var(--ink); z-index:6; }
+.pf-ph-s { position:absolute; inset:0; padding:46px 18px 18px; }
+.pf-ph-s h4 { font:700 22px/1.2 var(--display); margin:12px 0 6px; }
+.pf-ph-s p { font-size:13px; line-height:1.5; color:var(--muted); }
+.pf-ph-c svg { width:40px; height:40px; display:block; }
+.pf-ph-lab { font-weight:700; font-size:13px; margin:16px 0 6px 4px; }
+.pf-ph-in { display:flex; align-items:center; height:44px; padding:0 14px; border-radius:var(--r); background:var(--surface); font:14px var(--mono); }
+.pf-ph-in span:empty::before { content:attr(data-ph); color:var(--muted); }
+.pf-ph-pin-f { letter-spacing:.28em; }
+.pf-ph-probe { display:flex; align-items:center; gap:8px; margin:8px 0 0 4px; height:22px; font-size:13px; font-weight:600; color:var(--ok); }
+.pf-ph-probe svg { width:16px; height:16px; }
+.pf-ph-s .pf-ph-hint { margin:8px 0 0 4px; font-size:12px; }
+.pf-ph-btn { margin-top:20px; height:44px; border-radius:999px; background:var(--primary); display:flex; align-items:center; justify-content:center; font:700 15px var(--display); }
+.pf-ph-top { display:flex; align-items:center; justify-content:space-between; }
+.pf-ph-s .pf-ph-top h4 { margin:0; }
+.pf-ph-chip { display:inline-flex; align-items:center; gap:8px; height:36px; padding:0 12px 0 10px; border-radius:18px; background:var(--surface); }
+.pf-ph-chip svg { width:20px; height:20px; }
+.pf-ph-chip b { display:block; font:700 13px/1.15 var(--ui); } .pf-ph-chip span span { display:block; font-size:12px; line-height:1.15; color:var(--muted); }
+.pf-ph-list { margin-top:18px; background:var(--surface); border-radius:var(--r); overflow:hidden; }
+.pf-ph-row { display:flex; align-items:center; gap:10px; padding:12px; min-height:56px; }
+.pf-ph-row + .pf-ph-row { border-top:1px solid var(--sec); }
+.pf-ph-row > div { min-width:0; flex:1; }
+.pf-ph-row b { display:block; font:600 10.5px/1.4 var(--mono); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pf-ph-row .s { display:grid; font-size:12px; color:var(--muted); }
+.pf-ph-row .s > i { grid-area:1/1; font-style:normal; }
+.pf-ph-row .ico { display:grid; flex:none; width:20px; height:20px; }
+.pf-ph-row .ico > i { grid-area:1/1; display:grid; }
+.pf-ph-row .ico svg { width:20px; height:20px; }
+.pf-ph-row .ok { color:var(--ok); }
+.pf-ph-term { margin-top:12px; height:268px; padding:12px 14px; border-radius:var(--r); background:#231a1e; font:11px/1.8 var(--mono); color:#f3e4e8; overflow:hidden; }
+.pf-ph-term .m { color:#b3a3a9; } .pf-ph-term .ok { color:#7fd3a8; font-weight:700; }
+.pf-ph-tab { position:absolute; left:0; right:0; bottom:0; height:62px; display:flex; background:var(--surface); border-top:1px solid var(--sec-2); }
+.pf-ph-tab div { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:11px; color:var(--muted); }
+.pf-ph-tab div.on { color:var(--ink); font-weight:700; }
+.pf-ph-tab svg { width:22px; height:22px; }
+.pf-tap { position:absolute; left:0; top:0; width:34px; height:34px; margin:-17px 0 0 -17px; border-radius:50%; background:rgba(249,158,158,.55); border:2px solid var(--ink); visibility:hidden; opacity:0; pointer-events:none; z-index:8; }
 @media (max-width:860px) {
   .pf-nav .pf-link { display:none; }
-  .pf-get, .pf-next-grid, .pf-rc { grid-template-columns:1fr; }
+  .pf-get, .pf-next-grid, .pf-rc { grid-template-columns:minmax(0,1fr); }
+  .pf-pair { grid-template-columns:minmax(0,1fr); gap:40px; }
   .pf-rl.x { display:none; }
   .pf-grid { grid-template-columns:1fr; } .pf-grid figure:first-child { grid-row:auto; }
   .pf-get { padding:32px 24px; }
@@ -212,6 +260,21 @@ twitter:
   .pf-scene { height:220vh; } .pf-scene .pf-stage { width:100%; }
   .pf-sc-stick { justify-content:center; }
 }
+@media (max-width:520px) {
+  .pf-wrap { width:calc(100% - 32px); }
+  .pf-section { padding:8vh 0 3vh; }
+  .pf-get { padding:28px 20px; gap:28px; }
+  .pf-get-steps li { grid-template-columns:32px minmax(0,1fr); gap:12px; }
+  .pf-root .pf-get .pf-cta-row { flex-direction:column; align-items:stretch; }
+  .pf-get .pf-cta-row .pf-btn { justify-content:center; width:100%; }
+  .pf-root .pf-get .pf-cta-row .pf-link { align-self:center !important; justify-content:center; min-height:44px; }
+  .pf-code { font-size:13px; line-height:1.8; padding:16px; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .pf-foot { flex-direction:column; gap:12px; padding:32px 0 40px; }
+  .pf-foot nav { flex-wrap:wrap; gap:4px 20px; }
+  .pf-foot .pf-link { min-height:44px; }
+  .pf-pterm { font-size:11px; padding:16px; }
+}
+@media (max-width:380px) { .pf-pterm { font-size:10px; } }
 @media (prefers-reduced-motion: reduce) { .pf-btn, .pf-toast, .pf-cs span { transition:none; } }
 /* @arkzen:web:style:end */
 
@@ -220,11 +283,11 @@ twitter:
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Download, Copy, ArrowUpRight, Home, Puzzle, Settings, Plus, Search, Building2, CodeXml, Terminal, MessageSquare, ChevronDown, CircleCheck, Upload } from 'lucide-react'
+import { Download, Copy, ArrowUpRight, Home, Puzzle, Settings, Plus, Search, Building2, CodeXml, Terminal, MessageSquare, ChevronDown, CircleCheck, Upload, ListChecks, Laptop, RefreshCw } from 'lucide-react'
 
 export const REPO_URL = 'https://github.com/Mizumi250/Pluffy'
-export const RELEASE_URL = 'https://github.com/Mizumi250/Pluffy/releases/tag/v1.0.7'
-export const DOWNLOAD_URL = 'https://github.com/Mizumi250/Pluffy/releases/download/v1.0.7/PluffyStudio-portable.exe'
+export const RELEASE_URL = 'https://github.com/Mizumi250/Pluffy/releases/tag/v1.0.8'
+export const DOWNLOAD_URL = 'https://github.com/Mizumi250/Pluffy/releases/download/v1.0.8/PluffyStudio-portable.exe'
 export const CLONE_CMD = 'git clone https://github.com/Mizumi250/Pluffy.git'
 export const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap'
 export const IMG_BASE = '/tatemonos/pluffy-showcase/assets/images/'
@@ -235,7 +298,6 @@ const PETAL = 'M0 -2.5 C -6.5 -7 -6.5 -13 -3 -14.5 L 0 -12 L 3 -14.5 C 6.5 -13 6
 export const Mark = () => (
   <svg viewBox="-16 -16 32 32" aria-hidden="true">
     <g fill="#f99e9e">{[0, 72, 144, 216, 288].map((a) => <path key={a} d={PETAL} transform={`rotate(${a})`} />)}</g>
-    <circle r="2.4" fill="#212121" />
   </svg>
 )
 
@@ -388,6 +450,54 @@ export const ExportDialog = () => (
   </div>
 )
 
+export const PairTerm = () => (
+  <div className="pf-pterm" id="pair-term" role="img" aria-label="What the laptop prints when the bridge starts: an address, a 6 digit pairing PIN, then a line saying the phone paired.">
+    <div className="ln"><span className="m">$ </span><span className="pf-ptx" data-t="node mizumi.js bridge" /></div>
+    <div className="ln pf-hid pf-pl-a"><span className="pin">{'✿'} Pluffy bridge</span>{'  '}<span className="m">v1  MIZUMI</span></div>
+    <div className="ln pf-hid pf-pl-a m">Address, type one of these in the app:</div>
+    <div className="ln pf-hid pf-pl-a">{'  '}<b>192.168.1.37:7471</b>{'  '}<span className="m">Wi-Fi</span></div>
+    <div className="ln pf-hid pf-pl-a"><span className="m">Pairing PIN</span>{'   '}<span className="pin">482 915</span>{'   '}<span className="m">(works once, 10 minutes)</span></div>
+    <div className="ln pf-hid pf-pl-b"><span className="ok">{'✓'}</span> Paired <b>Phone</b> <span className="m">(3fa9c1d2)</span></div>
+  </div>
+)
+
+export const PairPhone = () => (
+  <div className="pf-phone" aria-hidden="true">
+    <div className="pf-ph-scr">
+      <i className="pf-ph-cam" />
+      <div className="pf-ph-s pf-ph-c">
+        <Mark />
+        <h4>Connect to your laptop</h4>
+        <p>Your tatemonos and the engine stay on the laptop. This phone starts commands there and watches them.</p>
+        <div className="pf-ph-lab">Address</div>
+        <div className="pf-ph-in pf-ph-addr-f"><span className="pf-ph-addr" data-t="192.168.1.37:7471" data-ph="192.168.1.20:7471" /></div>
+        <div className="pf-ph-probe pf-hid"><CircleCheck />Found MIZUMI</div>
+        <div className="pf-ph-lab">Pairing PIN</div>
+        <div className="pf-ph-in pf-ph-pin-f"><span className="pf-ph-pinv" data-t="482915" data-ph="6 digits" /></div>
+        <p className="pf-ph-hint">The PIN works once and expires after 10 minutes.</p>
+        <div className="pf-ph-btn">Pair with laptop</div>
+      </div>
+      <div className="pf-ph-s pf-ph-t pf-hid">
+        <div className="pf-ph-top"><h4>Tasks</h4><span className="pf-ph-chip"><Mark /><span><b>MIZUMI</b><span>Online</span></span></span></div>
+        <div className="pf-ph-list">
+          <div className="pf-ph-row pf-ph-r1 pf-hid"><span className="ico ok"><CircleCheck /></span><div><b>mizumi check warung-sore</b><span className="s"><i>Done, 2 s</i></span></div></div>
+          <div className="pf-ph-row pf-ph-r2 pf-hid">
+            <span className="ico"><i className="pf-ph-on"><RefreshCw /></i><i className="pf-ph-fin ok pf-hid"><CircleCheck /></i></span>
+            <div><b>mizumi export warung-sore nextjs</b><span className="s"><i className="pf-ph-on">Running</i><i className="pf-ph-fin pf-hid">Done, 6 s</i></span></div>
+          </div>
+        </div>
+        <div className="pf-ph-term">
+          <div className="pf-ph-tl pf-hid m">$ mizumi export warung-sore nextjs</div>
+          <div className="pf-ph-tl pf-hid"><span className="ok">{'✓'}</span> Exported warung-sore for nextjs</div>
+          <div className="pf-ph-tl pf-hid m">Done.</div>
+        </div>
+        <div className="pf-ph-tab"><div className="on"><ListChecks />Tasks</div><div><Terminal />Commands</div><div><Building2 />Tatemonos</div><div><Laptop />Laptop</div></div>
+      </div>
+      <i className="pf-tap" />
+    </div>
+  </div>
+)
+
 /* @arkzen:web:components:shared:end */
 
 /* @arkzen:web:animation */
@@ -407,8 +517,12 @@ const pluffyShowcaseAnimations = (pageRef: React.RefObject<HTMLDivElement | null
   const stages = Array.from(root.querySelectorAll<HTMLElement>('.pf-stage'))
   const fit = () => stages.forEach((st) => { st.querySelector<HTMLElement>('.pf-win')?.style.setProperty('--s', String(st.clientWidth / 1120)); st.setAttribute('data-ready', '1') })
   fit()
-  const ro = new ResizeObserver(fit)
+  const pstages = Array.from(root.querySelectorAll<HTMLElement>('.pf-pstage'))
+  const fitPhones = () => pstages.forEach((st) => { st.querySelector<HTMLElement>('.pf-phone')?.style.setProperty('--s', String(st.clientWidth / 320)); st.setAttribute('data-ready', '1') })
+  fitPhones()
+  const ro = new ResizeObserver(() => { fit(); fitPhones() })
   stages.forEach((st) => ro.observe(st))
+  pstages.forEach((st) => ro.observe(st))
   const late = window.setTimeout(() => ScrollTrigger.refresh(), 900)
 
   const mm = gsap.matchMedia(root)
@@ -442,6 +556,10 @@ const pluffyShowcaseAnimations = (pageRef: React.RefObject<HTMLDivElement | null
     root.querySelectorAll<HTMLElement>('.pf-scene .pf-win').forEach((w) => { const { q } = tools(w); gsap.set(q('.pf-to, .pf-rail-x, .pf-ex-cmd .x'), { autoAlpha: 1 }); q('.pf-tx').forEach((t) => { (t as HTMLElement).textContent = (t as HTMLElement).dataset.t ?? '' }); gsap.set(q('.pf-dock'), { y: 0 }) })
     gsap.set('.pf-rl, .pf-rc-blk', { autoAlpha: 1 }); gsap.set('.pf-rc-cover', { autoAlpha: 0 })
     root.querySelectorAll('.pf-cs span').forEach((s, i, all) => s.classList.toggle('on', i === all.length - 1))
+    // Pairing: show the finished state, the phone already on its Tasks screen.
+    const pr = root.querySelector<HTMLElement>('#pair-phone'), pt = root.querySelector<HTMLElement>('#pair-term')
+    if (pr) { const pq = gsap.utils.selector(pr); gsap.set(pq('.pf-hid'), { autoAlpha: 1 }); gsap.set(pq('.pf-ph-c, .pf-ph-on'), { autoAlpha: 0 }) }
+    if (pt) { gsap.set(gsap.utils.selector(pt)('.pf-hid'), { autoAlpha: 1 }); const c = pt.querySelector<HTMLElement>('.pf-ptx'); if (c) c.textContent = c.dataset.t ?? '' }
   })
 
   mm.add('(prefers-reduced-motion: no-preference)', () => {
@@ -479,6 +597,48 @@ const pluffyShowcaseAnimations = (pageRef: React.RefObject<HTMLDivElement | null
       ScrollTrigger.create({ trigger: '#hero-win', start: 'top bottom', end: 'bottom top', onToggle: (s) => tl.paused(!s.isActive) })
     }
     gsap.from('#hero-win', { y: 36, opacity: 0, duration: 0.9, ease: 'power3.out' })
+
+    // Pairing: the laptop prints a PIN, the phone types it, then the phone drives the laptop. Loops, and pauses off screen.
+    const phone = root.querySelector<HTMLElement>('#pair-phone'), pterm = root.querySelector<HTMLElement>('#pair-term')
+    if (phone && pterm) {
+      const scr = phone.querySelector<HTMLElement>('.pf-ph-scr')!
+      const pq = gsap.utils.selector(phone), tq = gsap.utils.selector(pterm)
+      const spot = (sel: string, fx = 0.5, fy = 0.5) => {
+        const el = phone.querySelector<HTMLElement>(sel)
+        if (!el) return { x: 0, y: 0 }
+        const r = el.getBoundingClientRect(), w = scr.getBoundingClientRect(), k = w.width / 300
+        return { x: (r.left - w.left + r.width * fx) / k, y: (r.top - w.top + r.height * fy) / k }
+      }
+      const a = spot('.pf-ph-addr-f', 0.88), p = spot('.pf-ph-pin-f', 0.88), b = spot('.pf-ph-btn', 0.7)
+      const cmd = pterm.querySelector<HTMLElement>('.pf-ptx'), addr = phone.querySelector<HTMLElement>('.pf-ph-addr'), pin = phone.querySelector<HTMLElement>('.pf-ph-pinv')
+      const tap = () => gsap.to(pq('.pf-tap'), { scale: 0.7, duration: 0.1, yoyo: true, repeat: 1 })
+      const tl = gsap.timeline({ repeat: -1, repeatDelay: 1.8, defaults: { ease: 'power2.inOut' } })
+      tl.set(pq('.pf-hid'), { autoAlpha: 0 }, 0).set(tq('.pf-hid'), { autoAlpha: 0 }, 0)
+        .set(pq('.pf-ph-c, .pf-ph-on'), { autoAlpha: 1 }, 0)
+        .set(pq('.pf-tap'), { autoAlpha: 0, x: 170, y: 540, scale: 1 }, 0)
+        .call(() => { [cmd, addr, pin].forEach((e) => { if (e) e.textContent = '' }) }, [], 0)
+      typeTo(tl, cmd ?? undefined, 0.4, 1.4)
+      tl.to(tq('.pf-pl-a'), { autoAlpha: 1, stagger: 0.25, duration: 0.2, ease: 'none' }, 2.0)
+        .to(pq('.pf-tap'), { autoAlpha: 1, x: a.x, y: a.y, duration: 0.7 }, 3.2)
+        .add(tap, 3.95)
+      typeTo(tl, addr ?? undefined, 4.1, 1.4)
+      tl.to(pq('.pf-ph-probe'), { autoAlpha: 1, duration: 0.25 }, 5.6)
+        .to(pq('.pf-tap'), { x: p.x, y: p.y, duration: 0.6 }, 5.9)
+        .add(tap, 6.55)
+      typeTo(tl, pin ?? undefined, 6.7, 1.0)
+      tl.to(pq('.pf-tap'), { x: b.x, y: b.y, duration: 0.6 }, 7.9)
+        .add(() => press(pq('.pf-ph-btn')), 8.55)
+        .to(tq('.pf-pl-b'), { autoAlpha: 1, duration: 0.2 }, 9.0)
+        .to(pq('.pf-ph-c'), { autoAlpha: 0, duration: 0.35 }, 9.1).to(pq('.pf-ph-t'), { autoAlpha: 1, duration: 0.35 }, 9.1)
+        .to(pq('.pf-tap'), { autoAlpha: 0, duration: 0.2 }, 9.1)
+        .to(pq('.pf-ph-r1'), { autoAlpha: 1, duration: 0.3 }, 9.7)
+        .to(pq('.pf-ph-r2'), { autoAlpha: 1, duration: 0.3 }, 10.2)
+        .to(pq('.pf-ph-tl'), { autoAlpha: 1, stagger: 0.55, duration: 0.2, ease: 'none' }, 10.8)
+        .to(pq('.pf-ph-on'), { autoAlpha: 0, duration: 0.2 }, 12.6).to(pq('.pf-ph-fin'), { autoAlpha: 1, duration: 0.2 }, 12.6)
+        .to({}, { duration: 1.2 }, 13.0)
+      const st = ScrollTrigger.create({ trigger: '#pair-phone', start: 'top bottom', end: 'bottom top', onToggle: (s) => tl.paused(!s.isActive) })
+      tl.paused(!st.isActive)
+    }
 
     // Scenes: a sticky stage, and a timeline the scroll position drives. The caption follows the scroll.
     const scene = (id: string, build: (tl: gsap.core.Timeline, q: ReturnType<typeof gsap.utils.selector>, at: ReturnType<typeof tools>['at']) => void) => {
@@ -553,7 +713,10 @@ const pluffyShowcaseAnimations = (pageRef: React.RefObject<HTMLDivElement | null
     gsap.utils.toArray<HTMLElement>('.pf-plat-row, .pf-plan').forEach((el) => {
       gsap.from(el, { y: 28, opacity: 0, duration: 0.7, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 90%', once: true } })
     })
-    gsap.from('.pf-fig', { y: 40, opacity: 0, duration: 0.8, stagger: 0.12, ease: 'power3.out', scrollTrigger: { trigger: '.pf-grid', start: 'top 80%', once: true } })
+    // Each screenshot card arrives on its own, when you scroll to it.
+    gsap.utils.toArray<HTMLElement>('.pf-fig').forEach((el) => {
+      gsap.from(el, { y: 56, opacity: 0, scale: 0.97, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 88%', once: true } })
+    })
   })
 
   return () => { window.clearTimeout(late); ro.disconnect(); mm.revert() }
@@ -646,7 +809,7 @@ const IndexPage = () => {
               <a className="pf-btn pf-primary" href={DOWNLOAD_URL} onClick={() => { copyClone('Download started. Clone command copied too.') }}><Download />Download for Windows</a>
               <button type="button" className="pf-btn pf-ghost" onClick={() => copyClone('Clone command copied. Paste it in a terminal.')}><Copy />Copy clone command</button>
             </div>
-            <p className="pf-fine">v1.0.6, Windows x64, about 246 MB. Unzip the whole folder and run it.</p>
+            <p className="pf-fine">v1.0.8, Windows x64, about 246 MB. Unzip the whole folder and run it.</p>
           </div>
           <div className="pf-stage" id="hero-win">
             <Frame dock={<TermHero />}><HomeView /><EditorView /></Frame>
@@ -714,6 +877,26 @@ const IndexPage = () => {
               <p className="pf-note"><a className="pf-link" href={PLAN('BACKEND_PARITY_CHECKLIST.md')} target="_blank" rel="noreferrer">Read the backend parity checklist<ArrowUpRight /></a></p>
             </section>
           )}
+
+          {n === 2 && (
+            <section className="pf-wrap pf-section" id="pair">
+              <div className="pf-pair">
+                <div className="pf-pair-l">
+                  <h2 className="pf-h2">Pair your phone. Run it from across the room.</h2>
+                  <p className="pf-muted">Pluffy Mobile is a remote. The engine and your tatemonos stay on the laptop. The phone starts commands there and watches them run.</p>
+                  <ol className="pf-pair-steps">
+                    <li><span className="pf-n">1</span><span>On the laptop, run <code>node mizumi.js bridge</code>. It prints an address and a 6 digit PIN.</span></li>
+                    <li><span className="pf-n">2</span><span>Type the address and the PIN into the app. The PIN works once and expires after 10 minutes.</span></li>
+                    <li><span className="pf-n">3</span><span>Start commands from the phone. Output streams back as it runs, and Stop works.</span></li>
+                  </ol>
+                  <PairTerm />
+                  <p className="pf-fine">The link is plain HTTP, so stay on your own Wi-Fi or a private network such as Tailscale.</p>
+                  <a className="pf-link" href={REPO_URL + '/tree/main/mobile'} target="_blank" rel="noreferrer">How to build the app<ArrowUpRight /></a>
+                </div>
+                <div className="pf-pstage" id="pair-phone"><PairPhone /></div>
+              </div>
+            </section>
+          )}
         </React.Fragment>
       ))}
 
@@ -739,15 +922,11 @@ const IndexPage = () => {
         </div>
       </section>
 
-      <section className="pf-built pf-wrap" id="built">
-        <div className="pf-built-head">
-          <h2 className="pf-h2">Buildings already standing.</h2>
-          <a className="pf-btn pf-ghost" href={REPO_URL + '/tree/main/tatemonos'} target="_blank" rel="noreferrer">Browse the 66 tatemonos<ArrowUpRight /></a>
-        </div>
+      <section className="pf-built pf-wrap" id="built" aria-label="Apps built with Pluffy">
         <div className="pf-grid">
-          <figure className="pf-card pf-fig"><img src={IMG_BASE + 'built-kotoba.webp'} alt="Kotoba homepage, built with Pluffy" loading="lazy" /><figcaption><b>Kotoba</b><span>A social language-learning app, Next.js</span></figcaption></figure>
-          <figure className="pf-card pf-fig"><img src={IMG_BASE + 'built-kairo.webp'} alt="Kairo homepage, built with Pluffy" loading="lazy" /><figcaption><b>Kairo</b><span>Next.js</span></figcaption></figure>
-          <figure className="pf-card pf-fig"><img src={IMG_BASE + 'built-rubik.webp'} alt="Rubik Solver, built with Pluffy" loading="lazy" /><figcaption><b>Rubik Solver</b><span>React and Vite</span></figcaption></figure>
+          <figure className="pf-card pf-fig"><img src={IMG_BASE + 'built-kotoba.webp'} alt="Kotoba homepage, built with Pluffy" loading="lazy" /></figure>
+          <figure className="pf-card pf-fig"><img src={IMG_BASE + 'built-kairo.webp'} alt="Kairo homepage, built with Pluffy" loading="lazy" /></figure>
+          <figure className="pf-card pf-fig"><img src={IMG_BASE + 'built-rubik.webp'} alt="Rubik Solver, built with Pluffy" loading="lazy" /></figure>
         </div>
       </section>
 
@@ -762,7 +941,7 @@ const IndexPage = () => {
             </ol>
             <div className="pf-cta-row" style={{ justifyContent: 'flex-start' }}>
               <a className="pf-btn pf-primary" href={DOWNLOAD_URL} onClick={() => { copyClone('Download started. Clone command copied too.') }}><Download />Download for Windows</a>
-              <a className="pf-link" style={{ alignSelf: 'center' }} href={RELEASE_URL} target="_blank" rel="noreferrer">Release v1.0.6 notes<ArrowUpRight /></a>
+              <a className="pf-link" style={{ alignSelf: 'center' }} href={RELEASE_URL} target="_blank" rel="noreferrer">Release v1.0.8 notes<ArrowUpRight /></a>
             </div>
           </div>
           <div>

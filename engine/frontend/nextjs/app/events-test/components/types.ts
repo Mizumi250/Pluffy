@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — events-test
 // Source: @arkzen:components (events-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:53:46.014Z
+// Generated: 2026-11-28T11:14:15.433Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

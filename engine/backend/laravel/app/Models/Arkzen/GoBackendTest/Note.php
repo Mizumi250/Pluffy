@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Note
 // Tatemono: go-backend-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:53:49.863038Z
+// Generated: 2026-11-28T11:14:20.804568Z
 // ============================================================
 
 namespace App\Models\Arkzen\GoBackendTest;

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — pay-lab
 // Source: @arkzen:components (pay-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:54:02.706Z
+// Generated: 2026-11-28T11:14:38.769Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

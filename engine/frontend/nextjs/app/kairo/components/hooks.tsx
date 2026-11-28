@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — kairo
 // Source: @arkzen:components (kairo)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:53:54.010Z
+// Generated: 2026-11-28T11:14:25.359Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'

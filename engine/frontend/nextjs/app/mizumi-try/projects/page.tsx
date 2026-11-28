@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — mizumi-try/projects
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:54:55.951Z
+// Generated: 2026-11-28T11:14:33.275Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

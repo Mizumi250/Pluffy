@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — UiReleaseArkzenSeeder
 // Tatemono: mobile-sdui  |  Connection: mobile_sdui
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:54:00.140416Z
+// Generated: 2026-11-28T11:14:33.819111Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\MobileSdui;

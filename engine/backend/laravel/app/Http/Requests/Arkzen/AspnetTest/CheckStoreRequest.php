@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — CheckStoreRequest
 // Tatemono: aspnet-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:53:38.813225Z
+// Generated: 2026-11-28T11:14:06.097016Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\AspnetTest;

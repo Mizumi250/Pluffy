@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — RapierSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:54:12.320Z
+// Generated: 2026-11-28T11:14:51.094Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

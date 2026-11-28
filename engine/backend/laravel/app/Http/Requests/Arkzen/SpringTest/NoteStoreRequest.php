@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — NoteStoreRequest
 // Tatemono: spring-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:54:08.175000Z
+// Generated: 2026-11-28T11:14:46.178420Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\SpringTest;

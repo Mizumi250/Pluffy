@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — visual-lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:54:12.188Z
+// Generated: 2026-11-28T11:14:50.823Z
 // ============================================================
 
 import { gsap } from 'gsap'

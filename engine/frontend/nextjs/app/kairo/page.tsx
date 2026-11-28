@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kairo/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:53:54.095Z
+// Generated: 2026-11-28T11:14:25.462Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Account
 // Tatemono: aspnet-ledger
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:53:38.156569Z
+// Generated: 2026-11-28T11:14:05.216058Z
 // ============================================================
 
 namespace App\Models\Arkzen\AspnetLedger;

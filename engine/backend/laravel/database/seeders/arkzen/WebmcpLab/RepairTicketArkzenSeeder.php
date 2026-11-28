@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — RepairTicketArkzenSeeder
 // Tatemono: webmcp-lab  |  Connection: webmcp_lab
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:54:13.177355Z
+// Generated: 2026-11-28T11:14:52.042577Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\WebmcpLab;

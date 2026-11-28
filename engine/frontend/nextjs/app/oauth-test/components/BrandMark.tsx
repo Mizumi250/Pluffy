@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — BrandMark
 // Source: @arkzen:components (oauth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-28T05:54:01.377Z
+// Generated: 2026-11-28T11:14:35.747Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
