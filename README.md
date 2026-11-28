@@ -5,7 +5,6 @@
 Pluffy is a place where an app starts as a single file and grows into a complete, working system: database, backend, web pages, mobile screens and a desktop shell, all from the same source. Make yourself at home.
 
 DOWNLOAD HERE: [Pluffy Studio](https://pluffy-engine.vercel.app/)
-<img src="./Shots/PluffyStudio.png" alt="kairo index screenshot" width="700">
 
 ---
 
@@ -29,10 +28,10 @@ Every tatemono is its own small world. It gets its own database, its own users, 
 - **Games:** Godot 4, Unity and Unreal Engine 5 projects generated from dedicated game DSLs
 - **Backend:** Laravel (PHP), Express (TypeScript), FastAPI (Python), Spring Boot (Java), ASP.NET Core (C#), Go, or Rust
 - **Database:** SQLite (a file per tatemono) or PostgreSQL (a database per tatemono)
-- **BrowserExtension:** in progress...phase 5
-- **TUI/CLI:** in progress...phase 3
-- **Packages:** in progress...phase 4
-- **OS:** soon...
+- **BrowserExtension:** in progress...phase 4
+- **TUI/CLI:** in progress...phase 1
+- **Packages:** in progress...phase 3
+- **OS:** in progress...phase 2
 
 Pick the stack you like, and the same tatemono runs on it.
 
@@ -64,7 +63,7 @@ index from web screenshots already in `Shots/web/`, run
 <!-- TATEMONO_SHOTS:START -->
 <table>
 <tr><td align="center"><a href="./tatemonos/kairo/core.tsx"><img src="./Shots/web/nextjs/kairo/index.png" alt="kairo index screenshot" width="420"><br><strong>kairo</strong></a></td><td align="center"><a href="./tatemonos/kotoba/core.tsx"><img src="./Shots/web/nextjs/kotoba/index.png" alt="kotoba index screenshot" width="420"><br><strong>kotoba</strong></a></td></tr>
-<tr><td align="center"><a href="./tatemonos/pluffy-showcase/core.tsx"><img src="./Shots/web/nextjs/pluffy-showcase/index.png" alt="pluffy-showcase index screenshot" width="420"><br><strong>pluffy-showcase</strong></a></td><td align="center"><a href="./tatemonos/rubik-solver/core.tsx"><img src="./Shots/web/react-vite/rubik-solver/index.png" alt="rubik-solver index screenshot" width="420"><br><strong>rubik-solver</strong></a></td></tr>
+<tr><td align="center"><a href="./tatemonos/rubik-solver/core.tsx"><img src="./Shots/web/react-vite/rubik-solver/index.png" alt="rubik-solver index screenshot" width="420"><br><strong>rubik-solver</strong></a></td><td></td></tr>
 </table>
 <!-- TATEMONO_SHOTS:END -->
 
