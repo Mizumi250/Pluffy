@@ -54,8 +54,7 @@ export function planNpmPackage({ tatemono, pkg, derived, registry = 'npm' }) {
 
   const tsSources = pkg.sources.filter(s => s.lang === 'ts')
   if (tsSources.length === 0) fail(`A ${project.kind} needs at least one @arkzen:pkg:source:ts:<name> block`)
-  const otherLang = pkg.sources.find(s => s.lang !== 'ts')
-  if (otherLang) fail(`@arkzen:pkg:source:${otherLang.lang}:${otherLang.name} is not TypeScript, so it cannot go into an npm package`)
+  // sources in other languages belong to this package's other registry targets (a PyPI build uses the py ones)
 
   const files = new Map()   // source name -> relative path
   const used = new Set()

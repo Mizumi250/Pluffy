@@ -15,7 +15,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { readTatemono } from './common/read.js'
+import { installPyTools, pyToolchain } from './common/pytools.js'
 import { npm, npmToolchain, TOOL_ROOT } from './common/run.js'
 
 const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -33,6 +33,8 @@ const GENERATORS = {
   github: async () => (await import('./npm/generator.js')).buildNpmPackage,
   // jsr.io publishes TypeScript sources: no build, and its own dry run needs Deno (opt in with --jsr-dry-run)
   jsr: async () => (await import('./npm/jsr.js')).buildJsrPackage,
+  // PyPI: hatchling through python -m build, verified in a fresh virtual environment
+  pypi: async () => (await import('./pypi/generator.js')).buildPyPackage,
 }
 
 function printReport(report) {
@@ -53,6 +55,14 @@ async function build() {
   const file = path.join(ROOT_DIR, 'tatemonos', name, 'core.tsx')
   if (!fs.existsSync(file)) { console.error(`[pkg] Unknown tatemono "${name}" (no ${path.relative(ROOT_DIR, file)})`); return 2 }
 
+  let readTatemono
+  try {
+    ;({ readTatemono } = await import('./common/read.js'))
+  } catch (error) {
+    if (error.code !== 'ERR_MODULE_NOT_FOUND') throw error
+    console.error('[pkg] The package tools are not installed yet. Run: node mizumi.js deps install package')
+    return 2
+  }
   const tatemono = readTatemono(file)
   const wantedId = flag('id')
   const wantedTarget = flag('target')
@@ -79,7 +89,7 @@ async function build() {
     }
     for (const registry of registries) {
       const generator = GENERATORS[registry]
-      if (!generator) { console.log(`\n  ${pkg.id} (${registry}): ${paint(33, 'not implemented yet')} (npm, github and jsr are the registries implemented so far)`); continue }
+      if (!generator) { console.log(`\n  ${pkg.id} (${registry}): ${paint(33, 'not implemented yet')} (npm, github, jsr and pypi are the registries implemented so far)`); continue }
       const outDir = path.join(ROOT_DIR, 'projects', 'package', name, pkg.id, registry)
       try {
         const buildPackage = await generator()
@@ -98,14 +108,17 @@ async function build() {
 
 function status() {
   console.log('\n  Package tools (engine/package)')
-  for (const t of npmToolchain()) console.log(`    ${t.ok ? paint(32, 'ok     ') : paint(31, 'missing')} ${t.name}${t.version ? ` ${t.version}` : ''}`)
-  console.log('\n  Other registries (PyPI, crates.io, Go, Maven, NuGet, Packagist) are not implemented yet.')
+  for (const t of [...npmToolchain(), ...pyToolchain()]) console.log(`    ${t.ok ? paint(32, 'ok     ') : paint(31, 'missing')} ${t.name}${t.version ? ` ${t.version}` : ''}`)
+  console.log('\n  Other registries (crates.io, Go, Maven, NuGet, Packagist) are not implemented yet.')
   return 0
 }
 
 function deps() {
   console.log(`  npm install in ${path.relative(ROOT_DIR, TOOL_ROOT)}`)
   const r = npm(['install', '--no-audit', '--no-fund'], { cwd: TOOL_ROOT, inherit: true, timeout: 900000 })
+  // Python tools for the PyPI generator live in engine/package/.venv. Missing Python only affects PyPI packages.
+  const py = installPyTools({ log: m => console.log(`  ${m}`) })
+  if (!py.ok) console.log(`  ${paint(33, 'note')}  Python tools were not installed: ${py.error}`)
   return r.ok ? 0 : 1
 }
 

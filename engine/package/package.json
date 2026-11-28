@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Tools Pluffy uses to build, pack and verify packages. Installed with: node mizumi.js deps install package",
   "scripts": {
-    "test": "node --test \"common/*.test.js\" \"npm/*.test.js\" \"derive/*.test.js\""
+    "test": "node --test \"common/*.test.js\" \"npm/*.test.js\" \"derive/*.test.js\" \"pypi/*.test.js\""
   },
   "dependencies": {
     "@types/node": "^22.0.0",

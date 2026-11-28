@@ -875,7 +875,7 @@ function validatePkg(parsed: ParsedTatemono, filePath: string): { errors: string
     if (d.bin !== undefined) {
       if (!isMap(d.bin)) errors.push(`${tag} bin must map a command name to a source name`)
       else for (const [cmd, src] of Object.entries(d.bin)) {
-        if (typeof src !== 'string' || !sources.has(src)) errors.push(`${tag} bin: "${cmd}" points at source "${String(src)}", but no @arkzen:pkg:source block has that name`)
+        if (typeof src !== 'string' || !sources.has(src.split(':')[0])) errors.push(`${tag} bin: "${cmd}" points at source "${String(src)}", but no @arkzen:pkg:source block has that name`)
       }
     }
     if (d.types_only !== undefined && typeof d.types_only !== 'boolean') errors.push(`${tag} types_only must be true or false`)
