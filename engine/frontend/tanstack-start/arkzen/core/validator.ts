@@ -2012,6 +2012,1099 @@ function validateTerm(parsed: ParsedTatemono, filePath: string): { errors: strin
   return { errors, warnings }
 }
 
+// ─────────────────────────────────────────────
+// OPERATING SYSTEM BLOCKS (v20.0)
+// @arkzen:os:project, target, config, boot, memory, interrupts, scheduler, syscall, driver,
+// fs, userland, shell, image, run, test, assets, distro, board, source, readme.
+// The parser reads the structure; every contract is checked here so a wrong value is
+// reported before the build. Only Tatemonos that declare an os block are checked.
+// Source: PLUFFY_OS_PLAN.md sections 7.4 to 7.7.
+// ─────────────────────────────────────────────
+
+const OS_KINDS         = ['kernel', 'os', 'bootloader', 'bootapp', 'firmware', 'unikernel', 'driver', 'distro', 'desktop']
+const OS_ARCHS         = ['x86_64', 'aarch64', 'riscv64', 'x86', 'arm-cortex-m']
+const OS_X86_ARCHS     = ['x86_64', 'x86']
+const OS_LANG_CODES    = ['rs', 'c', 'asm', 'go', 'cpp']
+const OS_USER_LANGS    = ['rs', 'c', 'asm']
+const OS_KERNEL_TYPES  = ['monolithic', 'microkernel', 'hybrid', 'unikernel', 'exokernel', 'rtos']
+const OS_HOSTS         = ['linux', 'windows', 'macos']
+const OS_FEATURES      = ['serial_log', 'framebuffer_console', 'heap', 'scheduler', 'syscalls', 'userland', 'filesystem', 'network']
+const OS_LOG_LEVELS    = ['off', 'error', 'warn', 'info', 'debug', 'trace']
+const OS_PANIC_MODES   = ['halt', 'reboot', 'dump']
+const OS_FIRMWARES     = ['bios', 'uefi', 'direct']
+const OS_LOADERS       = ['bootloader_crate', 'limine', 'grub', 'custom', 'none']
+const OS_PHYSICAL      = ['bitmap', 'buddy', 'freelist']
+const OS_HEAP_ALLOCS   = ['bump', 'linked_list', 'slab']
+const OS_REGION_KINDS  = ['code', 'data', 'stack', 'heap', 'mmio']
+const OS_REGION_FLAGS  = ['read', 'write', 'exec']
+const OS_CONTROLLERS   = ['pic', 'apic', 'gic', 'plic']
+const OS_POLICIES      = ['round_robin', 'priority', 'mlfq', 'cooperative', 'none']
+const OS_DRIVER_CLASSES = ['serial', 'framebuffer', 'keyboard', 'mouse', 'timer', 'rtc', 'disk', 'nic', 'usb', 'gpio', 'i2c', 'spi', 'uart', 'pci', 'virtio']
+const OS_BUSES         = ['platform', 'pci', 'usb', 'virtio', 'i2c', 'spi']
+const OS_DRIVER_MODELS = ['polling', 'interrupt', 'dma']
+const OS_FS_TYPES      = ['ramfs', 'tarfs', 'fat32', 'ext2', 'custom']
+const OS_LIBCS         = ['none', 'minimal', 'external']
+const OS_IMAGE_FORMATS = ['iso', 'raw', 'uefi_disk', 'efi_app', 'elf', 'bin', 'uf2', 'sd_image', 'initramfs']
+const OS_EMULATORS     = ['qemu']
+const OS_DISPLAYS      = ['none', 'gtk', 'sdl', 'vnc']
+const OS_SERIALS       = ['stdio', 'file', 'none']
+const OS_ACCELS        = ['auto', 'kvm', 'tcg']
+const OS_TEST_KINDS    = ['boot', 'unit']
+const OS_BUILDERS      = ['buildroot', 'yocto', 'debootstrap', 'alpine', 'nixos']
+const OS_INITS         = ['systemd', 'openrc', 'busybox', 'custom']
+const OS_BOARD_RUNTIMES = ['bare', 'embassy', 'freertos', 'zephyr', 'other']
+const OS_FLASH_TOOLS   = ['uf2', 'openocd', 'probe_rs']
+const OS_SOURCE_PARTS  = ['kernel', 'user', 'boot', 'driver', 'lib', 'test']
+const OS_CHECKSUMS     = ['sha256']
+const OS_SYSCALL_TYPES = ['u8', 'u16', 'u32', 'u64', 'i8', 'i16', 'i32', 'i64', 'usize', 'isize', 'bool', 'ptr']
+const OS_SYSCALL_RETURNS = [...OS_SYSCALL_TYPES, 'void', 'never']
+// Known QEMU device names. A name outside this list is a warning, not an error.
+const OS_QEMU_DEVICES  = [
+  'serial', 'vga', 'nic', 'virtio-blk', 'virtio-net', 'virtio-gpu', 'virtio-keyboard', 'virtio-mouse', 'virtio-rng',
+  'virtio-blk-pci', 'virtio-net-pci', 'virtio-gpu-pci', 'virtio-keyboard-pci', 'virtio-mouse-pci', 'isa-debug-exit',
+  'e1000', 'rtl8139', 'ahci', 'nvme', 'usb-kbd', 'usb-mouse', 'usb-tablet', 'qemu-xhci', 'ramfb',
+]
+
+// Which blocks each kind needs (R), does not use (X) and may use (O).
+// Source: PLUFFY_OS_PLAN.md section 7.6.
+const OS_MATRIX_COLUMNS = ['project', 'target', 'boot', 'memory', 'interrupts', 'scheduler', 'syscall', 'driver', 'fs', 'userland', 'image', 'run', 'test', 'board', 'distro', 'source'] as const
+const OS_MATRIX: Record<string, string> = {
+  //            project target boot memory interrupts scheduler syscall driver fs userland image run test board distro source
+  kernel:     'R R R R O O O O O X R R R X X R',
+  os:         'R R R R R R R O O R R R R X X R',
+  bootloader: 'R R R O O X X X X X R R R X X R',
+  bootapp:    'R R R O O X X O X X R R R X X R',
+  firmware:   'R R X O O O X O X X R O O R X R',
+  unikernel:  'R R R R O O O O O X R R R X X R',
+  driver:     'R O X X X X X R X X X O O X X R',
+  distro:     'R O X X X X X X X X R O O X R X',
+  desktop:    'R O X X X X X X X R O O O X O R',
+}
+const OS_NEEDS_ENTRY    = ['kernel', 'os', 'bootloader', 'bootapp', 'unikernel', 'firmware']
+const OS_NAME_RE        = /^[a-z][a-z0-9_-]*$/
+const OS_IDENT_RE       = /^[a-z][a-z0-9_]*$/
+const OS_FN_RE          = /^[A-Za-z_][A-Za-z0-9_]*$/
+const OS_HANDLER_RE     = /^([a-z][a-z0-9_]*)::([A-Za-z_][A-Za-z0-9_]*)$/
+const OS_SPDX_SYNTAX    = /^[A-Za-z0-9.+-]+$/
+const OS_HOSTNAME_RE    = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/
+const OS_DEVICE_PATH_RE = /^(?:\/dev\/|\\\\\.\\|\/proc\/|\/sys\/)/i
+const OS_SECRET_KEY     = /^(?:key|.*(?:token|password|passwd|secret|private[_-]?key|api[_-]?key|credential).*)$/i
+// A pointer to Pluffy from source that will be generated into a standalone project (rule 1).
+const OS_PLUFFY_IMPORT: Record<string, RegExp> = {
+  rs:  /^[ \t]*(?:pub[ \t]+)?(?:use|extern[ \t]+crate)[ \t]+(?:arkzen|pluffy)\b/im,
+  c:   /^[ \t]*#[ \t]*include[ \t]*[<"][^>"\n]*(?:arkzen|pluffy)[^>"\n]*[>"]/im,
+  cpp: /^[ \t]*#[ \t]*include[ \t]*[<"][^>"\n]*(?:arkzen|pluffy)[^>"\n]*[>"]/im,
+  asm: /^[ \t]*(?:%include|\.include|include)[ \t]+["'][^"'\n]*(?:arkzen|pluffy)[^"'\n]*["']/im,
+  go:  /^[ \t]*(?:import[ \t]+)?(?:[A-Za-z_.][A-Za-z0-9_]*[ \t]+)?"[^"\n]*(?:\/|^)(?:arkzen|pluffy)(?:\/[^"\n]*)?"[ \t]*$/im,
+}
+
+// Tools needed to build and to boot. A missing tool is a warning and the target verifies as UNVERIFIED.
+const OS_TOOLS: Record<string, { cmd: string; args: string[]; label: string }> = {
+  rustc:   { cmd: 'rustc',   args: ['--version'], label: 'Rust (rustc)' },
+  cargo:   { cmd: 'cargo',   args: ['--version'], label: 'Rust (cargo)' },
+  gcc:     { cmd: 'gcc',     args: ['--version'], label: 'a C compiler (gcc)' },
+  ld:      { cmd: 'ld',      args: ['--version'], label: 'the GNU linker (ld)' },
+  nasm:    { cmd: 'nasm',    args: ['-v'],        label: 'nasm' },
+  tinygo:  { cmd: 'tinygo',  args: ['version'],   label: 'TinyGo' },
+  'qemu-system-x86_64':  { cmd: 'qemu-system-x86_64',  args: ['--version'], label: 'QEMU (x86_64)' },
+  'qemu-system-aarch64': { cmd: 'qemu-system-aarch64', args: ['--version'], label: 'QEMU (aarch64)' },
+  'qemu-system-riscv64': { cmd: 'qemu-system-riscv64', args: ['--version'], label: 'QEMU (riscv64)' },
+  'qemu-system-i386':    { cmd: 'qemu-system-i386',    args: ['--version'], label: 'QEMU (x86)' },
+}
+const OS_QEMU_FOR_ARCH: Record<string, string> = {
+  x86_64: 'qemu-system-x86_64', aarch64: 'qemu-system-aarch64', riscv64: 'qemu-system-riscv64', x86: 'qemu-system-i386',
+}
+
+const osToolCache = new Map<string, boolean>()
+function osToolInstalled(tool: string): boolean {
+  const spec = OS_TOOLS[tool]
+  if (!spec) return true
+  const cached = osToolCache.get(tool)
+  if (cached !== undefined) return cached
+  let ok = false
+  // A cold first start of a large toolchain can pass the short timeout. Retry once with a longer one
+  // before calling the tool missing, so a slow disk does not mark a build UNVERIFIED by mistake.
+  for (const timeout of [4000, 20000]) {
+    try {
+      const r = spawnSync(spec.cmd, spec.args, { stdio: 'ignore', timeout, windowsHide: true })
+      if (!r.error && r.status === 0) { ok = true; break }
+      const code = (r.error as NodeJS.ErrnoException | undefined)?.code
+      if (code !== 'ETIMEDOUT') break
+    } catch { break }
+  }
+  osToolCache.set(tool, ok)
+  return ok
+}
+
+// A size or address: a non-negative integer, or a string such as 0x1000, 4096, 64K, 16M, 1G.
+// Returns undefined when the value is not one.
+function osNumber(value: unknown): bigint | undefined {
+  if (typeof value === 'number') {
+    return Number.isInteger(value) && value >= 0 ? BigInt(value) : undefined
+  }
+  if (typeof value !== 'string') return undefined
+  const m = value.trim().replace(/_/g, '').match(/^(0x[0-9a-fA-F]+|\d+)\s*([KMG])?(?:i?B)?$/i)
+  if (!m) return undefined
+  const base = BigInt(m[1])
+  const unit = m[2]?.toUpperCase()
+  const mult = unit === 'K' ? 1024n : unit === 'M' ? 1024n * 1024n : unit === 'G' ? 1024n * 1024n * 1024n : 1n
+  return base * mult
+}
+
+function osCollectSecrets(value: unknown, trail: string, out: string[]): void {
+  if (Array.isArray(value)) { value.forEach((v, i) => osCollectSecrets(v, `${trail}[${i}]`, out)); return }
+  if (!isMap(value)) return
+  for (const [key, v] of Object.entries(value)) {
+    if (OS_SECRET_KEY.test(key)) out.push(`${trail}.${key}`)
+    osCollectSecrets(v, `${trail}.${key}`, out)
+  }
+}
+
+function osCollectStrings(value: unknown, trail: string, out: { path: string; text: string }[]): void {
+  if (typeof value === 'string') { out.push({ path: trail, text: value }); return }
+  if (Array.isArray(value)) { value.forEach((v, i) => osCollectStrings(v, `${trail}[${i}]`, out)); return }
+  if (isMap(value)) for (const [key, v] of Object.entries(value)) osCollectStrings(v, `${trail}.${key}`, out)
+}
+
+function validateOs(parsed: ParsedTatemono, filePath: string): { errors: string[]; warnings: string[] } {
+  const errors:   string[] = []
+  const warnings: string[] = []
+  const os = parsed.os
+  if (!os) return { errors, warnings }
+
+  const E = (msg: string): void => { errors.push(msg) }
+  const W = (msg: string): void => { warnings.push(msg) }
+
+  const assetsDir = path.join(path.dirname(filePath), 'assets')
+  const listAssets = (): string[] => {
+    const out: string[] = []
+    const walk = (dir: string, rel: string): void => {
+      let entries: fs.Dirent[] = []
+      try { entries = fs.readdirSync(dir, { withFileTypes: true }) } catch { return }
+      for (const entry of entries) {
+        const r = rel ? `${rel}/${entry.name}` : entry.name
+        if (entry.isDirectory()) walk(path.join(dir, entry.name), r)
+        else out.push(r)
+      }
+    }
+    walk(assetsDir, '')
+    return out
+  }
+  const cleanAsset = (rel: string): string => rel.replace(/\\/g, '/').replace(/^(?:\.\/)?\/?(?:assets\/)?/, '')
+  const globToRe = (glob: string): RegExp => {
+    let re = ''
+    for (let i = 0; i < glob.length; i++) {
+      const c = glob[i]
+      if (c === '*') {
+        if (glob[i + 1] === '*') { re += '.*'; i++; if (glob[i + 1] === '/') i++ } else re += '[^/]*'
+      } else if (c === '?') re += '[^/]'
+      else re += c.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    }
+    return new RegExp(`^${re}$`)
+  }
+
+  const checkKeys = (label: string, map: Record<string, unknown>, known: string[]): void => {
+    for (const key of Object.keys(map)) {
+      if (!known.includes(key)) W(`${label}: unknown key "${key}" (known: ${known.join(', ')}). A misspelled key is ignored by the build.`)
+    }
+  }
+  const checkEnum = (label: string, value: unknown, allowed: string[]): void => {
+    if (value !== undefined && !(typeof value === 'string' && allowed.includes(value))) {
+      E(`${label} must be one of: ${allowed.join(', ')} (got ${JSON.stringify(value)})`)
+    }
+  }
+  const checkEnums = (label: string, value: unknown, allowed: string[]): void => {
+    if (value === undefined) return
+    if (!Array.isArray(value)) { E(`${label} must be a list (${allowed.join(', ')})`); return }
+    for (const v of value) if (!(typeof v === 'string' && allowed.includes(v))) E(`${label}: "${String(v)}" is not valid. Use one of: ${allowed.join(', ')}`)
+  }
+  const checkBool = (label: string, value: unknown): void => {
+    if (value !== undefined && typeof value !== 'boolean') E(`${label} must be true or false`)
+  }
+  const checkText = (label: string, value: unknown): void => {
+    if (value !== undefined && !isText(value)) E(`${label} must be a non-empty string`)
+  }
+  const checkTexts = (label: string, value: unknown): void => {
+    if (value !== undefined && !isTexts(value)) E(`${label} must be a list of non-empty strings`)
+  }
+  const checkPosInt = (label: string, value: unknown): void => {
+    if (value !== undefined && !isPosInt(value)) E(`${label} must be a positive integer`)
+  }
+  // A size or address. Returns the value, or undefined after reporting.
+  const checkNumber = (label: string, value: unknown, opts: { positive?: boolean } = {}): bigint | undefined => {
+    if (value === undefined) return undefined
+    const n = osNumber(value)
+    if (n === undefined) { E(`${label} must be a non-negative integer, a hex value such as 0x1000, or a size such as 64K, 16M or 1G (got ${JSON.stringify(value)})`); return undefined }
+    if (opts.positive && n === 0n) { E(`${label} must be greater than zero`); return undefined }
+    return n
+  }
+  const mapOf = (label: string, data: unknown): Record<string, unknown> => {
+    if (isMap(data)) return data
+    E(`${label} must be a YAML mapping`)
+    return {}
+  }
+  const checkRegex = (label: string, value: unknown): void => {
+    if (!isText(value)) { E(`${label} must be a non-empty regular expression`); return }
+    try { new RegExp(value) } catch (e) { E(`${label} is not a valid regular expression: ${e instanceof Error ? e.message : String(e)}`) }
+  }
+  const checkNames = (kind: string, blocks: { name: string }[], re: RegExp, style: string): void => {
+    const seen = new Set<string>()
+    for (const block of blocks) {
+      if (!re.test(block.name)) E(`@arkzen:os:${kind}:${block.name}: the name must be ${style}`)
+      if (seen.has(block.name)) E(`Duplicate @arkzen:os:${kind}:${block.name}`)
+      seen.add(block.name)
+    }
+  }
+
+  // ── rule: no secrets, no device paths, in any os block ──
+  const yamlBlocks: { label: string; data: unknown }[] = []
+  const addYaml = (label: string, block: { data: unknown } | undefined): void => { if (block) yamlBlocks.push({ label, data: block.data }) }
+  for (const p of os.projects) yamlBlocks.push({ label: `@arkzen:os:project${p.name ? ':' + p.name : ''}`, data: p.data })
+  for (const t of os.targets)   yamlBlocks.push({ label: `@arkzen:os:target:${t.name}`, data: t.data })
+  addYaml('@arkzen:os:config', os.config);         addYaml('@arkzen:os:boot', os.boot)
+  addYaml('@arkzen:os:memory', os.memory);         addYaml('@arkzen:os:interrupts', os.interrupts)
+  addYaml('@arkzen:os:scheduler', os.scheduler);   addYaml('@arkzen:os:fs', os.fs)
+  addYaml('@arkzen:os:shell', os.shell);           addYaml('@arkzen:os:image', os.image)
+  addYaml('@arkzen:os:run', os.run);               addYaml('@arkzen:os:assets', os.assets)
+  addYaml('@arkzen:os:distro', os.distro);         addYaml('@arkzen:os:board', os.board)
+  for (const b of os.syscalls) yamlBlocks.push({ label: `@arkzen:os:syscall:${b.name}`, data: b.data })
+  for (const b of os.drivers)  yamlBlocks.push({ label: `@arkzen:os:driver:${b.name}`, data: b.data })
+  for (const b of os.userland) yamlBlocks.push({ label: `@arkzen:os:userland:${b.name}`, data: b.data })
+  for (const b of os.tests)    yamlBlocks.push({ label: `@arkzen:os:test:${b.name}`, data: b.data })
+  for (const b of os.sources)  yamlBlocks.push({ label: `@arkzen:os:source:${b.lang}:${b.name}`, data: b.header })
+  for (const { label, data } of yamlBlocks) {
+    const secrets: string[] = []
+    osCollectSecrets(data, label, secrets)
+    for (const s of secrets) E(`${s}: secret-like keys (token, password, secret, key, credential) are not allowed in an os block. Declare account names only and set secrets outside the tatemono.`)
+    const strings: { path: string; text: string }[] = []
+    osCollectStrings(data, label, strings)
+    for (const s of strings) {
+      if (OS_DEVICE_PATH_RE.test(s.text.trim())) E(`${s.path}: "${s.text}" points at a device or system path. Pluffy writes images into projects/os/ only and never writes to a disk or device.`)
+    }
+  }
+
+  // ── project ───────────────────────────────────
+  const projects: { id: string; data: Record<string, unknown>; kind: string }[] = []
+  if (os.projects.length === 0) {
+    E('@arkzen:os:project is required when a tatemono has os blocks (it holds the name, kind and architectures)')
+  }
+  const projectIds = new Set<string>()
+  for (const block of os.projects) {
+    const id = block.name
+    const label = `@arkzen:os:project${id ? ':' + id : ''}`
+    if (id !== undefined && !OS_NAME_RE.test(id)) E(`${label}: the id must be lowercase letters, digits, - or _ and start with a letter`)
+    const key = id ?? ''
+    if (projectIds.has(key)) E(`Duplicate ${label}`)
+    projectIds.add(key)
+    if (os.projects.length > 1 && id === undefined) E(`${label}: when a tatemono has more than one project, every project needs an id (@arkzen:os:project:<id>)`)
+
+    const data = mapOf(label, block.data)
+    checkKeys(label, data, ['name', 'version', 'description', 'license', 'author', 'kind', 'arch', 'language', 'kernel_type', 'host'])
+    if (!isText(data.name)) E(`${label} needs a name:`)
+    else if (!OS_NAME_RE.test(data.name)) E(`${label} name "${data.name}" must be lowercase letters, digits, - or _ and start with a letter`)
+    checkText(`${label} description`, data.description)
+    checkText(`${label} author`, data.author)
+    const version = data.version ?? parsed.meta.version
+    if (version !== undefined && (typeof version !== 'string' || !TERM_SEMVER_RE.test(version))) {
+      E(`${label} version must be a semver string such as 0.1.0 (got ${JSON.stringify(version)}; it defaults to meta.version)`)
+    }
+    if (data.license !== undefined) {
+      if (!isText(data.license) || !OS_SPDX_SYNTAX.test(data.license)) E(`${label} license must be an SPDX id such as MIT or Apache-2.0`)
+      else if (!TERM_SPDX_COMMON.includes(data.license)) W(`${label} license "${data.license}" is not in the common SPDX list the engine knows. Check it at spdx.org/licenses`)
+    } else {
+      W(`${label} has no license:. An exported OS project without a license cannot be legally reused`)
+    }
+
+    const kind = data.kind
+    if (!isText(kind)) E(`${label} needs a kind: (${OS_KINDS.join(', ')})`)
+    else checkEnum(`${label} kind`, kind, OS_KINDS)
+    const kindOk = typeof kind === 'string' && OS_KINDS.includes(kind) ? kind : ''
+
+    if (data.arch !== undefined) checkEnums(`${label} arch`, data.arch, OS_ARCHS)
+    else if (kindOk && kindOk !== 'driver' && kindOk !== 'distro') E(`${label} needs arch: (a list of ${OS_ARCHS.join(', ')})`)
+    if (Array.isArray(data.arch) && data.arch.length === 0) E(`${label} arch must not be empty`)
+    if (Array.isArray(data.arch) && new Set(data.arch).size !== data.arch.length) E(`${label} arch lists an architecture twice`)
+
+    checkEnum(`${label} language`, data.language, OS_LANG_CODES)
+    if (data.language === undefined && kindOk && kindOk !== 'distro') E(`${label} needs language: (the primary language: ${OS_LANG_CODES.join(', ')})`)
+    if (data.language === 'go' && kindOk && kindOk !== 'firmware') E(`${label} language: go is only valid for kind: firmware (TinyGo)`)
+    checkEnum(`${label} kernel_type`, data.kernel_type, OS_KERNEL_TYPES)
+    if (kindOk === 'unikernel' && data.kernel_type !== undefined && data.kernel_type !== 'unikernel') W(`${label} kind is unikernel but kernel_type is ${String(data.kernel_type)}`)
+    if (kindOk === 'firmware' && data.kernel_type !== undefined && data.kernel_type !== 'rtos') W(`${label} kind is firmware but kernel_type is ${String(data.kernel_type)}. Firmware normally uses rtos.`)
+
+    if (kindOk === 'driver') {
+      if (!isText(data.host)) E(`${label} needs host: for kind: driver (${OS_HOSTS.join(', ')})`)
+      else checkEnum(`${label} host`, data.host, OS_HOSTS)
+    } else if (data.host !== undefined) {
+      E(`${label}: host: only applies to kind: driver`)
+    }
+    projects.push({ id: key, data, kind: kindOk })
+  }
+
+  const kinds = [...new Set(projects.map(p => p.kind).filter(Boolean))]
+  const declaredArchs = new Set<string>()
+  for (const p of projects) if (Array.isArray(p.data.arch)) for (const a of p.data.arch) if (typeof a === 'string') declaredArchs.add(a)
+  const archList = [...declaredArchs].filter(a => OS_ARCHS.includes(a))
+  const hasX86 = archList.some(a => OS_X86_ARCHS.includes(a))
+  const hostDriverOnly = kinds.length > 0 && kinds.every(k => k === 'driver')
+
+  // ── kind and block matrix (section 7.6) ───────
+  // Blocks are not scoped to a project, so with several projects a block is required when any
+  // project's kind requires it and rejected only when every project's kind rejects it.
+  const present: Record<string, boolean> = {
+    project: os.projects.length > 0, target: os.targets.length > 0, boot: !!os.boot, memory: !!os.memory,
+    interrupts: !!os.interrupts, scheduler: !!os.scheduler, syscall: os.syscalls.length > 0, driver: os.drivers.length > 0,
+    fs: !!os.fs, userland: os.userland.length > 0, image: !!os.image, run: !!os.run, test: os.tests.length > 0,
+    board: !!os.board, distro: !!os.distro, source: os.sources.length > 0,
+  }
+  if (kinds.length > 0) {
+    OS_MATRIX_COLUMNS.forEach((col, i) => {
+      const marks = kinds.map(k => OS_MATRIX[k].split(' ')[i])
+      const needed = marks.includes('R')
+      const rejected = marks.every(m => m === 'X')
+      const scope = kinds.length === 1 ? `kind: ${kinds[0]}` : `kinds ${kinds.join(', ')}`
+      if (needed && !present[col]) E(`@arkzen:os:${col} is required for ${scope}`)
+      if (rejected && present[col]) E(`@arkzen:os:${col} is not used by ${scope}. Remove it.`)
+    })
+  }
+
+  // ── source names, used to resolve handler references ──
+  const sourceNames = new Set(os.sources.map(s => s.name))
+  const checkHandler = (label: string, value: unknown): void => {
+    if (!isText(value)) { E(`${label} needs a handler: (<source name>::<function>)`); return }
+    const m = value.match(OS_HANDLER_RE)
+    if (!m) { E(`${label} handler "${value}" must look like <source name>::<function>, for example syscalls::sys_write`); return }
+    if (!sourceNames.has(m[1])) E(`${label} handler "${value}" names the source "${m[1]}", but there is no @arkzen:os:source block with that name`)
+  }
+
+  // ── targets ───────────────────────────────────
+  const pageSizes: bigint[] = []
+  const targetArchs = new Set<string>()
+  for (const t of os.targets) {
+    const label = `@arkzen:os:target:${t.name}`
+    if (!OS_ARCHS.includes(t.name)) E(`${label}: "${t.name}" is not an architecture. Use one of: ${OS_ARCHS.join(', ')}`)
+    if (targetArchs.has(t.name)) E(`Duplicate ${label}`)
+    targetArchs.add(t.name)
+    if (OS_ARCHS.includes(t.name) && archList.length > 0 && !declaredArchs.has(t.name)) E(`${label} is declared but @arkzen:os:project arch does not list ${t.name}`)
+    const data = mapOf(label, t.data)
+    checkKeys(label, data, ['triple', 'cpu', 'features', 'page_size', 'page_levels', 'machine', 'toolchain', 'abi', 'red_zone', 'soft_float'])
+    checkText(`${label} triple`, data.triple)
+    checkText(`${label} cpu`, data.cpu)
+    checkText(`${label} machine`, data.machine)
+    checkText(`${label} abi`, data.abi)
+    checkTexts(`${label} features`, data.features)
+    checkBool(`${label} red_zone`, data.red_zone)
+    checkBool(`${label} soft_float`, data.soft_float)
+    if (data.red_zone === true && t.name === 'x86_64') W(`${label} red_zone: true is unsafe in a kernel (an interrupt overwrites the red zone). Kernels normally set red_zone: false.`)
+    if (data.page_levels !== undefined && !(isPosInt(data.page_levels) && data.page_levels >= 2 && data.page_levels <= 5)) E(`${label} page_levels must be an integer from 2 to 5`)
+    if (data.page_size !== undefined) {
+      const ps = checkNumber(`${label} page_size`, data.page_size, { positive: true })
+      if (ps !== undefined) {
+        if ((ps & (ps - 1n)) !== 0n) E(`${label} page_size must be a power of two (got ${String(data.page_size)})`)
+        else pageSizes.push(ps)
+      }
+    }
+    if (data.toolchain !== undefined) {
+      if (!isMap(data.toolchain)) E(`${label} toolchain must be a mapping (channel and components for Rust, or compiler and flags for C)`)
+      else {
+        checkKeys(`${label} toolchain`, data.toolchain, ['channel', 'components', 'compiler', 'flags'])
+        checkText(`${label} toolchain.channel`, data.toolchain.channel)
+        checkTexts(`${label} toolchain.components`, data.toolchain.components)
+        checkText(`${label} toolchain.compiler`, data.toolchain.compiler)
+        checkTexts(`${label} toolchain.flags`, data.toolchain.flags)
+      }
+    }
+  }
+  const needsTarget = kinds.some(k => OS_MATRIX[k].split(' ')[1] === 'R')
+  if (needsTarget) {
+    for (const a of archList) if (!targetArchs.has(a)) E(`@arkzen:os:project lists arch ${a} but there is no @arkzen:os:target:${a} block`)
+  }
+  const pageSize = pageSizes.length > 0 ? pageSizes[0] : 4096n
+  if (new Set(pageSizes.map(String)).size > 1) W('@arkzen:os:target blocks declare different page sizes. Alignment checks use the first one.')
+  const aligned = (n: bigint): boolean => n % pageSize === 0n
+
+  // ── config ────────────────────────────────────
+  const configData = os.config ? mapOf('@arkzen:os:config', os.config.data) : {}
+  if (os.config) {
+    const label = '@arkzen:os:config'
+    checkKeys(label, configData, ['features', 'log_level', 'panic', 'debug_assertions', 'banner', 'constants'])
+    checkEnums(`${label} features`, configData.features, OS_FEATURES)
+    checkEnum(`${label} log_level`, configData.log_level, OS_LOG_LEVELS)
+    checkEnum(`${label} panic`, configData.panic, OS_PANIC_MODES)
+    checkBool(`${label} debug_assertions`, configData.debug_assertions)
+    checkText(`${label} banner`, configData.banner)
+    if (configData.constants !== undefined) {
+      if (!isMap(configData.constants)) E(`${label} constants must be a mapping of NAME: value`)
+      else {
+        for (const [k, v] of Object.entries(configData.constants)) {
+          if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(k)) E(`${label} constants: "${k}" is not a valid identifier`)
+          if (!(typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean')) E(`${label} constants.${k} must be a string, number or true/false`)
+        }
+      }
+    }
+  }
+  const features: string[] = Array.isArray(configData.features) ? configData.features.filter((f): f is string => typeof f === 'string') : []
+  if (features.includes('userland') && !features.includes('syscalls')) W('@arkzen:os:config features lists userland without syscalls. Userland programs cannot call the kernel.')
+  if (features.includes('scheduler') && !features.includes('heap')) W('@arkzen:os:config features lists scheduler without heap. Most schedulers need the heap for task structures.')
+  if (features.includes('filesystem') && !os.fs) W('@arkzen:os:config features lists filesystem but there is no @arkzen:os:fs block')
+
+  // ── boot ──────────────────────────────────────
+  if (os.boot) {
+    const label = '@arkzen:os:boot'
+    const data = mapOf(label, os.boot.data)
+    checkKeys(label, data, ['firmware', 'loader', 'requests', 'higher_half', 'kernel_base', 'stack_size'])
+    checkEnum(`${label} firmware`, data.firmware, OS_FIRMWARES)
+    checkEnum(`${label} loader`, data.loader, OS_LOADERS)
+    if (data.firmware === 'bios' && archList.length > 0 && archList.some(a => !OS_X86_ARCHS.includes(a))) {
+      E(`${label} firmware: bios is only available on x86 and x86_64, but the project also builds ${archList.filter(a => !OS_X86_ARCHS.includes(a)).join(', ')}`)
+    }
+    if (data.loader === 'bootloader_crate' && archList.some(a => a !== 'x86_64')) W(`${label} loader: bootloader_crate targets x86_64 only. Use limine or custom for ${archList.filter(a => a !== 'x86_64').join(', ')}.`)
+    if (data.loader === 'limine' && data.firmware === 'direct') E(`${label} loader: limine needs firmware bios or uefi, not direct`)
+    if (data.loader === 'grub' && archList.some(a => a === 'arm-cortex-m')) E(`${label} loader: grub does not run on arm-cortex-m`)
+    checkBool(`${label} higher_half`, data.higher_half)
+    checkNumber(`${label} kernel_base`, data.kernel_base)
+    if (data.stack_size !== undefined) {
+      const ss = checkNumber(`${label} stack_size`, data.stack_size, { positive: true })
+      if (ss !== undefined && !aligned(ss)) E(`${label} stack_size must be a multiple of the page size (${pageSize})`)
+    }
+    if (data.requests !== undefined) {
+      if (!isMap(data.requests)) E(`${label} requests must be a mapping`)
+      else {
+        const rq = data.requests
+        checkKeys(`${label} requests`, rq, ['memory_map', 'framebuffer', 'rsdp', 'modules', 'cmdline'])
+        checkBool(`${label} requests.memory_map`, rq.memory_map)
+        checkBool(`${label} requests.rsdp`, rq.rsdp)
+        checkTexts(`${label} requests.modules`, rq.modules)
+        checkText(`${label} requests.cmdline`, rq.cmdline)
+        if (rq.framebuffer !== undefined && rq.framebuffer !== true && rq.framebuffer !== false) {
+          if (!isMap(rq.framebuffer)) E(`${label} requests.framebuffer must be true, false or a mapping with width, height and bpp`)
+          else {
+            checkKeys(`${label} requests.framebuffer`, rq.framebuffer, ['width', 'height', 'bpp'])
+            checkPosInt(`${label} requests.framebuffer.width`, rq.framebuffer.width)
+            checkPosInt(`${label} requests.framebuffer.height`, rq.framebuffer.height)
+            if (rq.framebuffer.bpp !== undefined && ![8, 16, 24, 32].includes(rq.framebuffer.bpp as number)) E(`${label} requests.framebuffer.bpp must be 8, 16, 24 or 32`)
+          }
+        }
+        if (rq.rsdp === true && archList.length > 0 && !hasX86 && !archList.includes('aarch64')) W(`${label} requests.rsdp (ACPI) is normally found on x86 and some aarch64 machines`)
+      }
+    }
+  }
+
+  // ── memory ────────────────────────────────────
+  const regionList: { name: string; base: bigint; size: bigint; kind: string }[] = []
+  if (os.memory) {
+    const label = '@arkzen:os:memory'
+    const data = mapOf(label, os.memory.data)
+    checkKeys(label, data, ['physical', 'paging', 'heap', 'regions', 'guard_pages'])
+    checkEnum(`${label} physical`, data.physical, OS_PHYSICAL)
+    checkBool(`${label} guard_pages`, data.guard_pages)
+    if (data.paging !== undefined) {
+      if (!isMap(data.paging)) E(`${label} paging must be a mapping (levels, huge_pages, kernel_mapping)`)
+      else {
+        checkKeys(`${label} paging`, data.paging, ['levels', 'huge_pages', 'kernel_mapping'])
+        if (data.paging.levels !== undefined && !(isPosInt(data.paging.levels) && data.paging.levels >= 2 && data.paging.levels <= 5)) E(`${label} paging.levels must be an integer from 2 to 5`)
+        checkBool(`${label} paging.huge_pages`, data.paging.huge_pages)
+        checkText(`${label} paging.kernel_mapping`, data.paging.kernel_mapping)
+      }
+    }
+    if (data.regions !== undefined) {
+      if (!Array.isArray(data.regions)) E(`${label} regions must be a list`)
+      else {
+        const names = new Set<string>()
+        data.regions.forEach((r: unknown, i: number) => {
+          const rl = `${label} regions[${i}]`
+          if (!isMap(r)) { E(`${rl} must be a mapping (name, base, size, flags, kind)`); return }
+          checkKeys(rl, r, ['name', 'base', 'size', 'flags', 'kind'])
+          if (!isText(r.name)) E(`${rl} needs a name:`)
+          else { if (names.has(r.name)) E(`${rl}: duplicate region name "${r.name}"`); names.add(r.name) }
+          const base = checkNumber(`${rl} base`, r.base)
+          const size = checkNumber(`${rl} size`, r.size, { positive: true })
+          if (r.base === undefined) E(`${rl} needs a base:`)
+          if (r.size === undefined) E(`${rl} needs a size:`)
+          checkEnums(`${rl} flags`, r.flags, OS_REGION_FLAGS)
+          checkEnum(`${rl} kind`, r.kind, OS_REGION_KINDS)
+          if (Array.isArray(r.flags) && r.flags.includes('write') && r.flags.includes('exec')) W(`${rl} is both writable and executable. Split it so code is not writable.`)
+          if (base !== undefined && !aligned(base)) E(`${rl} base ${String(r.base)} is not aligned to the page size (${pageSize})`)
+          if (size !== undefined && !aligned(size)) E(`${rl} size ${String(r.size)} is not a multiple of the page size (${pageSize})`)
+          if (base !== undefined && size !== undefined) regionList.push({ name: isText(r.name) ? r.name : `#${i}`, base, size, kind: typeof r.kind === 'string' ? r.kind : '' })
+        })
+        for (let i = 0; i < regionList.length; i++) {
+          for (let j = i + 1; j < regionList.length; j++) {
+            const a = regionList[i], b = regionList[j]
+            if (a.base < b.base + b.size && b.base < a.base + a.size) E(`${label}: regions "${a.name}" and "${b.name}" overlap`)
+          }
+        }
+      }
+    }
+    if (data.heap !== undefined) {
+      if (!isMap(data.heap)) E(`${label} heap must be a mapping (allocator, start, initial_size, max_size)`)
+      else {
+        const h = data.heap
+        checkKeys(`${label} heap`, h, ['allocator', 'start', 'initial_size', 'max_size'])
+        checkEnum(`${label} heap.allocator`, h.allocator, OS_HEAP_ALLOCS)
+        const start = checkNumber(`${label} heap.start`, h.start)
+        const initial = checkNumber(`${label} heap.initial_size`, h.initial_size, { positive: true })
+        const max = checkNumber(`${label} heap.max_size`, h.max_size, { positive: true })
+        if (start !== undefined && !aligned(start)) E(`${label} heap.start is not aligned to the page size (${pageSize})`)
+        if (initial !== undefined && max !== undefined && initial > max) E(`${label} heap.initial_size cannot exceed heap.max_size`)
+        if (start !== undefined && regionList.length > 0) {
+          const inside = regionList.some(r => start >= r.base && start < r.base + r.size)
+          if (!inside) E(`${label} heap.start is not inside any region in regions`)
+        }
+        if (start !== undefined && max !== undefined && regionList.length > 0) {
+          const host = regionList.find(r => start >= r.base && start < r.base + r.size)
+          if (host && start + max > host.base + host.size) E(`${label} heap (start + max_size) runs past the end of region "${host.name}"`)
+        }
+      }
+    }
+    if (data.heap !== undefined && !features.includes('heap') && features.length > 0) W(`${label} declares a heap but @arkzen:os:config features does not list heap`)
+  }
+
+  // ── interrupts ────────────────────────────────
+  const irqLimits: Record<string, [number, number]> = { pic: [0, 15], apic: [0, 239], gic: [0, 1019], plic: [1, 1023] }
+  const controllerArchs: Record<string, string[]> = { pic: OS_X86_ARCHS, apic: OS_X86_ARCHS, gic: ['aarch64'], plic: ['riscv64'] }
+  const controller = os.interrupts && isMap(os.interrupts.data) && typeof os.interrupts.data.controller === 'string' ? os.interrupts.data.controller : undefined
+  const irqLineOk = (label: string, line: unknown): void => {
+    if (typeof line !== 'number' || !Number.isInteger(line) || line < 0) { E(`${label} must be a non-negative integer`); return }
+    if (controller && irqLimits[controller]) {
+      const [lo, hi] = irqLimits[controller]
+      if (line < lo || line > hi) E(`${label} ${line} is outside the range ${lo} to ${hi} that the ${controller} controller supports`)
+    }
+  }
+  if (os.interrupts) {
+    const label = '@arkzen:os:interrupts'
+    const data = mapOf(label, os.interrupts.data)
+    checkKeys(label, data, ['controller', 'exceptions', 'irqs', 'timer'])
+    checkEnum(`${label} controller`, data.controller, OS_CONTROLLERS)
+    if (controller && controllerArchs[controller] && archList.length > 0 && !archList.some(a => controllerArchs[controller].includes(a))) {
+      E(`${label} controller: ${controller} is for ${controllerArchs[controller].join(' or ')}, but the project builds ${archList.join(', ')}`)
+    }
+    if (data.exceptions !== undefined) {
+      if (!Array.isArray(data.exceptions)) E(`${label} exceptions must be a list of names or {name, handler} mappings`)
+      else data.exceptions.forEach((x: unknown, i: number) => {
+        const xl = `${label} exceptions[${i}]`
+        if (isText(x)) return
+        if (!isMap(x)) { E(`${xl} must be a name or a {name, handler} mapping`); return }
+        checkKeys(xl, x, ['name', 'handler'])
+        if (!isText(x.name)) E(`${xl} needs a name:`)
+        if (x.handler !== undefined) checkHandler(xl, x.handler)
+      })
+    }
+    if (data.irqs !== undefined) {
+      if (!Array.isArray(data.irqs)) E(`${label} irqs must be a list of {name, line, handler} mappings`)
+      else {
+        const names = new Set<string>()
+        const lines = new Map<number, string>()
+        data.irqs.forEach((x: unknown, i: number) => {
+          const xl = `${label} irqs[${i}]`
+          if (!isMap(x)) { E(`${xl} must be a mapping (name, line, handler)`); return }
+          checkKeys(xl, x, ['name', 'line', 'handler'])
+          if (!isText(x.name)) E(`${xl} needs a name:`)
+          else { if (names.has(x.name)) E(`${xl}: duplicate irq name "${x.name}"`); names.add(x.name) }
+          if (x.line === undefined) E(`${xl} needs a line:`)
+          else {
+            irqLineOk(`${xl} line`, x.line)
+            if (typeof x.line === 'number') {
+              const prev = lines.get(x.line)
+              if (prev !== undefined) W(`${xl}: line ${x.line} is also used by "${prev}". Shared lines need handlers that check their device.`)
+              lines.set(x.line, isText(x.name) ? x.name : `#${i}`)
+            }
+          }
+          checkHandler(xl, x.handler)
+        })
+      }
+    }
+    if (data.timer !== undefined) {
+      if (!isMap(data.timer)) E(`${label} timer must be a mapping (source, hz)`)
+      else {
+        checkKeys(`${label} timer`, data.timer, ['source', 'hz'])
+        checkText(`${label} timer.source`, data.timer.source)
+        checkPosInt(`${label} timer.hz`, data.timer.hz)
+      }
+    }
+  }
+
+  // ── scheduler ─────────────────────────────────
+  if (os.scheduler) {
+    const label = '@arkzen:os:scheduler'
+    const data = mapOf(label, os.scheduler.data)
+    checkKeys(label, data, ['policy', 'tick_hz', 'preemptive', 'max_tasks', 'stack_size', 'idle_task', 'smp'])
+    checkEnum(`${label} policy`, data.policy, OS_POLICIES)
+    checkPosInt(`${label} tick_hz`, data.tick_hz)
+    checkBool(`${label} preemptive`, data.preemptive)
+    checkPosInt(`${label} max_tasks`, data.max_tasks)
+    checkBool(`${label} idle_task`, data.idle_task)
+    checkBool(`${label} smp`, data.smp)
+    if (data.policy === 'cooperative' && data.preemptive === true) E(`${label} policy: cooperative cannot be preemptive: true`)
+    if (data.preemptive === true && data.tick_hz === undefined) E(`${label} preemptive: true needs tick_hz: (the timer rate that triggers a switch)`)
+    if (data.policy === 'none' && (data.preemptive === true || data.tick_hz !== undefined)) W(`${label} policy: none ignores preemptive and tick_hz`)
+    if (data.smp === true) W(`${label} smp: true is not promised to be stable. Test it in the emulator with several cores.`)
+    if (data.stack_size !== undefined) {
+      const ss = checkNumber(`${label} stack_size`, data.stack_size, { positive: true })
+      if (ss !== undefined && !aligned(ss)) E(`${label} stack_size must be a multiple of the page size (${pageSize})`)
+    }
+  }
+
+  // ── syscalls ──────────────────────────────────
+  checkNames('syscall', os.syscalls, OS_IDENT_RE, 'lowercase letters, digits and _ and start with a letter')
+  const syscallNumbers = new Map<number, string>()
+  for (const s of os.syscalls) {
+    const label = `@arkzen:os:syscall:${s.name}`
+    const data = mapOf(label, s.data)
+    checkKeys(label, data, ['number', 'args', 'returns', 'errors', 'privilege', 'handler'])
+    if (data.number === undefined) E(`${label} needs a number:`)
+    else if (!(typeof data.number === 'number' && Number.isInteger(data.number) && data.number >= 0)) E(`${label} number must be a non-negative integer`)
+    else {
+      const prev = syscallNumbers.get(data.number)
+      if (prev !== undefined) E(`${label} number ${data.number} is already used by syscall "${prev}". Syscall numbers must be unique and are never reused.`)
+      syscallNumbers.set(data.number, s.name)
+    }
+    if (data.args !== undefined) {
+      if (!Array.isArray(data.args)) E(`${label} args must be a list of {name, type} mappings`)
+      else {
+        if (data.args.length > 6) E(`${label} has ${data.args.length} args. The syscall ABI passes at most 6 in registers.`)
+        const argNames = new Set<string>()
+        data.args.forEach((a: unknown, i: number) => {
+          const al = `${label} args[${i}]`
+          if (!isMap(a)) { E(`${al} must be a mapping (name, type)`); return }
+          checkKeys(al, a, ['name', 'type'])
+          if (!isText(a.name) || !OS_FN_RE.test(a.name)) E(`${al} needs a name: that is a valid identifier`)
+          else { if (argNames.has(a.name)) E(`${al}: duplicate argument name "${a.name}"`); argNames.add(a.name) }
+          if (!isText(a.type)) E(`${al} needs a type: (${OS_SYSCALL_TYPES.join(', ')})`)
+          else checkEnum(`${al} type`, a.type, OS_SYSCALL_TYPES)
+        })
+      }
+    }
+    checkEnum(`${label} returns`, data.returns, OS_SYSCALL_RETURNS)
+    checkTexts(`${label} errors`, data.errors)
+    checkText(`${label} privilege`, data.privilege)
+    checkHandler(label, data.handler)
+  }
+  if (os.syscalls.length > 0 && features.length > 0 && !features.includes('syscalls')) W('@arkzen:os:syscall blocks are declared but @arkzen:os:config features does not list syscalls')
+
+  // ── drivers ───────────────────────────────────
+  checkNames('driver', os.drivers, OS_NAME_RE, 'lowercase letters, digits, - or _ and start with a letter')
+  const mmioRanges: { name: string; base: bigint; end: bigint }[] = []
+  const classBus: Record<string, string[]> = {
+    pci: ['pci'], virtio: ['virtio', 'pci', 'platform'], usb: ['usb', 'pci'], i2c: ['i2c', 'platform'], spi: ['spi', 'platform'],
+  }
+  const hostKeys: Record<string, string[]> = { linux: ['module', 'params'], windows: ['inf', 'signing'], macos: ['entitlements'] }
+  const allHostKeys = ['module', 'params', 'inf', 'signing', 'entitlements']
+  const hostValues = projects.filter(p => p.kind === 'driver').map(p => p.data.host).filter((h): h is string => typeof h === 'string')
+  for (const d of os.drivers) {
+    const label = `@arkzen:os:driver:${d.name}`
+    const data = mapOf(label, d.data)
+    checkKeys(label, data, ['class', 'bus', 'ports', 'mmio', 'irq', 'model', 'exposes', 'handler', ...allHostKeys])
+    if (!isText(data.class)) E(`${label} needs a class: (${OS_DRIVER_CLASSES.join(', ')})`)
+    else checkEnum(`${label} class`, data.class, OS_DRIVER_CLASSES)
+    checkEnum(`${label} bus`, data.bus, OS_BUSES)
+    if (typeof data.class === 'string' && typeof data.bus === 'string' && classBus[data.class] && !classBus[data.class].includes(data.bus)) {
+      E(`${label} class ${data.class} cannot sit on bus ${data.bus}. Use: ${classBus[data.class].join(', ')}`)
+    }
+    checkEnum(`${label} model`, data.model, OS_DRIVER_MODELS)
+    checkText(`${label} exposes`, data.exposes)
+    if (data.ports !== undefined) {
+      if (!Array.isArray(data.ports) || !data.ports.every((p: unknown) => typeof p === 'number' && Number.isInteger(p) && p >= 0 && p <= 0xffff)) E(`${label} ports must be a list of I/O port numbers from 0 to 0xFFFF`)
+      else if (archList.length > 0 && !hasX86) E(`${label} ports: I/O ports exist on x86 only, but the project builds ${archList.join(', ')}. Use mmio.`)
+    }
+    if (data.mmio !== undefined) {
+      if (!isMap(data.mmio)) E(`${label} mmio must be a mapping (base, size)`)
+      else {
+        checkKeys(`${label} mmio`, data.mmio, ['base', 'size'])
+        const base = checkNumber(`${label} mmio.base`, data.mmio.base)
+        const size = checkNumber(`${label} mmio.size`, data.mmio.size, { positive: true })
+        if (data.mmio.base === undefined) E(`${label} mmio needs a base:`)
+        if (data.mmio.size === undefined) E(`${label} mmio needs a size:`)
+        if (base !== undefined && size !== undefined) {
+          for (const r of mmioRanges) if (base < r.end && r.base < base + size) E(`${label} mmio range overlaps the one of driver "${r.name}"`)
+          mmioRanges.push({ name: d.name, base, end: base + size })
+        }
+      }
+    }
+    if (data.irq !== undefined) irqLineOk(`${label} irq`, data.irq)
+    if (data.irq !== undefined && data.model === 'polling') W(`${label} has irq: but model: polling never uses it`)
+    if (data.handler !== undefined) checkHandler(label, data.handler)
+    // Host drivers: build inputs only, valid for the host they target.
+    const hostKeysUsed = allHostKeys.filter(k => data[k] !== undefined)
+    if (hostKeysUsed.length > 0) {
+      if (hostValues.length === 0) E(`${label} uses ${hostKeysUsed.join(', ')}, which are for a host driver. Set kind: driver and host: in @arkzen:os:project.`)
+      else {
+        for (const k of hostKeysUsed) {
+          if (!hostValues.some(h => hostKeys[h]?.includes(k))) E(`${label} ${k}: is not valid for host ${hostValues.join(', ')}`)
+        }
+      }
+    }
+    checkText(`${label} module`, data.module)
+    if (isText(data.module) && !/^[a-z_][a-z0-9_]*$/.test(data.module)) E(`${label} module must be a valid Linux module name (lowercase letters, digits and _)`)
+    if (data.params !== undefined && !(isTexts(data.params) || isMap(data.params))) E(`${label} params must be a list of names or a mapping of name: type`)
+    checkText(`${label} inf`, data.inf)
+    checkText(`${label} signing`, data.signing)
+    checkTexts(`${label} entitlements`, data.entitlements)
+  }
+  if (hostValues.length > 0) {
+    for (const h of hostValues) {
+      if (h === 'windows') W('@arkzen:os:project host: windows is build-only. A Windows driver needs the Windows Driver Kit on Windows and must be signed by you.')
+      if (h === 'macos') W('@arkzen:os:project host: macos is build-only. A DriverKit extension needs Xcode on macOS and your entitlements.')
+      if (h === 'linux') W('@arkzen:os:project host: linux is build-only. A kernel module runs in ring 0, so load it only in a virtual machine.')
+    }
+  }
+
+  // ── fs ────────────────────────────────────────
+  if (os.fs) {
+    const label = '@arkzen:os:fs'
+    const data = mapOf(label, os.fs.data)
+    checkKeys(label, data, ['type', 'root', 'mounts', 'vfs'])
+    if (!isText(data.type)) E(`${label} needs a type: (${OS_FS_TYPES.join(', ')})`)
+    else checkEnum(`${label} type`, data.type, OS_FS_TYPES)
+    checkBool(`${label} vfs`, data.vfs)
+    if (data.root !== undefined) {
+      if (!isText(data.root) || data.root.includes('..') || /^(?:[A-Za-z]:)?[\\/]/.test(data.root)) E(`${label} root must be a relative path inside assets/ (no .. and no absolute path)`)
+    }
+    if (data.mounts !== undefined) {
+      if (!Array.isArray(data.mounts)) E(`${label} mounts must be a list of {path, device, type} mappings`)
+      else {
+        const paths = new Set<string>()
+        data.mounts.forEach((m: unknown, i: number) => {
+          const ml = `${label} mounts[${i}]`
+          if (!isMap(m)) { E(`${ml} must be a mapping (path, device, type)`); return }
+          checkKeys(ml, m, ['path', 'device', 'type'])
+          if (!isText(m.path) || !m.path.startsWith('/')) E(`${ml} needs a path: that starts with /`)
+          else { if (paths.has(m.path)) E(`${ml}: duplicate mount path "${m.path}"`); paths.add(m.path) }
+          checkText(`${ml} device`, m.device)
+          checkEnum(`${ml} type`, m.type, OS_FS_TYPES)
+        })
+      }
+    }
+    if (data.vfs === true && data.type === 'custom' && !data.mounts) W(`${label} vfs: true with type: custom and no mounts has nothing to mount`)
+  }
+
+  // ── userland ──────────────────────────────────
+  checkNames('userland', os.userland, OS_NAME_RE, 'lowercase letters, digits, - or _ and start with a letter')
+  const orders = new Map<number, string>()
+  for (const u of os.userland) {
+    const label = `@arkzen:os:userland:${u.name}`
+    const data = mapOf(label, u.data)
+    checkKeys(label, data, ['language', 'entry', 'args', 'autostart', 'order', 'libc', 'stack_size', 'heap_size'])
+    if (!isText(data.language)) E(`${label} needs a language: (${OS_USER_LANGS.join(', ')})`)
+    else checkEnum(`${label} language`, data.language, OS_USER_LANGS)
+    checkText(`${label} entry`, data.entry)
+    checkTexts(`${label} args`, data.args)
+    checkBool(`${label} autostart`, data.autostart)
+    checkEnum(`${label} libc`, data.libc, OS_LIBCS)
+    if (data.order !== undefined) {
+      if (!(typeof data.order === 'number' && Number.isInteger(data.order) && data.order >= 0)) E(`${label} order must be a non-negative integer`)
+      else {
+        const prev = orders.get(data.order)
+        if (prev !== undefined) W(`${label} order ${data.order} is also used by "${prev}". Start order between them is not defined.`)
+        orders.set(data.order, u.name)
+      }
+    }
+    for (const key of ['stack_size', 'heap_size']) {
+      if (data[key] === undefined) continue
+      const n = checkNumber(`${label} ${key}`, data[key], { positive: true })
+      if (n !== undefined && !aligned(n)) E(`${label} ${key} must be a multiple of the page size (${pageSize})`)
+    }
+    if (data.libc === 'external' && data.language === 'rs') W(`${label} libc: external with language rs needs a libc build you provide in assets`)
+    if (!os.sources.some(s => s.header.part === 'user' && s.name === u.name.replace(/-/g, '_'))) {
+      W(`${label} has no @arkzen:os:source block with part: user and the name "${u.name.replace(/-/g, '_')}", so it has no code`)
+    }
+  }
+  if (os.syscalls.length === 0 && os.userland.length > 0) W('@arkzen:os:userland programs are declared but there are no @arkzen:os:syscall blocks, so they cannot call the kernel')
+
+  // ── shell ─────────────────────────────────────
+  if (os.shell) {
+    const label = '@arkzen:os:shell'
+    const data = mapOf(label, os.shell.data)
+    checkKeys(label, data, ['prompt', 'builtins', 'history', 'line_edit'])
+    checkText(`${label} prompt`, data.prompt)
+    checkBool(`${label} history`, data.history)
+    checkBool(`${label} line_edit`, data.line_edit)
+    if (data.builtins !== undefined) {
+      if (!isTexts(data.builtins)) E(`${label} builtins must be a list of names`)
+      else {
+        const seen = new Set<string>()
+        for (const b of data.builtins) {
+          if (!OS_NAME_RE.test(b)) E(`${label} builtins: "${b}" must be lowercase letters, digits, - or _ and start with a letter`)
+          if (seen.has(b)) E(`${label} builtins: duplicate "${b}"`)
+          seen.add(b)
+        }
+      }
+    }
+    if (kinds.length > 0 && kinds.every(k => OS_MATRIX[k].split(' ')[9] === 'X')) W(`${label} is declared but ${kinds.length === 1 ? `kind: ${kinds[0]}` : 'these kinds'} has no userland to run it in`)
+  }
+
+  // ── image ─────────────────────────────────────
+  const imageData = os.image ? mapOf('@arkzen:os:image', os.image.data) : {}
+  if (os.image) {
+    const label = '@arkzen:os:image'
+    checkKeys(label, imageData, ['formats', 'partitions', 'size', 'bootloader_install', 'checksums'])
+    if (!Array.isArray(imageData.formats) || imageData.formats.length === 0) E(`${label} needs formats: (a list of ${OS_IMAGE_FORMATS.join(', ')})`)
+    else checkEnums(`${label} formats`, imageData.formats, OS_IMAGE_FORMATS)
+    checkBool(`${label} bootloader_install`, imageData.bootloader_install)
+    checkEnum(`${label} checksums`, imageData.checksums, OS_CHECKSUMS)
+    const formats: string[] = Array.isArray(imageData.formats) ? imageData.formats.filter((f): f is string => typeof f === 'string') : []
+    if (formats.includes('uf2') && !kinds.includes('firmware')) E(`${label} formats: uf2 is for kind: firmware`)
+    if (formats.includes('uf2') && archList.length > 0 && !archList.includes('arm-cortex-m')) E(`${label} formats: uf2 needs arch arm-cortex-m`)
+    if ((formats.includes('efi_app') || formats.includes('uefi_disk')) && os.boot && isMap(os.boot.data) && os.boot.data.firmware !== undefined && os.boot.data.firmware !== 'uefi') {
+      E(`${label} formats: efi_app and uefi_disk need @arkzen:os:boot firmware: uefi (it is ${String(os.boot.data.firmware)})`)
+    }
+    if ((formats.includes('iso') || formats.includes('raw') || formats.includes('uefi_disk') || formats.includes('efi_app')) && archList.length > 0 && archList.every(a => a === 'arm-cortex-m')) W(`${label} formats: ${formats.join(', ')} are not normal outputs for arm-cortex-m. Use bin, elf or uf2.`)
+    const total = checkNumber(`${label} size`, imageData.size, { positive: true })
+    if (imageData.partitions !== undefined) {
+      if (!Array.isArray(imageData.partitions)) E(`${label} partitions must be a list of {name, size, fs, contents} mappings`)
+      else {
+        const names = new Set<string>()
+        let sum = 0n
+        let allSized = true
+        const assets = listAssets()
+        const tokens = new Set(['kernel', 'bootloader', 'initramfs', 'userland', ...os.userland.map(u => u.name)])
+        imageData.partitions.forEach((p: unknown, i: number) => {
+          const pl = `${label} partitions[${i}]`
+          if (!isMap(p)) { E(`${pl} must be a mapping (name, size, fs, contents)`); return }
+          checkKeys(pl, p, ['name', 'size', 'fs', 'contents'])
+          if (!isText(p.name)) E(`${pl} needs a name:`)
+          else { if (names.has(p.name)) E(`${pl}: duplicate partition name "${p.name}"`); names.add(p.name) }
+          const sz = checkNumber(`${pl} size`, p.size, { positive: true })
+          if (p.size === undefined) { E(`${pl} needs a size:`); allSized = false }
+          else if (sz !== undefined) sum += sz
+          else allSized = false
+          checkEnum(`${pl} fs`, p.fs, OS_FS_TYPES)
+          if (p.contents !== undefined) {
+            if (!isTexts(p.contents)) E(`${pl} contents must be a list of names or asset paths`)
+            else for (const c of p.contents) {
+              if (tokens.has(c)) continue
+              if (/^(?:[A-Za-z]:)?[\\/]/.test(c) || c.includes('..')) { E(`${pl} contents "${c}" must be a relative path inside assets/`); continue }
+              const rel = cleanAsset(c)
+              if (!assets.includes(rel) && !assets.some(a => a.startsWith(rel.replace(/\/$/, '') + '/'))) {
+                W(`${pl} contents "${c}" is not kernel, bootloader, initramfs, a userland program, or a file under assets/`)
+              }
+            }
+          }
+        })
+        if (total !== undefined && allSized && sum > total) E(`${label} partitions add up to more than size (${String(imageData.size)})`)
+      }
+    }
+  }
+
+  // ── run ───────────────────────────────────────
+  if (os.run) {
+    const label = '@arkzen:os:run'
+    const data = mapOf(label, os.run.data)
+    checkKeys(label, data, ['emulator', 'machine', 'cpu', 'ram', 'cores', 'devices', 'display', 'serial', 'accel', 'debug', 'extra_args'])
+    checkEnum(`${label} emulator`, data.emulator, OS_EMULATORS)
+    if (data.emulator === undefined) E(`${label} needs emulator: (${OS_EMULATORS.join(', ')})`)
+    checkText(`${label} machine`, data.machine)
+    checkText(`${label} cpu`, data.cpu)
+    checkNumber(`${label} ram`, data.ram, { positive: true })
+    checkPosInt(`${label} cores`, data.cores)
+    checkEnum(`${label} display`, data.display, OS_DISPLAYS)
+    checkEnum(`${label} serial`, data.serial, OS_SERIALS)
+    checkEnum(`${label} accel`, data.accel, OS_ACCELS)
+    checkTexts(`${label} extra_args`, data.extra_args)
+    if (data.devices !== undefined) {
+      if (!isTexts(data.devices)) E(`${label} devices must be a list of device names`)
+      else for (const dev of data.devices) {
+        if (!/^[a-z0-9][a-z0-9_.-]*$/i.test(dev)) E(`${label} devices: "${dev}" is not a device name (letters, digits, - _ . only; put options in extra_args)`)
+        else if (!OS_QEMU_DEVICES.includes(dev)) W(`${label} devices: "${dev}" is not a device the engine knows. Check it with qemu -device help.`)
+      }
+    }
+    if (data.debug !== undefined) {
+      if (!isMap(data.debug)) E(`${label} debug must be a mapping (gdb, port)`)
+      else {
+        checkKeys(`${label} debug`, data.debug, ['gdb', 'port'])
+        checkBool(`${label} debug.gdb`, data.debug.gdb)
+        if (data.debug.port !== undefined && !(isPosInt(data.debug.port) && data.debug.port <= 65535)) E(`${label} debug.port must be a port from 1 to 65535`)
+      }
+    }
+    if (data.accel === 'kvm' && archList.length > 0 && !hasX86) W(`${label} accel: kvm only helps when the guest architecture matches the host`)
+    if (data.serial === 'none' && os.tests.some(t => isMap(t.data) && (t.data.kind === 'boot' || t.data.kind === undefined))) E(`${label} serial: none leaves a boot test nothing to read. Use stdio or file.`)
+    if (data.display !== undefined && data.display !== 'none' && os.tests.length > 0) W(`${label} display: ${String(data.display)} opens a window. Boot tests run headless and ignore it.`)
+    if (data.cores !== undefined && typeof data.cores === 'number' && data.cores > 1 && !(os.scheduler && isMap(os.scheduler.data) && os.scheduler.data.smp === true)) W(`${label} cores: ${data.cores} but @arkzen:os:scheduler does not set smp: true, so extra cores will idle`)
+  }
+
+  // ── tests ─────────────────────────────────────
+  checkNames('test', os.tests, OS_NAME_RE, 'lowercase letters, digits, - or _ and start with a letter')
+  for (const t of os.tests) {
+    const label = `@arkzen:os:test:${t.name}`
+    const data = mapOf(label, t.data)
+    checkKeys(label, data, ['kind', 'timeout', 'expect', 'forbid', 'input', 'exit'])
+    if (!isText(data.kind)) E(`${label} needs a kind: (${OS_TEST_KINDS.join(', ')})`)
+    else checkEnum(`${label} kind`, data.kind, OS_TEST_KINDS)
+    if (data.kind === 'boot') {
+      if (!os.run) E(`${label} is a boot test but there is no @arkzen:os:run block to boot with`)
+      if (data.timeout === undefined) E(`${label} needs timeout: (seconds)`)
+      else if (!isPosInt(data.timeout)) E(`${label} timeout must be a positive whole number of seconds`)
+      else if (data.timeout > 600) W(`${label} timeout of ${data.timeout}s is long. A kernel that boots at all does so in seconds.`)
+      if (!Array.isArray(data.expect) || data.expect.length === 0) E(`${label} needs expect: (a list of regular expressions the serial output must match)`)
+      else data.expect.forEach((x: unknown, i: number) => checkRegex(`${label} expect[${i}]`, x))
+      if (data.forbid !== undefined) {
+        if (!Array.isArray(data.forbid)) E(`${label} forbid must be a list of regular expressions`)
+        else data.forbid.forEach((x: unknown, i: number) => checkRegex(`${label} forbid[${i}]`, x))
+      }
+      checkTexts(`${label} input`, data.input)
+      checkText(`${label} exit`, data.exit)
+    } else if (data.kind === 'unit') {
+      for (const key of ['timeout', 'expect', 'forbid', 'input', 'exit']) {
+        if (data[key] !== undefined) W(`${label} kind: unit ignores ${key}:. Unit tests run on the host.`)
+      }
+    }
+  }
+  if (os.tests.length > 0 && !os.tests.some(t => isMap(t.data) && t.data.kind === 'boot') && kinds.some(k => ['kernel', 'os', 'bootloader', 'bootapp', 'unikernel'].includes(k))) {
+    W('There is no boot test (@arkzen:os:test with kind: boot). A kernel is only verified by booting it.')
+  }
+
+  // ── assets ────────────────────────────────────
+  if (os.assets) {
+    const label = '@arkzen:os:assets'
+    const data = mapOf(label, os.assets.data)
+    checkKeys(label, data, ['include', 'dest', 'embed', 'fonts'])
+    checkBool(`${label} embed`, data.embed)
+    checkText(`${label} dest`, data.dest)
+    if (isText(data.dest) && (data.dest.includes('..') || /^(?:[A-Za-z]:)?[\\/]/.test(data.dest))) E(`${label} dest must be a relative path (no .. and no absolute path)`)
+    const assets = listAssets()
+    for (const key of ['include', 'fonts']) {
+      const list = data[key]
+      if (list === undefined) continue
+      if (!isTexts(list)) { E(`${label} ${key} must be a list of paths or globs under assets/`); continue }
+      for (const g of list) {
+        if (g.includes('..') || /^(?:[A-Za-z]:)?[\\/]/.test(g)) { E(`${label} ${key}: "${g}" must be a relative path inside assets/`); continue }
+        const re = globToRe(cleanAsset(g))
+        if (!assets.some(a => re.test(a))) W(`${label} ${key}: "${g}" matches no file under assets/`)
+      }
+    }
+  }
+
+  // ── distro ────────────────────────────────────
+  if (os.distro) {
+    const label = '@arkzen:os:distro'
+    const data = mapOf(label, os.distro.data)
+    checkKeys(label, data, ['builder', 'base', 'packages', 'kernel_fragments', 'init', 'users', 'services', 'overlay', 'hostname', 'locale'])
+    if (!isText(data.builder)) E(`${label} needs a builder: (${OS_BUILDERS.join(', ')})`)
+    else if (!OS_BUILDERS.includes(data.builder)) W(`${label} builder "${data.builder}" is not one the engine writes configuration for (${OS_BUILDERS.join(', ')})`)
+    checkText(`${label} base`, data.base)
+    checkTexts(`${label} packages`, data.packages)
+    checkTexts(`${label} kernel_fragments`, data.kernel_fragments)
+    checkTexts(`${label} services`, data.services)
+    checkEnum(`${label} init`, data.init, OS_INITS)
+    checkText(`${label} locale`, data.locale)
+    if (data.hostname !== undefined && !(isText(data.hostname) && OS_HOSTNAME_RE.test(data.hostname))) E(`${label} hostname must be a valid host name (letters, digits and -)`)
+    if (Array.isArray(data.packages) && new Set(data.packages).size !== data.packages.length) W(`${label} packages lists a package twice`)
+    if (data.users !== undefined) {
+      if (!Array.isArray(data.users)) E(`${label} users must be a list of {name: ...} entries`)
+      else data.users.forEach((u: unknown, i: number) => {
+        const ul = `${label} users[${i}]`
+        const name = isText(u) ? u : isMap(u) ? u.name : undefined
+        if (isMap(u)) {
+          for (const k of Object.keys(u)) if (k !== 'name') E(`${ul}: only name: is allowed. Accounts are declared by name and never carry passwords or keys.`)
+        }
+        if (!isText(name) || !/^[a-z_][a-z0-9_-]{0,31}$/.test(name)) E(`${ul} needs a valid account name (lowercase letters, digits, - and _)`)
+      })
+    }
+    if (data.overlay !== undefined) {
+      if (!isTexts(data.overlay)) E(`${label} overlay must be a list of files under assets/`)
+      else {
+        const assets = listAssets()
+        for (const o of data.overlay) {
+          if (o.includes('..') || /^(?:[A-Za-z]:)?[\\/]/.test(o)) { E(`${label} overlay: "${o}" must be a relative path inside assets/`); continue }
+          const rel = cleanAsset(o)
+          if (!assets.includes(rel) && !assets.some(a => a.startsWith(rel.replace(/\/$/, '') + '/'))) W(`${label} overlay: "${o}" is not a file under assets/`)
+        }
+      }
+    }
+    W(`${label} only the ${isText(data.builder) ? data.builder : 'builder'} configuration is generated and checked. The full build needs the builder on a Linux host and can take hours, so it verifies as UNVERIFIED.`)
+  }
+
+  // ── board ─────────────────────────────────────
+  if (os.board) {
+    const label = '@arkzen:os:board'
+    const data = mapOf(label, os.board.data)
+    checkKeys(label, data, ['name', 'chip', 'clock', 'flash', 'ram', 'runtime', 'peripherals', 'flash_tool'])
+    if (!isText(data.name)) E(`${label} needs a name:`)
+    if (!isText(data.chip)) E(`${label} needs a chip:`)
+    for (const key of ['clock', 'flash', 'ram']) {
+      const v = data[key]
+      if (v === undefined) continue
+      if (typeof v === 'string' && /^\d+(?:\.\d+)?\s*[kKmMgG]?[hH]z$/.test(v.trim())) continue
+      checkNumber(`${label} ${key}`, v, { positive: true })
+    }
+    checkEnum(`${label} runtime`, data.runtime, OS_BOARD_RUNTIMES)
+    checkEnum(`${label} flash_tool`, data.flash_tool, OS_FLASH_TOOLS)
+    if (data.peripherals !== undefined) {
+      if (!Array.isArray(data.peripherals)) E(`${label} peripherals must be a list (gpio, uart, i2c, spi, adc entries)`)
+      else data.peripherals.forEach((p: unknown, i: number) => {
+        const pl = `${label} peripherals[${i}]`
+        if (!isMap(p) || Object.keys(p).length === 0) { E(`${pl} must be a mapping such as gpio: {pins: [25]}`); return }
+        for (const k of Object.keys(p)) if (!['gpio', 'uart', 'i2c', 'spi', 'adc'].includes(k)) W(`${pl}: unknown peripheral "${k}" (known: gpio, uart, i2c, spi, adc)`)
+        const gpio = p.gpio
+        if (isMap(gpio) && gpio.pins !== undefined && !(Array.isArray(gpio.pins) && gpio.pins.every((n: unknown) => typeof n === 'number' && Number.isInteger(n) && n >= 0))) E(`${pl} gpio.pins must be a list of pin numbers`)
+      })
+    }
+    if (data.flash_tool !== undefined) W(`${label} flash_tool: Pluffy prints flashing instructions and never runs the flash tool.`)
+    if (archList.length > 0 && !archList.includes('arm-cortex-m') && !archList.includes('riscv64')) W(`${label} is for a microcontroller, but the project arch is ${archList.join(', ')}`)
+  }
+
+  // ── sources ───────────────────────────────────
+  {
+    const seen = new Set<string>()
+    const entries: Record<string, string[]> = {}
+    for (const s of os.sources) {
+      const label = `@arkzen:os:source:${s.lang}:${s.name}`
+      const key = `${s.lang}:${s.name}`
+      if (!OS_IDENT_RE.test(s.name)) E(`${label}: the name must be lowercase letters, digits and _ and start with a letter, so a handler can refer to it as ${s.name.replace(/[^a-z0-9_]/gi, '_')}::function`)
+      if (seen.has(key)) E(`Duplicate ${label}`)
+      seen.add(key)
+      checkKeys(label, s.header, ['part', 'arch', 'path', 'entry'])
+      checkEnum(`${label} part`, s.header.part, OS_SOURCE_PARTS)
+      if (s.header.part === undefined) E(`${label} needs part: (${OS_SOURCE_PARTS.join(', ')})`)
+      checkEnum(`${label} arch`, s.header.arch, OS_ARCHS)
+      if (s.lang === 'asm' && s.header.arch === undefined) E(`${label} needs arch: (assembly is always architecture specific)`)
+      if (typeof s.header.arch === 'string' && archList.length > 0 && !declaredArchs.has(s.header.arch)) E(`${label} arch ${s.header.arch} is not listed in @arkzen:os:project arch`)
+      checkBool(`${label} entry`, s.header.entry)
+      if (s.header.path !== undefined) {
+        if (!isText(s.header.path) || s.header.path.includes('..') || /^(?:[A-Za-z]:)?[\\/]/.test(s.header.path)) E(`${label} path must be a relative path inside the project (no .. and no absolute path)`)
+      }
+      if (s.header.entry === true) (entries[`${String(s.header.part)}:${String(s.header.arch ?? '*')}`] ??= []).push(s.name)
+      if (s.lang === 'go' && !kinds.every(k => k === 'firmware')) E(`${label}: go source is only valid for kind: firmware (TinyGo)`)
+      if (!s.raw.trim()) E(`${label} has an empty body`)
+      const pl = OS_PLUFFY_IMPORT[s.lang]
+      if (pl && pl.test(s.raw)) E(`${label} refers to Pluffy or Arkzen. An exported OS project must build with its own toolchain and no Pluffy files.`)
+    }
+    for (const [key, names] of Object.entries(entries)) {
+      if (names.length > 1) E(`More than one source has entry: true for part:arch "${key}" (${names.join(', ')}). A kernel has one entry point.`)
+    }
+    if (kinds.some(k => OS_NEEDS_ENTRY.includes(k)) && !Object.keys(entries).some(k => k.startsWith('kernel:') || k.startsWith('boot:') || k.startsWith('user:'))) {
+      E('No @arkzen:os:source has entry: true with part: kernel or part: boot. The generator needs to know where the program starts.')
+    }
+  }
+
+  // ── toolchains ────────────────────────────────
+  {
+    const need = new Map<string, string>()
+    const langs = new Set<string>(os.sources.map(s => s.lang))
+    for (const p of projects) if (typeof p.data.language === 'string') langs.add(p.data.language)
+    if (kinds.some(k => k !== 'distro')) {
+      if (langs.has('rs')) { need.set('rustc', 'Rust sources'); need.set('cargo', 'Rust sources') }
+      if (langs.has('c') || langs.has('cpp')) { need.set('gcc', 'C sources'); need.set('ld', 'C sources') }
+      if (langs.has('asm') && (hasX86 || os.sources.some(s => s.lang === 'asm' && OS_X86_ARCHS.includes(String(s.header.arch))))) need.set('nasm', 'x86 assembly')
+      if (langs.has('go')) need.set('tinygo', 'Go firmware')
+    }
+    const missingBuild: string[] = []
+    for (const [tool, why] of need) if (!osToolInstalled(tool)) missingBuild.push(`${OS_TOOLS[tool].label} (${why})`)
+    if (missingBuild.length > 0) W(`Not installed here: ${missingBuild.join(', ')}. The project can be generated but not built, and it will verify as UNVERIFIED.`)
+    if (os.run || os.tests.length > 0) {
+      const missingEmu: string[] = []
+      for (const a of archList) {
+        const q = OS_QEMU_FOR_ARCH[a]
+        if (q && !osToolInstalled(q)) missingEmu.push(OS_TOOLS[q].label)
+      }
+      if (missingEmu.length > 0) W(`Not installed here: ${missingEmu.join(', ')}. The image can be built but not booted, so boot tests will be UNVERIFIED.`)
+    }
+    if (hostDriverOnly && hostValues.includes('linux') && !osToolInstalled('gcc')) W('A Linux kernel module needs gcc, make and the kernel headers. Check them before building.')
+  }
+
+  return { errors, warnings }
+}
+
 export function validateTatemono(filePath: string): ValidationResult {
   const errors:   string[] = []
   const warnings: string[] = []
@@ -2122,11 +3215,18 @@ export function validateTatemono(filePath: string): ValidationResult {
     warnings.push(...termResult.warnings)
   }
 
+  // v20.0: operating system blocks (opt-in)
+  if (parsed.os) {
+    const osResult = validateOs(parsed, filePath)
+    errors.push(...osResult.errors)
+    warnings.push(...osResult.warnings)
+  }
+
   const hasFreeFiles = hasFileBlocks(fs.readFileSync(filePath, 'utf-8'))
 
   // v14.1: @arkzen:file blocks are valid without any page
   // v17.0: @arkzen:ext blocks are valid without any page (validateExt checks the ext contracts)
-  if (!hasFreeFiles && !parsed.ext && !parsed.pkg && !parsed.term && parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0) {
+  if (!hasFreeFiles && !parsed.ext && !parsed.pkg && !parsed.term && !parsed.os && parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0) {
     errors.push('At least one @arkzen:web:page:name, @arkzen:native:page:name, or @arkzen:native:page:lynx:name section is required')
   }
 

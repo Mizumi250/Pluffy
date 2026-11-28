@@ -10,6 +10,18 @@
 //        desktop window host). @arkzen:native:frame:expo|rn|lynx and
 //        @arkzen:desktop:frame:electron|tauri. New parser: parseFrames().
 //        Opt-in: Tatemonos without a frame block parse exactly as before.
+// v20.0: Operating system blocks. The `os` family (@arkzen:os:project[:id], target:<arch>,
+//        config, boot, memory, interrupts, scheduler, syscall:<n>, driver:<n>, fs, userland:<n>,
+//        shell, image, run, test:<n>, assets, distro, board, source:<lang>:<n>, readme).
+//        New parser: parseOs(). ParsedTatemono.os is set only when the file has at least one
+//        os block. A Tatemono with os blocks needs no web, native or Lynx page.
+//        Opt-in: Tatemonos without an os block parse exactly as before.
+// v19.0: Terminal blocks. The `term` family (@arkzen:term:project, runtime:<lang>, config,
+//        theme, keymap, command:<n>, prompt:<n>, screen:<n>, data:<n>, loop:<n>, assets,
+//        export, handler:<lang>:<n>, view:<lang>:<n>, script:<lang>:<n>, test:<lang>:<n>,
+//        readme). New parser: parseTerm(). ParsedTatemono.term is set only when the file has
+//        at least one term block. A Tatemono with term blocks needs no web, native or Lynx
+//        page. Opt-in: Tatemonos without a term block parse exactly as before.
 // v18.0: Package blocks. The `pkg` family (@arkzen:pkg:project, target, exports, build, verify,
 //        sdk, types, validators, openapi, backend, assets, template, plugin, source, test, readme).
 //        New parser: parsePkg(). ParsedTatemono.pkg is set only when the file has at least one
@@ -148,6 +160,14 @@ import type {
   ArkzenExtYamlBlock,
   ArkzenPkg,
   ArkzenPkgBlock,
+  ArkzenTerm,
+  ArkzenTermCodeBlock,
+  ArkzenTermLangCodeBlock,
+  ArkzenTermYamlBlock,
+  ArkzenOs,
+  ArkzenOsCodeBlock,
+  ArkzenOsSourceBlock,
+  ArkzenOsYamlBlock,
   ArkzenConfigOverride,
   ArkzenDatabase,
   ArkzenApi,
@@ -862,6 +882,430 @@ function parseExt(content: string): ArkzenExt | undefined {
   }
 
   return found ? ext : undefined
+}
+
+// ─────────────────────────────────────────────
+// TERMINAL BLOCKS - v19.0
+//
+// A tatemono can describe a command-line tool or a terminal UI with the `term` family:
+//
+//   YAML-only (Shape A: bare */ closes the comment, no :end)
+//     @arkzen:term:project             once   identity, mode (cli|tui|hybrid), runtimes, entry
+//     @arkzen:term:runtime:<lang>      many   per-language framework and dependencies
+//     @arkzen:term:config              once   config file, env prefix, defaults
+//     @arkzen:term:theme               once   palette, roles, border style
+//     @arkzen:term:keymap[:<name>]     many   key bindings (the name is optional)
+//     @arkzen:term:command:<name>      many   subcommand (a dotted name is a nested subcommand)
+//     @arkzen:term:prompt:<name>       many   interactive question flow
+//     @arkzen:term:screen:<name>       many   TUI screen: layout and panes
+//     @arkzen:term:data:<name>         many   record schema for a TUI or CLI
+//     @arkzen:term:loop:<name>         many   real-time game loop settings
+//     @arkzen:term:assets              once   files and templates bundled into the tool
+//     @arkzen:term:export              once   platforms, formats, completions
+//
+//   Code blocks (:end required). Shape B when a YAML header is needed, Shape C when it is not.
+//     @arkzen:term:handler:<lang>:<name>   many   command body
+//     @arkzen:term:view:<lang>:<name>      many   custom screen, widget or loop code
+//     @arkzen:term:script:<lang>:<name>    many   shared module
+//     @arkzen:term:test:<lang>:<name>      many   test file
+//     @arkzen:term:readme                  once   README body (markdown)
+//
+// <lang> is one of ts, py, rs, go, java, cs, php. A command name may contain dots
+// (db.migrate). Opt-in: a Tatemono with no term block gets no `term` field. This parser
+// reads the structure only (tags, names, languages, YAML, bodies). The contracts live in
+// validator.ts.
+// ─────────────────────────────────────────────
+
+const TERM_LANGS = ['ts', 'py', 'rs', 'go', 'java', 'cs', 'php'] as const
+
+type TermArgs = 'none' | 'name' | 'optname' | 'lang' | 'langname'
+
+interface TermBlockSpec {
+  kind: 'code' | 'yaml'
+  args: TermArgs
+}
+
+const TERM_BLOCK_SPECS: Readonly<Record<string, TermBlockSpec>> = {
+  project:  { kind: 'yaml', args: 'none'     },
+  runtime:  { kind: 'yaml', args: 'lang'     },
+  config:   { kind: 'yaml', args: 'none'     },
+  theme:    { kind: 'yaml', args: 'none'     },
+  keymap:   { kind: 'yaml', args: 'optname'  },
+  command:  { kind: 'yaml', args: 'name'     },
+  prompt:   { kind: 'yaml', args: 'name'     },
+  screen:   { kind: 'yaml', args: 'name'     },
+  data:     { kind: 'yaml', args: 'name'     },
+  loop:     { kind: 'yaml', args: 'name'     },
+  assets:   { kind: 'yaml', args: 'none'     },
+  export:   { kind: 'yaml', args: 'none'     },
+  handler:  { kind: 'code', args: 'langname' },
+  view:     { kind: 'code', args: 'langname' },
+  script:   { kind: 'code', args: 'langname' },
+  test:     { kind: 'code', args: 'langname' },
+  readme:   { kind: 'code', args: 'none'     },
+}
+
+const TERM_CODE_TAGS = Object.keys(TERM_BLOCK_SPECS).filter(k => TERM_BLOCK_SPECS[k].kind === 'code').map(k => `term:${k}`)
+const TERM_YAML_TAGS = Object.keys(TERM_BLOCK_SPECS).filter(k => TERM_BLOCK_SPECS[k].kind === 'yaml').map(k => `term:${k}`)
+
+// How many ":"-separated parts follow the block name: [min, max].
+const TERM_ARITY: Readonly<Record<TermArgs, readonly [number, number]>> = {
+  none: [0, 0], name: [1, 1], optname: [0, 1], lang: [1, 1], langname: [2, 2],
+}
+
+const TERM_SHAPE_HINT: Readonly<Record<TermArgs, string>> = {
+  none: '', name: ':<name>', optname: '[:<name>]', lang: ':<lang>', langname: ':<lang>:<name>',
+}
+
+function parseTerm(content: string): ArkzenTerm | undefined {
+  // Marker searches run on a copy with template literal text blanked out (same length),
+  // so a marker inside a demo string is not read as a block. Slices use the original.
+  const safe = stripTemplateLiterals(content)
+
+  // Opening tags only. Parts after the block name are captured together, so one pattern
+  // reads term:command:db.migrate and term:handler:ts:db.migrate alike. A closer such as
+  // "term:handler:ts:add:end" has one more part than its opener and is skipped below.
+  const openerRe = /^[ \t]*\/\*[ \t]*@arkzen:term:([A-Za-z0-9_-]+)((?::[A-Za-z0-9_.-]+)*)(?=\s|\*\/)/gm
+
+  const term: ArkzenTerm = {
+    runtimes: [], keymaps: [], commands: [], prompts: [], screens: [], data: [], loops: [],
+    handlers: [], views: [], scripts: [], tests: [],
+  }
+  const seenOnce = new Set<string>()
+  let found = false
+
+  const loadYaml = (marker: string, text: string): unknown => {
+    if (!text.trim()) return undefined
+    try {
+      return yaml.load(text)
+    } catch (e) {
+      const why = e instanceof Error ? e.message.split('\n')[0] : String(e)
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} has invalid YAML: ${why}`)
+    }
+  }
+
+  for (const m of safe.matchAll(openerRe)) {
+    const base = m[1]
+    const segs = m[2] ? m[2].slice(1).split(':') : []
+
+    if (!Object.prototype.hasOwnProperty.call(TERM_BLOCK_SPECS, base)) {
+      throw new Error(
+        `[Arkzen Parser] Unknown terminal block @arkzen:term:${base}. ` +
+        `Known blocks: ${Object.keys(TERM_BLOCK_SPECS).map(k => `term:${k}`).join(', ')}`
+      )
+    }
+    const spec = TERM_BLOCK_SPECS[base]
+    const [minArgs, maxArgs] = TERM_ARITY[spec.args]
+    const hint = `@arkzen:term:${base}${TERM_SHAPE_HINT[spec.args]}`
+
+    // Only code blocks have a closer. It is the opener's tag plus ":end".
+    if (spec.kind === 'code' && segs.length === maxArgs + 1 && segs[segs.length - 1] === 'end') continue
+
+    if (segs.length < minArgs) throw new Error(`[Arkzen Parser] ${hint} is incomplete: write ${hint}`)
+    if (segs.length > maxArgs) {
+      throw new Error(
+        maxArgs === 0
+          ? `[Arkzen Parser] @arkzen:term:${base} takes no name (found "${segs.join(':')}")`
+          : `[Arkzen Parser] @arkzen:term:${base}:${segs.join(':')} has too many parts: write ${hint}`
+      )
+    }
+
+    let lang: string | undefined
+    let name: string | undefined
+    if (spec.args === 'lang' || spec.args === 'langname') {
+      lang = segs[0]
+      if (!(TERM_LANGS as readonly string[]).includes(lang)) {
+        throw new Error(`[Arkzen Parser] @arkzen:term:${base}:${segs.join(':')} has unknown language "${lang}". Use one of: ${TERM_LANGS.join(', ')}`)
+      }
+      if (spec.args === 'langname') name = segs[1]
+    } else if (spec.args === 'name' || spec.args === 'optname') {
+      name = segs[0]
+    }
+
+    if (spec.args === 'none' || (spec.args === 'optname' && name === undefined)) {
+      const onceKey = `${base}:`
+      if (seenOnce.has(onceKey)) {
+        throw new Error(`[Arkzen Parser] Only one ${spec.args === 'none' ? `@arkzen:term:${base}` : `unnamed @arkzen:term:${base}`} block is allowed per Tatemono`)
+      }
+      seenOnce.add(onceKey)
+    }
+    found = true
+
+    const marker  = segs.length ? `term:${base}:${segs.join(':')}` : `term:${base}`
+    const openIdx = (m.index ?? 0) + m[0].indexOf('/*')
+    const openEnd = findOpeningCommentEnd(safe, openIdx, openIdx + 2)
+    if (openEnd === -1) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} opening comment is never closed with */`)
+    }
+
+    // The YAML header is everything between the opener line and the closing */.
+    const firstBreak = safe.indexOf('\n', openIdx)
+    const inline     = firstBreak === -1 || openEnd < firstBreak
+    const headerText = inline ? '' : content.slice(firstBreak + 1, openEnd)
+
+    if (spec.kind === 'yaml') {
+      const block: ArkzenTermYamlBlock = {
+        data:  loadYaml(marker, headerText) ?? {},
+        start: openIdx,
+        end:   openEnd + 2,
+      }
+      if (base === 'project') term.project = block
+      if (base === 'config')  term.config  = block
+      if (base === 'theme')   term.theme   = block
+      if (base === 'assets')  term.assets  = block
+      if (base === 'export')  term.export  = block
+      if (base === 'runtime') term.runtimes.push({ ...block, lang: lang as string })
+      if (base === 'keymap')  term.keymaps.push(name === undefined ? { ...block } : { ...block, name })
+      if (base === 'command') term.commands.push({ ...block, name: name as string })
+      if (base === 'prompt')  term.prompts.push({ ...block, name: name as string })
+      if (base === 'screen')  term.screens.push({ ...block, name: name as string })
+      if (base === 'data')    term.data.push({ ...block, name: name as string })
+      if (base === 'loop')    term.loops.push({ ...block, name: name as string })
+      continue
+    }
+
+    const header = loadYaml(marker, headerText) ?? {}
+    if (typeof header !== 'object' || header === null || Array.isArray(header)) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} header must be a YAML mapping`)
+    }
+    const closeMarker = `/* @arkzen:${marker}:end */`
+    const closeIdx    = safe.indexOf(closeMarker, openEnd)
+    if (closeIdx === -1) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} is missing its closing ${closeMarker}`)
+    }
+    const block: ArkzenTermCodeBlock = {
+      header: header as Record<string, unknown>,
+      raw:    content.slice(openEnd + 2, closeIdx).trim(),
+      start:  openIdx,
+      end:    closeIdx + closeMarker.length,
+    }
+    if (base === 'readme') { term.readme = block; continue }
+    const langBlock: ArkzenTermLangCodeBlock = { ...block, lang: lang as string, name: name as string }
+    if (base === 'handler') term.handlers.push(langBlock)
+    if (base === 'view')    term.views.push(langBlock)
+    if (base === 'script')  term.scripts.push(langBlock)
+    if (base === 'test')    term.tests.push(langBlock)
+  }
+
+  return found ? term : undefined
+}
+
+// ─────────────────────────────────────────────
+// OPERATING SYSTEM BLOCKS - v20.0
+//
+// A tatemono can describe a kernel, an operating system, a bootloader, firmware, a driver
+// or a distribution with the `os` family:
+//
+//   YAML-only (Shape A: bare */ closes the comment, no :end)
+//     @arkzen:os:project[:<id>]      many   identity, kind, architectures (the id is optional)
+//     @arkzen:os:target:<arch>       many   toolchain target per architecture
+//     @arkzen:os:config              once   kernel feature flags and constants
+//     @arkzen:os:boot                once   firmware, loader, boot requests
+//     @arkzen:os:memory              once   memory managers, regions, heap
+//     @arkzen:os:interrupts          once   exceptions, IRQ map, controller
+//     @arkzen:os:scheduler           once   scheduling policy
+//     @arkzen:os:syscall:<name>      many   syscall number, arguments, returns
+//     @arkzen:os:driver:<name>       many   driver declaration (in-OS or host-OS)
+//     @arkzen:os:fs                  once   filesystem and mounts
+//     @arkzen:os:userland:<name>     many   userland program declaration
+//     @arkzen:os:shell               once   built-in shell settings
+//     @arkzen:os:image               once   output images and partition layout
+//     @arkzen:os:run                 once   emulator run configuration
+//     @arkzen:os:test:<name>         many   boot or unit test expectations
+//     @arkzen:os:assets              once   files bundled into the image or kernel
+//     @arkzen:os:distro              once   distribution build configuration
+//     @arkzen:os:board               once   microcontroller board and peripherals
+//
+//   Code blocks (:end required). Shape B when a YAML header is needed, Shape C when it is not.
+//     @arkzen:os:source:<lang>:<name>   many   one source file in that language
+//     @arkzen:os:readme                 once   README body (markdown)
+//
+// <lang> is one of rs, c, asm, go, cpp. <arch> is validated in validator.ts. Opt-in: a
+// Tatemono with no os block gets no `os` field. This parser reads the structure only
+// (tags, names, languages, YAML, bodies). The contracts live in validator.ts.
+// ─────────────────────────────────────────────
+
+const OS_LANGS = ['rs', 'c', 'asm', 'go', 'cpp'] as const
+
+type OsArgs = 'none' | 'name' | 'optname' | 'langname'
+
+interface OsBlockSpec {
+  kind: 'code' | 'yaml'
+  args: OsArgs
+}
+
+const OS_BLOCK_SPECS: Readonly<Record<string, OsBlockSpec>> = {
+  project:    { kind: 'yaml', args: 'optname'  },
+  target:     { kind: 'yaml', args: 'name'     },
+  config:     { kind: 'yaml', args: 'none'     },
+  boot:       { kind: 'yaml', args: 'none'     },
+  memory:     { kind: 'yaml', args: 'none'     },
+  interrupts: { kind: 'yaml', args: 'none'     },
+  scheduler:  { kind: 'yaml', args: 'none'     },
+  syscall:    { kind: 'yaml', args: 'name'     },
+  driver:     { kind: 'yaml', args: 'name'     },
+  fs:         { kind: 'yaml', args: 'none'     },
+  userland:   { kind: 'yaml', args: 'name'     },
+  shell:      { kind: 'yaml', args: 'none'     },
+  image:      { kind: 'yaml', args: 'none'     },
+  run:        { kind: 'yaml', args: 'none'     },
+  test:       { kind: 'yaml', args: 'name'     },
+  assets:     { kind: 'yaml', args: 'none'     },
+  distro:     { kind: 'yaml', args: 'none'     },
+  board:      { kind: 'yaml', args: 'none'     },
+  source:     { kind: 'code', args: 'langname' },
+  readme:     { kind: 'code', args: 'none'     },
+}
+
+const OS_CODE_TAGS = Object.keys(OS_BLOCK_SPECS).filter(k => OS_BLOCK_SPECS[k].kind === 'code').map(k => `os:${k}`)
+const OS_YAML_TAGS = Object.keys(OS_BLOCK_SPECS).filter(k => OS_BLOCK_SPECS[k].kind === 'yaml').map(k => `os:${k}`)
+
+// How many ":"-separated parts follow the block name: [min, max].
+const OS_ARITY: Readonly<Record<OsArgs, readonly [number, number]>> = {
+  none: [0, 0], name: [1, 1], optname: [0, 1], langname: [2, 2],
+}
+
+const OS_SHAPE_HINT: Readonly<Record<OsArgs, string>> = {
+  none: '', name: ':<name>', optname: '[:<id>]', langname: ':<lang>:<name>',
+}
+
+function parseOs(content: string): ArkzenOs | undefined {
+  // Marker searches run on a copy with template literal text blanked out (same length),
+  // so a marker inside a demo string is not read as a block. Slices use the original.
+  const safe = stripTemplateLiterals(content)
+
+  // Opening tags only. Parts after the block name are captured together. A closer such as
+  // "os:source:rs:main:end" has one more part than its opener and is skipped below.
+  const openerRe = /^[ \t]*\/\*[ \t]*@arkzen:os:([A-Za-z0-9_-]+)((?::[A-Za-z0-9_.-]+)*)(?=\s|\*\/)/gm
+
+  const os: ArkzenOs = {
+    projects: [], targets: [], syscalls: [], drivers: [], userland: [], tests: [], sources: [],
+  }
+  const seenOnce = new Set<string>()
+  let found = false
+
+  const loadYaml = (marker: string, text: string): unknown => {
+    if (!text.trim()) return undefined
+    try {
+      return yaml.load(text)
+    } catch (e) {
+      const why = e instanceof Error ? e.message.split('\n')[0] : String(e)
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} has invalid YAML: ${why}`)
+    }
+  }
+
+  for (const m of safe.matchAll(openerRe)) {
+    const base = m[1]
+    const segs = m[2] ? m[2].slice(1).split(':') : []
+
+    if (!Object.prototype.hasOwnProperty.call(OS_BLOCK_SPECS, base)) {
+      throw new Error(
+        `[Arkzen Parser] Unknown operating system block @arkzen:os:${base}. ` +
+        `Known blocks: ${Object.keys(OS_BLOCK_SPECS).map(k => `os:${k}`).join(', ')}`
+      )
+    }
+    const spec = OS_BLOCK_SPECS[base]
+    const [minArgs, maxArgs] = OS_ARITY[spec.args]
+    const hint = `@arkzen:os:${base}${OS_SHAPE_HINT[spec.args]}`
+
+    // Only code blocks have a closer. It is the opener's tag plus ":end".
+    if (spec.kind === 'code' && segs.length === maxArgs + 1 && segs[segs.length - 1] === 'end') continue
+
+    if (segs.length < minArgs) throw new Error(`[Arkzen Parser] ${hint} is incomplete: write ${hint}`)
+    if (segs.length > maxArgs) {
+      throw new Error(
+        maxArgs === 0
+          ? `[Arkzen Parser] @arkzen:os:${base} takes no name (found "${segs.join(':')}")`
+          : `[Arkzen Parser] @arkzen:os:${base}:${segs.join(':')} has too many parts: write ${hint}`
+      )
+    }
+
+    let lang: string | undefined
+    let name: string | undefined
+    if (spec.args === 'langname') {
+      lang = segs[0]
+      if (!(OS_LANGS as readonly string[]).includes(lang)) {
+        throw new Error(`[Arkzen Parser] @arkzen:os:${base}:${segs.join(':')} has unknown language "${lang}". Use one of: ${OS_LANGS.join(', ')}`)
+      }
+      name = segs[1]
+    } else if (spec.args === 'name' || spec.args === 'optname') {
+      name = segs[0]
+    }
+
+    if (spec.args === 'none' || (spec.args === 'optname' && name === undefined)) {
+      const onceKey = `${base}:`
+      if (seenOnce.has(onceKey)) {
+        throw new Error(`[Arkzen Parser] Only one ${spec.args === 'none' ? `@arkzen:os:${base}` : `unnamed @arkzen:os:${base}`} block is allowed per Tatemono`)
+      }
+      seenOnce.add(onceKey)
+    }
+    found = true
+
+    const marker  = segs.length ? `os:${base}:${segs.join(':')}` : `os:${base}`
+    const openIdx = (m.index ?? 0) + m[0].indexOf('/*')
+    const openEnd = findOpeningCommentEnd(safe, openIdx, openIdx + 2)
+    if (openEnd === -1) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} opening comment is never closed with */`)
+    }
+
+    // The YAML header is everything between the opener line and the closing */.
+    const firstBreak = safe.indexOf('\n', openIdx)
+    const inline     = firstBreak === -1 || openEnd < firstBreak
+    const headerText = inline ? '' : content.slice(firstBreak + 1, openEnd)
+
+    if (spec.kind === 'yaml') {
+      const block: ArkzenOsYamlBlock = {
+        data:  loadYaml(marker, headerText) ?? {},
+        start: openIdx,
+        end:   openEnd + 2,
+      }
+      if (base === 'config')     os.config     = block
+      if (base === 'boot')       os.boot       = block
+      if (base === 'memory')     os.memory     = block
+      if (base === 'interrupts') os.interrupts = block
+      if (base === 'scheduler')  os.scheduler  = block
+      if (base === 'fs')         os.fs         = block
+      if (base === 'shell')      os.shell      = block
+      if (base === 'image')      os.image      = block
+      if (base === 'run')        os.run        = block
+      if (base === 'assets')     os.assets     = block
+      if (base === 'distro')     os.distro     = block
+      if (base === 'board')      os.board      = block
+      if (base === 'project') {
+        if (name !== undefined && os.projects.some(p => p.name === name)) {
+          throw new Error(`[Arkzen Parser] Duplicate @arkzen:os:project:${name}`)
+        }
+        os.projects.push(name === undefined ? { ...block } : { ...block, name })
+      }
+      if (base === 'target')   os.targets.push({ ...block, name: name as string })
+      if (base === 'syscall')  os.syscalls.push({ ...block, name: name as string })
+      if (base === 'driver')   os.drivers.push({ ...block, name: name as string })
+      if (base === 'userland') os.userland.push({ ...block, name: name as string })
+      if (base === 'test')     os.tests.push({ ...block, name: name as string })
+      continue
+    }
+
+    const header = loadYaml(marker, headerText) ?? {}
+    if (typeof header !== 'object' || header === null || Array.isArray(header)) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} header must be a YAML mapping`)
+    }
+    const closeMarker = `/* @arkzen:${marker}:end */`
+    const closeIdx    = safe.indexOf(closeMarker, openEnd)
+    if (closeIdx === -1) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} is missing its closing ${closeMarker}`)
+    }
+    const block: ArkzenOsCodeBlock = {
+      header: header as Record<string, unknown>,
+      raw:    content.slice(openEnd + 2, closeIdx).trim(),
+      start:  openIdx,
+      end:    closeIdx + closeMarker.length,
+    }
+    if (base === 'readme') { os.readme = block; continue }
+    const sourceBlock: ArkzenOsSourceBlock = { ...block, lang: lang as string, name: name as string }
+    os.sources.push(sourceBlock)
+  }
+
+  return found ? os : undefined
 }
 
 // ─────────────────────────────────────────────
@@ -2462,6 +2906,10 @@ const CODE_BLOCK_TAGS = [
   ...EXT_CODE_TAGS,
   // package blocks - v18.0 (same line */ for Shape C, a multi-line YAML opener for Shape B)
   ...PKG_CODE_TAGS,
+  // terminal blocks - v19.0 (same shapes as the extension blocks)
+  ...TERM_CODE_TAGS,
+  // operating system blocks - v20.0 (same shapes as the extension blocks)
+  ...OS_CODE_TAGS,
 ]
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
 const YAML_ONLY_TAGS  = [
@@ -2473,6 +2921,10 @@ const YAML_ONLY_TAGS  = [
   ...EXT_YAML_TAGS,
   // package YAML-only blocks - v18.0
   ...PKG_YAML_TAGS,
+  // terminal YAML-only blocks - v19.0
+  ...TERM_YAML_TAGS,
+  // operating system YAML-only blocks - v20.0
+  ...OS_YAML_TAGS,
 ]
 
 function validateDslTags(content: string, filePath: string): void {
@@ -2493,7 +2945,7 @@ function validateDslTags(content: string, filePath: string): void {
     if (trimmed.match(/^\/\* @arkzen:native:page:layout:/)) continue
 
     // v7.0: capture full type including web: prefix e.g. "web:page", "web:style", "script"
-    const tagMatch = trimmed.match(/^\/\* @arkzen:((?:web|native|desktop|ext|pkg):)?([a-zA-Z]+)/)
+    const tagMatch = trimmed.match(/^\/\* @arkzen:((?:web|native|desktop|ext|pkg|term|os):)?([a-zA-Z]+)/)
     if (!tagMatch) continue
     const tagType = tagMatch[1] ? `${tagMatch[1]}${tagMatch[2]}` : tagMatch[2]
 
@@ -2519,6 +2971,28 @@ function validateDslTags(content: string, filePath: string): void {
       continue
     }
 
+    // v19.0: same clear message for a typo in a terminal block name
+    if (tagType.startsWith('term:') && ![...TERM_CODE_TAGS, ...TERM_YAML_TAGS].includes(tagType)) {
+      errors.push({
+        line:    lineNum,
+        tag:     trimmed.replace('/* ', '').trim(),
+        problem: `Unknown terminal block "@arkzen:${tagType}"`,
+        fix:     `Use one of: ${[...TERM_CODE_TAGS, ...TERM_YAML_TAGS].map(x => `@arkzen:${x}`).join(', ')}`,
+      })
+      continue
+    }
+
+    // v20.0: same clear message for a typo in an operating system block name
+    if (tagType.startsWith('os:') && ![...OS_CODE_TAGS, ...OS_YAML_TAGS].includes(tagType)) {
+      errors.push({
+        line:    lineNum,
+        tag:     trimmed.replace('/* ', '').trim(),
+        problem: `Unknown operating system block "@arkzen:${tagType}"`,
+        fix:     `Use one of: ${[...OS_CODE_TAGS, ...OS_YAML_TAGS].map(x => `@arkzen:${x}`).join(', ')}`,
+      })
+      continue
+    }
+
     const hasInlineClose = trimmed.endsWith('*/')
 
     // v11.0: web:layout and native:layout allow multi-line opening comments
@@ -2526,7 +3000,11 @@ function validateDslTags(content: string, filePath: string): void {
     // findOpeningCommentEnd — skip the inline-close requirement for them.
     const isLayoutTag = tagType === 'web:layout' || tagType === 'native:layout'
     // v17.0: ext code blocks may also open with a multi-line YAML header (Shape B)
-    const isExtCodeTag = EXT_CODE_TAGS.includes(tagType) || PKG_CODE_TAGS.includes(tagType)
+    // v19.0: terminal code blocks take the same two opening shapes
+    const isTermCodeTag = TERM_CODE_TAGS.includes(tagType)
+    // v20.0: operating system code blocks take the same two opening shapes
+    const isOsCodeTag = OS_CODE_TAGS.includes(tagType)
+    const isExtCodeTag = EXT_CODE_TAGS.includes(tagType) || PKG_CODE_TAGS.includes(tagType) || isTermCodeTag || isOsCodeTag
 
     // Code blocks must have */ on same line (except layout tags with YAML metadata)
     if (CODE_BLOCK_TAGS.includes(tagType) && !hasInlineClose && !isLayoutTag && !isExtCodeTag) {
@@ -2552,7 +3030,7 @@ function validateDslTags(content: string, filePath: string): void {
         errors.push({
           line:    lineNum,
           tag:     fullTag,
-          problem: `Multi-line ${isExtCodeTag ? 'extension block' : 'layout'} opening comment is missing closing \`*/\``,
+          problem: `Multi-line ${isOsCodeTag ? 'operating system block' : isTermCodeTag ? 'terminal block' : isExtCodeTag ? 'extension block' : 'layout'} opening comment is missing closing \`*/\``,
           fix:     `Add \`*/\` on its own line after the YAML metadata`,
         })
       }
@@ -2670,14 +3148,17 @@ function validatePages(
   nativeLynxPages: ArkzenPage[],
   hasFreeFiles:    boolean = false,
   hasExt:          boolean = false,
-  hasPkg:          boolean = false
+  hasPkg:          boolean = false,
+  hasTerm:         boolean = false,
+  hasOs:           boolean = false
 ): void {
   // v14.1: a tatemono made only of @arkzen:file blocks needs no pages
   // v10.0: valid if has web pages, native pages, or error handlers
   // v10.3: nativeLynxPages also counts as valid
   // A native-only tatemono has zero web pages — that's fine
+  // v20.0: a tatemono with @arkzen:os blocks needs no page either (the validator checks the os contracts)
   // v17.0: a tatemono with @arkzen:ext blocks needs no page either (the validator checks the ext contracts)
-  if (!hasFreeFiles && !hasExt && !hasPkg && pages.length === 0 && errorHandlers.length === 0 && nativePages.length === 0 && nativeLynxPages.length === 0) {
+  if (!hasFreeFiles && !hasExt && !hasPkg && !hasTerm && !hasOs && pages.length === 0 && errorHandlers.length === 0 && nativePages.length === 0 && nativeLynxPages.length === 0) {
     throw new Error('[Arkzen Parser] At least one @arkzen:web:page:name, @arkzen:native:page:name, or @arkzen:native:page:lynx:name section is required')
   }
   const seen = new Set<string>()
@@ -2811,6 +3292,12 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   // v18.0: package blocks (opt-in; undefined when the Tatemono declares none)
   const pkg = parsePkg(content)
 
+  // v19.0: terminal blocks (opt-in; undefined when the Tatemono declares none)
+  const term = parseTerm(content)
+
+  // v20.0: operating system blocks (opt-in; undefined when the Tatemono declares none)
+  const os = parseOs(content)
+
   // Clear any existing DSL error file for this tatemono on successful parse
   try {
     const tatemono  = path.basename(path.dirname(filePath))
@@ -2822,7 +3309,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   validateTableNames(databases)
   validateNoDuplicateTables(databases)
   validateNoDuplicateControllers(apis)
-  validatePages(pages, errorHandlers, nativePages, nativeLynxPages, content.includes('/* @arkzen:file:'), ext !== undefined, pkg !== undefined)
+  validatePages(pages, errorHandlers, nativePages, nativeLynxPages, content.includes('/* @arkzen:file:'), ext !== undefined, pkg !== undefined, term !== undefined, os !== undefined)
 
   const hasBackend =
     databases.length     > 0 ||
@@ -2891,6 +3378,8 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     ...(frames ? { frames } : {}),   // v15.0
     ...(ext ? { ext } : {}),         // v17.0
     ...(pkg ? { pkg } : {}),         // v18.0
+    ...(term ? { term } : {}),       // v19.0
+    ...(os ? { os } : {}),           // v20.0
   }
 
   console.log(`[Arkzen Parser] ✓ Parsed: ${meta.name} v${meta.version}`)
@@ -2966,6 +3455,53 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     })
     console.log(`[Arkzen Parser]   Package: ${pkgParts.join(', ')}`)
   }
+  if (term) {
+    const termParts = [
+      term.project   && 'project',
+      term.runtimes.length > 0 && `runtimes (${term.runtimes.map(x => x.lang).join(', ')})`,
+      term.commands.length > 0 && `commands (${term.commands.map(x => x.name).join(', ')})`,
+      term.prompts.length  > 0 && `prompts (${term.prompts.map(x => x.name).join(', ')})`,
+      term.screens.length  > 0 && `screens (${term.screens.map(x => x.name).join(', ')})`,
+      term.data.length     > 0 && `data (${term.data.map(x => x.name).join(', ')})`,
+      term.loops.length    > 0 && `loops (${term.loops.map(x => x.name).join(', ')})`,
+      term.keymaps.length  > 0 && `keymaps (${term.keymaps.length})`,
+      term.config    && 'config',
+      term.theme     && 'theme',
+      term.assets    && 'assets',
+      term.export    && 'export',
+      term.handlers.length > 0 && `handlers (${term.handlers.length})`,
+      term.views.length    > 0 && `views (${term.views.length})`,
+      term.scripts.length  > 0 && `scripts (${term.scripts.length})`,
+      term.tests.length    > 0 && `tests (${term.tests.length})`,
+      term.readme    && 'readme',
+    ].filter(Boolean)
+    console.log(`[Arkzen Parser]   Terminal: ${termParts.join(', ')}`)
+  }
+  if (os) {
+    const osParts = [
+      os.projects.length > 0 && `projects (${os.projects.map(x => x.name ?? 'default').join(', ')})`,
+      os.targets.length  > 0 && `targets (${os.targets.map(x => x.name).join(', ')})`,
+      os.config      && 'config',
+      os.boot        && 'boot',
+      os.memory      && 'memory',
+      os.interrupts  && 'interrupts',
+      os.scheduler   && 'scheduler',
+      os.syscalls.length > 0 && `syscalls (${os.syscalls.map(x => x.name).join(', ')})`,
+      os.drivers.length  > 0 && `drivers (${os.drivers.map(x => x.name).join(', ')})`,
+      os.fs          && 'fs',
+      os.userland.length > 0 && `userland (${os.userland.map(x => x.name).join(', ')})`,
+      os.shell       && 'shell',
+      os.image       && 'image',
+      os.run         && 'run',
+      os.tests.length    > 0 && `tests (${os.tests.map(x => x.name).join(', ')})`,
+      os.assets      && 'assets',
+      os.distro      && 'distro',
+      os.board       && 'board',
+      os.sources.length  > 0 && `sources (${os.sources.length})`,
+      os.readme      && 'readme',
+    ].filter(Boolean)
+    console.log(`[Arkzen Parser]   Operating system: ${osParts.join(', ')}`)
+  }
   if (nativeLynxPages.length > 0 || nativeLynxLayouts.length > 0 || nativeLynxComponents.length > 0 || nativeLynxStyleGlobal || nativeLynxStyles.length > 0 || nativeLynxErrorHandlers.length > 0 || nativeAnimationLynx || nativeScriptLynx || nativeScriptsLynx.length > 0) {
     console.log(`[Arkzen Parser]   ── Native (Lynx) ──`)
     if (nativeLynxPages.length)         console.log(`[Arkzen Parser]   Lynx pages (${nativeLynxPages.length}): ${nativeLynxPages.map(p => p.name).join(', ')}`)
@@ -3023,5 +3559,9 @@ export function hasSections(filePath: string) {
     ext:                     content.includes('/* @arkzen:ext:'),
     // package - v18.0
     pkg:                     content.includes('/* @arkzen:pkg:'),
+    // terminal - v19.0
+    term:                    content.includes('/* @arkzen:term:'),
+    // operating system - v20.0
+    os:                      content.includes('/* @arkzen:os:'),
   }
 }

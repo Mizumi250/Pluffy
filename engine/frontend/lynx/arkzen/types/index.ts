@@ -209,6 +209,60 @@ export interface ArkzenTerm {
   readme?:   ArkzenTermCodeBlock          // @arkzen:term:readme
 }
 
+// v20.0 - operating system blocks (@arkzen:os:*). See parser parseOs.
+// YAML blocks keep the parsed value (a mapping for most blocks; the validator checks the
+// shape). Code blocks keep their YAML header and body apart, like the ext and term blocks.
+export interface ArkzenOsYamlBlock {
+  data:  unknown
+  start: number
+  end:   number
+}
+
+export interface ArkzenOsNamedYamlBlock extends ArkzenOsYamlBlock {
+  name: string
+}
+
+// @arkzen:os:project[:id]: the id is optional (an unnamed project is the default one)
+export interface ArkzenOsProjectBlock extends ArkzenOsYamlBlock {
+  name?: string
+}
+
+export interface ArkzenOsCodeBlock {
+  header: Record<string, unknown>   // YAML in the opening comment ({} when the opener closes with */ on the same line)
+  raw:    string                    // the code body, verbatim and trimmed
+  start:  number
+  end:    number
+}
+
+// @arkzen:os:source:<lang>:<name>
+export interface ArkzenOsSourceBlock extends ArkzenOsCodeBlock {
+  lang: string
+  name: string
+}
+
+export interface ArkzenOs {
+  projects:   ArkzenOsProjectBlock[]      // @arkzen:os:project[:id]
+  targets:    ArkzenOsNamedYamlBlock[]    // @arkzen:os:target:<arch>
+  config?:     ArkzenOsYamlBlock          // @arkzen:os:config
+  boot?:       ArkzenOsYamlBlock          // @arkzen:os:boot
+  memory?:     ArkzenOsYamlBlock          // @arkzen:os:memory
+  interrupts?: ArkzenOsYamlBlock          // @arkzen:os:interrupts
+  scheduler?:  ArkzenOsYamlBlock          // @arkzen:os:scheduler
+  syscalls:   ArkzenOsNamedYamlBlock[]    // @arkzen:os:syscall:<name>
+  drivers:    ArkzenOsNamedYamlBlock[]    // @arkzen:os:driver:<name>
+  fs?:         ArkzenOsYamlBlock          // @arkzen:os:fs
+  userland:   ArkzenOsNamedYamlBlock[]    // @arkzen:os:userland:<name>
+  shell?:      ArkzenOsYamlBlock          // @arkzen:os:shell
+  image?:      ArkzenOsYamlBlock          // @arkzen:os:image
+  run?:        ArkzenOsYamlBlock          // @arkzen:os:run
+  tests:      ArkzenOsNamedYamlBlock[]    // @arkzen:os:test:<name>
+  assets?:     ArkzenOsYamlBlock          // @arkzen:os:assets
+  distro?:     ArkzenOsYamlBlock          // @arkzen:os:distro
+  board?:      ArkzenOsYamlBlock          // @arkzen:os:board
+  sources:    ArkzenOsSourceBlock[]       // @arkzen:os:source:<lang>:<name>
+  readme?:     ArkzenOsCodeBlock          // @arkzen:os:readme
+}
+
 // ─────────────────────────────────────────────
 // PACKAGE BLOCKS - v18.0
 // @arkzen:pkg:* blocks describe a reusable package (npm, PyPI, crates.io, ...).
@@ -471,6 +525,7 @@ export interface ParsedTatemono {
   frames?:        ArkzenFrames        // v15.0: @arkzen:native:frame:* / @arkzen:desktop:frame:*
   ext?:           ArkzenExt           // v17.0: @arkzen:ext:* browser extension blocks
   term?:          ArkzenTerm          // v19.0: @arkzen:term:* terminal (CLI/TUI) blocks
+  os?:            ArkzenOs            // v20.0: @arkzen:os:* operating system blocks
   pkg?:           ArkzenPkg           // v18.0: @arkzen:pkg:* package blocks
 
   databases:          ArkzenDatabase[]

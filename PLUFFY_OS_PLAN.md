@@ -657,3 +657,42 @@ Paste this into the new Claude session along with the repo URL:
 > Read `PLUFFY_OS_PLAN.md`, `PLUFFY_TERMINAL_PLAN.md`, `PLUFFY_PACKAGE_PLAN.md` and `PLUFFY_EXTENSION_PLAN.md`, then read `engine/shared/arkzen/engine-core/parser.ts` (`validateDslTags`, `validatePages`, `parseTatemono`) and `shared-sync.ts`. Do step 1 only: register the `ext`, `pkg`, `term` and `os` families so tatemonos containing them parse with zero errors in the web watcher and existing tatemonos are unchanged. Show complete files, not diffs.
 
 Constraints Mizumi has stated for this work: direct and decisive answers instead of option lists, complete file outputs instead of snippets or diffs, no unsolicited feature suggestions, read the actual source files before suggesting fixes, no em dashes. Mizumi wants the full scope listed, not split into versions.
+
+---
+
+## 17. Progress log
+
+### Step 1 (done): register the `os` family
+
+Built on commit `673d87060`, after the extension, package and terminal sessions registered `ext`, `pkg` and `term` (parser `v19.0`). The parser header note for `os` is `v20.0`.
+
+Changed:
+- `engine/shared/arkzen/engine-core/parser.ts`: new `parseOs()`, `os` added to the tag lists and the tag-prefix pattern, `ParsedTatemono.os`, page requirement waived for os tatemonos, a clear "unknown operating system block" message for a typo.
+- `engine/shared/arkzen/engine-core/validator.ts`: new `validateOs()` with the rules in section 7.7, wired into `validateTatemono`.
+- `arkzen/types/index.ts` in the 8 frontend stacks: `ArkzenOs` and friends, `os?` on `ParsedTatemono`.
+- The per-stack `parser.ts` and `validator.ts` copies (8 frontend stacks plus `laravel-inertia`) were refreshed from the shared files, as `shared-sync` does at run time. Several stack parsers were already stale (no `term`), so these copies now carry `term` and `os` together.
+- `scaffold.js`: 20 `os:*` blocks, templates `kernel`, `os`, `firmware`, `driver`, `distro`, a `snake` name style (syscall and source names), tag parsing and lint for os. `vscode-extension/lib/scaffold.mjs` regenerated, `extension.js` has a two line change.
+- New: `engine/os/` (own `package.json`, `scripts/sync-shared.mjs`, 80 tests), five fixtures `tatemonos/os-tiny-kernel`, `os-kernel-features`, `os-kiosk-distro`, `os-blinker-firmware`, `os-hello-module`.
+
+Decisions made while building (header keys and rules the plan left open):
+- Languages are `rs`, `c`, `asm`, `go`, `cpp`. `cpp` is included only so host drivers can use it. It is one entry in `OS_LANGS` and easy to remove if Mizumi decides against it.
+- `os:project[:<id>]` is the only block that can repeat as a family. With several projects every project needs an id. Blocks are not scoped to a project, so a block is required when any project's kind requires it and rejected only when every project's kind rejects it.
+- `language` is required for every kind except `distro`. `arch` is required for every kind except `driver` and `distro`. `host` is required for `driver` and rejected for other kinds. `go` is only valid for `firmware`.
+- A source block name must be lowercase letters, digits and `_`, so a handler can refer to it as `<source name>::<function>`. Handler references in `syscall`, `driver` and `interrupts` must name a source block that exists. The function name is not checked (it is inside the body).
+- Every kernel-like kind needs one source with `entry: true` and `part: kernel` or `boot` (or `user`). Two entries for the same `part` and `arch` is an error.
+- Sizes and addresses accept an integer, hex, or a `K`, `M`, `G` suffix. Big addresses should be quoted strings, because YAML numbers lose precision above 2^53.
+- Region, heap, stack and userland sizes must be multiples of the page size (the first target's `page_size`, default 4096). Regions may not overlap. The heap must start inside a region and fit in it.
+- IRQ ranges: `pic` 0 to 15, `apic` 0 to 239, `gic` 0 to 1019, `plic` 1 to 1023. A controller must suit a declared architecture.
+- A boot test needs `timeout`, `expect` and an `os:run` block. `serial: none` with a boot test is an error.
+- Any string in any os block that points at `/dev/`, `/proc/`, `/sys/` or `\\.\` is an error (rule: never write to a device). Keys named `key` or containing `token`, `password`, `secret`, `credential` or `api_key` are errors in every os block. `distro` accounts may only have `name:`.
+- Partition `contents` that is not `kernel`, `bootloader`, `initramfs`, a userland name or a file under `assets/` is a warning, not an error. Unknown QEMU device names, unknown SPDX ids and unknown header keys are warnings.
+- A missing toolchain (`rustc`, `cargo`, `gcc`, `ld`, `nasm`, `tinygo`, `qemu-system-*`) is a warning that the target verifies as UNVERIFIED. The probe retries once with a longer timeout, because a cold first start of `rustc` once exceeded 4 seconds and wrongly reported it missing.
+- The section 8 examples were illustrative. The matrix in 7.6 says `firmware` needs `target` and `source`, so the fixtures add them.
+
+Verified against the latest repo: all 74 tatemonos that existed in `tatemonos/` parse to byte-identical results and get identical validator output (the 13 that failed before still fail the same way). `parser.ts` and `validator.ts` type-check clean in nextjs, react-vite, expo and react-native. `astro`, `tanstack-start`, `react-inertia` (38 errors each) and `lynx` (14) report the same errors at `HEAD`, so those are not from this change. The 80 os tests pass, and the other sessions' suites still pass (terminal 177, package 58, extension 47). Every scaffolded template lints clean and validates with no errors.
+
+Not verified: nothing has been built or booted. No web watcher or builder was run against an os tatemono (they treat it as a page-less tatemono, the same path `ext` and `term` take). Not run on Windows.
+
+Sandbox finding for step 2: after `apt-get update`, `apt-get install qemu-system-x86 nasm rustc cargo` worked as root (QEMU 8.2.2, nasm, rustc 1.75.0, cargo 1.75.0). `static.rust-lang.org` returned no response, so `rustup` and a nightly toolchain were not obtained. Whether the boot crates in section 4 build on rustc 1.75 is still unchecked, and a C or assembly kernel with a Multiboot path is the fallback if they do not. The sandbox may reset between sessions, so repeat the install.
+
+Next: step 2, `engine/os/common/` and the Rust `x86_64` bare kernel with a headless QEMU boot test.

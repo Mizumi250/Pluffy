@@ -781,6 +781,99 @@ add(TERM({ key: 'term:readme', sub: 'README body (markdown)', name: null, once: 
   build: ({ slug }) => shapeC('term:readme', `# ${slug}\n\nDescribe what this tool does.`) }))
 
 
+// ---- Operating system (kernel / OS / firmware / driver / distro) ----
+// @arkzen:os:* blocks. Source blocks carry a language (:rs, :c, :asm, :go, :cpp). Pluffy scaffolds the
+// declarations and a starting body. It does not write kernel logic for you.
+const osNeedsProject = source => /^[ \t]*\/\*[ \t]*@arkzen:os:project\b/m.test(source) ? null : 'Add @arkzen:os:project first (node mizumi.js block os:project --mode=kernel), then the other os blocks.'
+const OSB = g => ({ group: 'Operating system', needs: g.key === 'os:project' ? undefined : osNeedsProject, ...g })
+const OS_LANGS = ['rs', 'c', 'asm', 'go', 'cpp']
+const OS_LANG_LABEL = { rs: 'Rust', c: 'C', asm: 'Assembly (needs arch in the header)', go: 'Go (TinyGo, firmware only)', cpp: 'C++' }
+const OS_KINDS = ['kernel', 'os', 'bootloader', 'bootapp', 'firmware', 'unikernel', 'driver', 'distro', 'desktop']
+const osVariants = { list: OS_LANGS, optional: false, labels: OS_LANG_LABEL, question: '言語？ Which source language?' }
+const osPlaceholder = (v, what) => `${v === 'rs' || v === 'go' || v === 'c' || v === 'cpp' ? '//' : ';'} ${what}: write the ${v} version here`
+
+add(OSB({ key: 'os:project', sub: 'identity, kind (--mode=kernel|os|bootloader|bootapp|firmware|unikernel|driver|distro|desktop), architectures (required)', name: { prompt: 'Project id (blank = the only project)', def: '', optional: true }, once: false,
+  tag: n => n ? `os:project:${n}` : 'os:project',
+  build: ({ name, slug, flags }) => {
+    const kind = flags.mode ?? 'kernel'
+    const tag = name ? `os:project:${name}` : 'os:project'
+    if (kind === 'distro') return shapeA(tag, `name: ${slug}\nkind: distro\nlicense: MIT`)
+    if (kind === 'driver') return shapeA(tag, `name: ${slug}\nkind: driver\nhost: linux\nlanguage: c\nlicense: GPL-2.0-only`)
+    if (kind === 'firmware') return shapeA(tag, `name: ${slug}\nkind: firmware\narch: [arm-cortex-m]\nlanguage: rs\nkernel_type: rtos\nlicense: MIT`)
+    return shapeA(tag, `name: ${slug}\nkind: ${kind}\narch: [x86_64]\nlanguage: rs\nlicense: MIT`)
+  } }))
+add(OSB({ key: 'os:target', sub: 'toolchain target for one architecture (the name is the arch: x86_64, aarch64, riscv64, x86, arm-cortex-m)', name: { prompt: 'Architecture', def: 'x86_64' },
+  tag: n => `os:target:${n}`,
+  build: ({ name }) => shapeA(`os:target:${name}`, {
+    x86_64: 'triple: x86_64-unknown-none\nmachine: q35\nred_zone: false',
+    aarch64: 'triple: aarch64-unknown-none\nmachine: virt',
+    riscv64: 'triple: riscv64gc-unknown-none-elf\nmachine: virt',
+    x86: 'triple: i686-unknown-none\nmachine: pc',
+    'arm-cortex-m': 'triple: thumbv6m-none-eabi',
+  }[name] ?? `triple: ${name}-unknown-none`) }))
+add(OSB({ key: 'os:config', sub: 'kernel feature flags, log level, panic mode, constants', name: null, once: true,
+  tag: () => 'os:config',
+  build: () => shapeA('os:config', `features: [serial_log, heap]\nlog_level: info\npanic: halt\ndebug_assertions: true`) }))
+add(OSB({ key: 'os:boot', sub: 'firmware, loader and what the kernel asks the loader for', name: null, once: true,
+  tag: () => 'os:boot',
+  build: () => shapeA('os:boot', `firmware: uefi\nloader: bootloader_crate\nrequests:\n  memory_map: true`) }))
+add(OSB({ key: 'os:memory', sub: 'physical allocator, paging, heap and regions', name: null, once: true,
+  tag: () => 'os:memory',
+  build: () => shapeA('os:memory', `physical: bitmap\nguard_pages: true`) }))
+add(OSB({ key: 'os:interrupts', sub: 'interrupt controller, exceptions, irq lines and timer', name: null, once: true,
+  tag: () => 'os:interrupts',
+  build: () => shapeA('os:interrupts', `controller: apic\ntimer:\n  source: apic\n  hz: 100`) }))
+add(OSB({ key: 'os:scheduler', sub: 'scheduling policy and tick rate', name: null, once: true,
+  tag: () => 'os:scheduler',
+  build: () => shapeA('os:scheduler', `policy: round_robin\ntick_hz: 100\npreemptive: true\nmax_tasks: 64\nidle_task: true`) }))
+add(OSB({ key: 'os:syscall', sub: 'one syscall: number, arguments, return type, handler (<source>::<function>)', name: { prompt: 'Syscall name', def: 'write' },
+  tag: n => `os:syscall:${n}`,
+  build: ({ name }) => shapeA(`os:syscall:${name}`, `number: 1\nargs:\n  - name: fd\n    type: u64\nreturns: i64\nhandler: syscalls::sys_${name}`) }))
+add(OSB({ key: 'os:driver', sub: 'one driver: class, bus, ports or mmio, model', name: { prompt: 'Driver name', def: 'serial' },
+  tag: n => `os:driver:${n}`,
+  build: ({ name }) => shapeA(`os:driver:${name}`, `class: serial\nbus: platform\nports: [0x3F8]\nmodel: polling\nexposes: ${name}`) }))
+add(OSB({ key: 'os:fs', sub: 'filesystem type, root folder under assets/ and mounts', name: null, once: true,
+  tag: () => 'os:fs',
+  build: () => shapeA('os:fs', `type: tarfs\nroot: initrd\nvfs: true`) }))
+add(OSB({ key: 'os:userland', sub: 'one userland program (write it with an os:source part: user block)', name: { prompt: 'Program name', def: 'hello' },
+  tag: n => `os:userland:${n}`,
+  build: ({ name }) => shapeA(`os:userland:${name}`, `language: rs\nentry: main\nautostart: true\nlibc: none`) }))
+add(OSB({ key: 'os:shell', sub: 'built-in shell prompt and builtins', name: null, once: true,
+  tag: () => 'os:shell',
+  build: () => shapeA('os:shell', `prompt: "> "\nbuiltins: [help, echo, halt]\nhistory: true`) }))
+add(OSB({ key: 'os:image', sub: 'output image formats and partitions (written under projects/os/ only)', name: null, once: true,
+  tag: () => 'os:image',
+  build: () => shapeA('os:image', `formats: [uefi_disk]\nchecksums: sha256`) }))
+add(OSB({ key: 'os:run', sub: 'emulator settings (QEMU): machine, ram, devices, serial', name: null, once: true,
+  tag: () => 'os:run',
+  build: () => shapeA('os:run', `emulator: qemu\nmachine: q35\nram: 256M\ndisplay: none\nserial: stdio`) }))
+add(OSB({ key: 'os:test', sub: 'a boot test (serial output must match) or a unit test', name: { prompt: 'Test name', def: 'boots' },
+  tag: n => `os:test:${n}`,
+  build: ({ name }) => shapeA(`os:test:${name}`, `kind: boot\ntimeout: 10\nexpect: ["boot ok"]\nforbid: ["panic"]`) }))
+add(OSB({ key: 'os:assets', sub: 'files bundled into the image (folder assets/ next to core.tsx)', name: null, once: true,
+  tag: () => 'os:assets',
+  build: () => shapeA('os:assets', `include: ["initrd/**"]\ndest: initrd`) }))
+add(OSB({ key: 'os:distro', sub: 'distribution build: builder, packages, init, account names (no passwords)', name: null, once: true,
+  tag: () => 'os:distro',
+  build: () => shapeA('os:distro', `builder: buildroot\npackages: [busybox]\ninit: busybox\nhostname: pluffy`) }))
+add(OSB({ key: 'os:board', sub: 'microcontroller board: chip, clock, runtime, peripherals', name: null, once: true,
+  tag: () => 'os:board',
+  build: () => shapeA('os:board', `name: example-board\nchip: example-chip\nruntime: bare\nflash_tool: uf2`) }))
+add(OSB({ key: 'os:source', sub: 'one source file in a language (use a variant: --rs, --c, --asm, --go, --cpp)', name: { prompt: 'Source name (a module name such as main)', def: 'main' }, variants: osVariants,
+  tag: (n, v) => `os:source:${v}:${n}`,
+  build: ({ name, variant, flags }) => {
+    const tag = `os:source:${variant}:${name}`
+    if (variant === 'rs') return shapeB(tag, `part: kernel${name === 'main' ? '\nentry: true' : ''}`, name === 'main'
+      ? `#![no_std]\n#![no_main]\n\n#[no_mangle]\npub extern "C" fn _start() -> ! {\n    loop {}\n}\n\n#[panic_handler]\nfn panic(_info: &core::panic::PanicInfo) -> ! {\n    loop {}\n}`
+      : `pub fn init() {}`)
+    if (variant === 'asm') return shapeB(tag, `part: boot\narch: x86_64`, osPlaceholder(variant, `${name} assembly`))
+    return shapeB(tag, 'part: kernel', osPlaceholder(variant, `${name} source`))
+  } }))
+add(OSB({ key: 'os:readme', sub: 'README body (markdown)', name: null, once: true,
+  tag: () => 'os:readme',
+  build: ({ slug }) => shapeC('os:readme', `# ${slug}\n\nDescribe what this system does and how to boot it.`) }))
+
+
 // ---- Godot 4 ----
 const GODOT = g => ({ group: 'Godot 4', game: 'godot', ...g })
 add(GODOT({ key: 'godot:project', sub: 'project identity, renderer, display', name: null, once: true,
@@ -895,6 +988,16 @@ const TEMPLATES = {
     make: ({ slug }) => [metaBlock(slug, 'Terminal UI tatemono'), make('term:project', null, { slug, flags: { mode: 'tui' } }), make('term:runtime', null, { slug, variant: 'ts', flags: { tui: true } }), make('term:screen', 'main', { slug }), make('term:keymap', 'main', { slug, flags: { name: 'main' } })] },
   records: { label: 'Record manager (TUI)', sub: 'meta + term project (tui) + data + table/form screen + keymap + export',
     make: ({ slug }) => [metaBlock(slug, 'Record manager tatemono'), make('term:project', null, { slug, flags: { mode: 'tui' } }), make('term:runtime', null, { slug, variant: 'ts', flags: { tui: true } }), make('term:data', 'items', { slug }), make('term:screen', 'main', { slug, flags: { data: 'items' } }), make('term:keymap', 'main', { slug, flags: { name: 'main' } }), make('term:export')] },
+  kernel: { label: 'Kernel (OS)', sub: 'meta + os project (kernel) + target + boot + memory + image + run + boot test + entry source',
+    make: ({ slug }) => [metaBlock(slug, 'Kernel tatemono'), make('os:project', null, { slug, flags: { mode: 'kernel' } }), make('os:target', 'x86_64', { slug }), make('os:boot'), make('os:memory'), make('os:image'), make('os:run'), make('os:test', 'boots', { slug }), make('os:source', 'main', { slug, variant: 'rs' })] },
+  os:     { label: 'Operating system', sub: 'kernel + interrupts, scheduler, syscall, userland program and shell',
+    make: ({ slug }) => [metaBlock(slug, 'Operating system tatemono'), make('os:project', null, { slug, flags: { mode: 'os' } }), make('os:target', 'x86_64', { slug }), make('os:boot'), make('os:memory'), make('os:interrupts'), make('os:scheduler'), make('os:syscall', 'write', { slug }), make('os:userland', 'hello', { slug }), make('os:shell'), make('os:image'), make('os:run'), make('os:test', 'boots', { slug }), make('os:source', 'main', { slug, variant: 'rs' }), make('os:source', 'syscalls', { slug, variant: 'rs' }), shapeB('os:source:rs:hello', 'part: user', '#![no_std]\n#![no_main]\n\n#[no_mangle]\npub extern "C" fn main() -> i64 {\n    0\n}')] },
+  firmware: { label: 'Firmware (microcontroller)', sub: 'meta + os project (firmware) + arm-cortex-m target + board + image + entry source',
+    make: ({ slug }) => [metaBlock(slug, 'Firmware tatemono'), make('os:project', null, { slug, flags: { mode: 'firmware' } }), make('os:target', 'arm-cortex-m', { slug }), make('os:board'), shapeA('os:image', 'formats: [uf2]'), make('os:source', 'main', { slug, variant: 'rs' })] },
+  driver: { label: 'Driver (host OS)', sub: 'meta + os project (driver, linux) + driver block + C source',
+    make: ({ slug }) => [metaBlock(slug, 'Driver tatemono'), make('os:project', null, { slug, flags: { mode: 'driver' } }), shapeA('os:driver:hello', 'class: serial\nbus: platform\nmodule: hello_serial'), shapeB('os:source:c:hello', 'part: driver', '#include <linux/init.h>\n#include <linux/module.h>\n\nMODULE_LICENSE("GPL");')] },
+  distro: { label: 'Linux distribution', sub: 'meta + os project (distro) + distro build configuration + image',
+    make: ({ slug }) => [metaBlock(slug, 'Distribution tatemono'), make('os:project', null, { slug, flags: { mode: 'distro' } }), make('os:distro'), shapeA('os:image', 'formats: [raw]')] },
   game:   { label: 'Terminal game', sub: 'meta + term project (tui) + ts runtime + loop and loop view + keymap',
     make: ({ slug }) => [metaBlock(slug, 'Terminal game tatemono'), make('term:project', null, { slug, flags: { mode: 'tui' } }), make('term:runtime', null, { slug, variant: 'ts', flags: { tui: true } }), make('term:keymap', null, { slug }), make('term:loop', 'game', { slug }), make('term:view', 'game', { slug, variant: 'ts', flags: { loop: true } })] },
 }
@@ -927,6 +1030,18 @@ const TERM_CODE_FAMILIES = new Set(['term:handler', 'term:view', 'term:script', 
 const TERM_YAML_FAMILIES = new Set(Object.keys(TERM_FAMILY_SHAPE).filter(f => !TERM_CODE_FAMILIES.has(f)))
 const TERM_LANG_SHAPES = new Set(['lang', 'langname'])
 
+// Operating system blocks (@arkzen:os:*). How many parts follow the family name:
+//   none: nothing   optname: an optional id   name: a name   langname: a language and a name
+const OS_FAMILY_SHAPE = {
+  'os:config': 'none', 'os:boot': 'none', 'os:memory': 'none', 'os:interrupts': 'none', 'os:scheduler': 'none', 'os:fs': 'none',
+  'os:shell': 'none', 'os:image': 'none', 'os:run': 'none', 'os:assets': 'none', 'os:distro': 'none', 'os:board': 'none', 'os:readme': 'none',
+  'os:project': 'optname',
+  'os:target': 'name', 'os:syscall': 'name', 'os:driver': 'name', 'os:userland': 'name', 'os:test': 'name',
+  'os:source': 'langname',
+}
+const OS_CODE_FAMILIES = new Set(['os:source', 'os:readme'])
+const OS_YAML_FAMILIES = new Set(Object.keys(OS_FAMILY_SHAPE).filter(f => !OS_CODE_FAMILIES.has(f)))
+
 function parseTag(tag) {
   const decl = tag.match(DECL_RE)
   if (decl) return { family: decl[1], decl: decl[2], name: '' }
@@ -942,6 +1057,11 @@ function parseTag(tag) {
   if (head === 'desktop') return { family: `desktop:${parts[1]}`, name: parts.slice(2).join(':') }
   if (head === 'ext') return { family: `ext:${parts[1]}`, name: parts.slice(2).join(':') }
   if (head === 'pkg') return { family: `pkg:${parts[1]}`, name: parts.slice(2).join(':') }
+  if (head === 'os') {
+    const family = `os:${parts[1]}`
+    if (OS_FAMILY_SHAPE[family] === 'langname') return { family, variant: parts[2] ?? null, name: parts.slice(3).join(':') }
+    return { family, name: parts.slice(2).join(':') }
+  }
   if (head === 'term') {
     const family = `term:${parts[1]}`
     if (TERM_LANG_SHAPES.has(TERM_FAMILY_SHAPE[family])) return { family, variant: parts[2] ?? null, name: parts.slice(3).join(':') }
@@ -1000,7 +1120,7 @@ export function scanSource(source) {
   const model = {
     src, openers: [], meta: null, metaLine: 0, apis: [], tables: [], routes: [], events: [],
     webPages: [], webLayouts: [], nativePages: [], nativeLayouts: [], lynxPages: [], lynxLayouts: [],
-    code: [], mixed: [], frames: [], fileBlocks: [], game: null, ends: new Set(), oauth: null, exts: [], pkgs: [], terms: [],
+    code: [], mixed: [], frames: [], fileBlocks: [], game: null, ends: new Set(), oauth: null, exts: [], pkgs: [], terms: [], oss: [],
   }
   const lineOf = idx => src.slice(0, idx).split('\n').length
   let lastWeb = null, lastNative = null, lastLynx = null
@@ -1017,7 +1137,7 @@ export function scanSource(source) {
       // which contain */ inside a string. Their header ends at a */ that starts its own line,
       // the same rule the engine parser uses.
       let end
-      if (tag.startsWith('ext:') || tag.startsWith('term:')) {
+      if (tag.startsWith('ext:') || tag.startsWith('term:') || tag.startsWith('os:')) {
         const own = /\n\*\//.exec(src.slice(afterOpen))
         end = own ? afterOpen + own.index + 1 : -1
       } else {
@@ -1032,6 +1152,7 @@ export function scanSource(source) {
     if (o.family.startsWith('ext:')) model.exts.push({ ...o, name: o.name, fields: yamlTop(yaml) })
     if (o.family.startsWith('pkg:')) model.pkgs.push({ ...o, name: o.name, fields: yamlTop(yaml) })
     if (o.family.startsWith('term:')) model.terms.push({ ...o, fields: yamlTop(yaml) })
+    if (o.family.startsWith('os:')) model.oss.push({ ...o, fields: yamlTop(yaml) })
 
     switch (o.family) {
       case 'meta': model.meta = { ...yamlTop(yaml), _raw: yaml }; model.metaLine = o.line; break
@@ -1138,10 +1259,20 @@ export function lintSource(source, opts = {}) {
         else if (shape === 'none' && o.name) E(`@arkzen:${o.family} takes no name (found "${o.name}")`, o.line)
       }
     }
+    if (o.family.startsWith('os:')) {
+      const shape = OS_FAMILY_SHAPE[o.family]
+      if (!shape) E(`Unknown operating system block @arkzen:${o.tag}. Known: ${Object.keys(OS_FAMILY_SHAPE).map(f => '@arkzen:' + f).join(', ')}.${didYouMean(o.family, Object.keys(OS_FAMILY_SHAPE))}`, o.line)
+      else if (shape === 'langname') {
+        if (!o.variant) E(`@arkzen:${o.tag} needs a language: write @arkzen:${o.family}:<lang>:<name> (${OS_LANGS.join(', ')})`, o.line)
+        else if (!OS_LANGS.includes(o.variant)) E(`@arkzen:${o.tag}: unknown language "${o.variant}". Use one of: ${OS_LANGS.join(', ')}.${didYouMean(o.variant, OS_LANGS)}`, o.line)
+        else if (!o.name) E(`@arkzen:${o.tag} needs a name: write @arkzen:${o.family}:${o.variant}:<name>`, o.line)
+      } else if (shape === 'name' && !o.name) E(`@arkzen:${o.tag} needs a name: write @arkzen:${o.family}:<name>`, o.line)
+      else if (shape === 'none' && o.name) E(`@arkzen:${o.family} takes no name (found "${o.name}")`, o.line)
+    }
     const head = o.tag.split(':')[0]
-    const isA = SHAPE_A_TAGS.has(o.tag) || head === 'database' || head === 'api' || EXT_YAML_FAMILIES.has(o.family) || PKG_YAML_FAMILIES.has(o.family) || TERM_YAML_FAMILIES.has(o.family)
+    const isA = SHAPE_A_TAGS.has(o.tag) || head === 'database' || head === 'api' || EXT_YAML_FAMILIES.has(o.family) || PKG_YAML_FAMILIES.has(o.family) || TERM_YAML_FAMILIES.has(o.family) || OS_YAML_FAMILIES.has(o.family)
     const isD = BACKEND_CODE.has(head) || o.family === 'module:rs'
-    const isC = (SHAPE_C_HEADS.has(head) && !SHAPE_A_TAGS.has(o.tag) && o.family !== 'native:meta') || o.family === 'desktop:frame' || EXT_CODE_FAMILIES.has(o.family) || PKG_CODE_FAMILIES.has(o.family) || TERM_CODE_FAMILIES.has(o.family)
+    const isC = (SHAPE_C_HEADS.has(head) && !SHAPE_A_TAGS.has(o.tag) && o.family !== 'native:meta') || o.family === 'desktop:frame' || EXT_CODE_FAMILIES.has(o.family) || PKG_CODE_FAMILIES.has(o.family) || TERM_CODE_FAMILIES.has(o.family) || OS_CODE_FAMILIES.has(o.family)
     const needsEnd = () => { if (!m.ends.has(o.tag)) E(`@arkzen:${o.tag} is missing its closing /* @arkzen:${o.tag}:end */`, o.line) }
     if (isA) {
       if (o.sameLineClose) E(`@arkzen:${o.tag} is a YAML-only block: do not put */ on the opening line, close it with a bare */ line`, o.line)
@@ -1152,7 +1283,7 @@ export function lintSource(source, opts = {}) {
       needsEnd()
     } else if (isC) {
       // Layouts and ext blocks may open with a multi-line YAML header (Shape B).
-      const layoutWithYaml = (o.family === 'web:layout' || o.family === 'native:layout' || o.family === 'native:layout:lynx' || EXT_CODE_FAMILIES.has(o.family) || PKG_CODE_FAMILIES.has(o.family) || TERM_CODE_FAMILIES.has(o.family)) && !o.sameLineClose && o.closed
+      const layoutWithYaml = (o.family === 'web:layout' || o.family === 'native:layout' || o.family === 'native:layout:lynx' || EXT_CODE_FAMILIES.has(o.family) || PKG_CODE_FAMILIES.has(o.family) || TERM_CODE_FAMILIES.has(o.family) || OS_CODE_FAMILIES.has(o.family)) && !o.sameLineClose && o.closed
       if (!o.sameLineClose && !layoutWithYaml) E(`@arkzen:${o.tag} is a code block: put */ on the SAME line as the opening tag`, o.line)
       needsEnd()
     } else if (o.family === 'file') {
@@ -1182,8 +1313,20 @@ export function lintSource(source, opts = {}) {
     }
   }
 
+  // operating system blocks: the cross-checks that need no YAML parser (the engine validator checks the rest)
+  if (m.oss.length) {
+    if (!m.oss.some(o => o.family === 'os:project')) E('@arkzen:os:project is required when a tatemono has operating system blocks')
+    const sources = new Set(m.oss.filter(o => o.family === 'os:source').map(o => o.name))
+    const handlers = [...m.oss.filter(o => ['os:syscall', 'os:driver', 'os:interrupts'].includes(o.family))]
+    for (const o of handlers) {
+      for (const hm of o.yaml.matchAll(/handler:[ \t]*([A-Za-z0-9_]+)::[A-Za-z0-9_]+/g)) {
+        if (!sources.has(hm[1])) W(`@arkzen:${o.tag}: handler refers to the source "${hm[1]}", but no @arkzen:os:source block has that name.${didYouMean(hm[1], [...sources])}`, o.line)
+      }
+    }
+  }
+
   // pages
-  if (!isGame && !hasFiles && !m.exts.length && !m.pkgs.length && !m.terms.length && !m.webPages.length && !m.nativePages.length && !m.lynxPages.length)
+  if (!isGame && !hasFiles && !m.exts.length && !m.pkgs.length && !m.terms.length && !m.oss.length && !m.webPages.length && !m.nativePages.length && !m.lynxPages.length)
     E('At least one @arkzen:web:page:<name>, @arkzen:native:page:<name> or @arkzen:native:page:lynx:<name> is required')
   for (const [list, label] of [[m.webPages, 'web'], [m.nativePages, 'native'], [m.lynxPages, 'Lynx']]) {
     const names = new Set()
@@ -1349,6 +1492,7 @@ const NAME_KIND = {
   'native:script': 'free', 'lynx:script': 'free', 'ext:locale': 'free',
   'pkg:target': 'free', 'pkg:source': 'free', 'pkg:test': 'free',
   'term:command': 'dotted', 'term:handler': 'dotted',
+  'os:target': 'free', 'os:syscall': 'snake', 'os:source': 'snake',
 }
 
 function normalizeName(block, raw, flags) {
@@ -1373,6 +1517,13 @@ function normalizeName(block, raw, flags) {
     const w = words(input)
     const v = w.length ? w[0].toLowerCase() + w.slice(1).map(x => x[0].toUpperCase() + x.slice(1)).join('') : ''
     return /^[A-Za-z_]/.test(v) ? done(v) : { error: `"${input}" is not a valid ${block.key} name (letters, digits and _; not starting with a digit)` }
+  }
+  if (kind === 'snake') {
+    // lowercase snake_case: a syscall name, or a source name that a handler refers to (syscalls::sys_write)
+    if (/^[a-z][a-z0-9_]*$/.test(input)) return { value: input }
+    if (flags.exact) return { error: `"${input}" is not a valid ${block.key} name (lowercase letters, digits and _, starting with a letter)` }
+    const v = snake(input)
+    return /^[a-z]/.test(v) ? done(v) : { error: `"${input}" cannot be turned into a snake_case name (it must start with a letter)` }
   }
   if (kind === 'dotted') {
     // kebab-case parts joined by dots: db.migrate, tag.add
@@ -1532,6 +1683,7 @@ function printBlockHelp() {
     --path=<file>   output path for file blocks
     --mode=scene    unity:project mode (Unreal is always scene mode)
     --mode=<m>      term:project mode: cli (default), tui or hybrid
+    --mode=<k>      os:project kind: kernel (default), os, bootloader, bootapp, firmware, unikernel, driver, distro or desktop
     --exact         keep the name as typed (no snake_case / kebab-case conversion)
     --force         write even if the result has new errors
     --dry           print the block, write nothing
@@ -1580,7 +1732,7 @@ function allowedFlagsFor(block) {
   if (['web:page', 'native:page', 'lynx:page'].includes(block.key)) ok.add('layout')
   if (['web:layout', 'native:layout', 'lynx:layout'].includes(block.key)) ok.add('parent')
   if (block.key === 'file') ok.add('path')
-  if (block.key === 'unity:project' || block.key === 'term:project') ok.add('mode')
+  if (block.key === 'unity:project' || block.key === 'term:project' || block.key === 'os:project') ok.add('mode')
   return ok
 }
 
@@ -1646,6 +1798,7 @@ export async function cmdBlock(ctx, args) {
   const bad = Object.keys(flags).filter(k => flags[k] !== false && !allowed.has(k) && k !== 'list')
   if (bad.length) { ctx.error(`${block.key} does not use ${bad.map(k => '--' + k).join(', ')}.${allowed.size > 5 ? ` It accepts: ${[...allowed].filter(k => !['dry', 'force', 'exact', 'quiet', 'help'].includes(k)).map(k => '--' + k).join(', ')}.` : ''}`); return fail() }
 
+  if (block.key === 'os:project' && flags.mode !== undefined && !OS_KINDS.includes(flags.mode)) { ctx.error(`--mode must be one of: ${OS_KINDS.join(', ')} (got "${flags.mode}")`); return fail() }
   if (block.key === 'term:project' && flags.mode !== undefined && !TERM_MODES.includes(flags.mode)) { ctx.error(`--mode must be one of: ${TERM_MODES.join(', ')} (got "${flags.mode}")`); return fail() }
 
   // 4. variant (backend or native target)

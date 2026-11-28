@@ -178,7 +178,7 @@ function symbolKind(tag) {
     case 'listener': case 'events': case 'realtime': return k.Event
     case 'jobs': case 'console': case 'notifications': case 'mail': return k.Function
     case 'file': return k.File
-    case 'godot': case 'unity': case 'unreal': case 'ext': case 'pkg': case 'term': return k.Object
+    case 'godot': case 'unity': case 'unreal': case 'ext': case 'pkg': case 'term': case 'os': return k.Object
     default: return k.Variable
   }
 }
@@ -428,7 +428,7 @@ async function addBlock() {
     const opts = list.map(x => ({ label: `:${x}`, description: `${labels[x]}${x === active ? '  (active backend)' : ''}`, value: x }))
     opts.sort((a, b) => (b.value === active) - (a.value === active))
     if (optional) opts.unshift({ label: 'shared', description: 'YAML only, works on every backend', value: null })
-    const v = await pick(opts, backend ? 'Which backend variant?' : (block.variants.question ? 'Which terminal runtime?' : 'Which native target?'))
+    const v = await pick(opts, backend ? 'Which backend variant?' : (block.variants.question ? (block.key.startsWith('os:') ? 'Which source language?' : 'Which terminal runtime?') : 'Which native target?'))
     if (!v) return
     variant = v.value
   }
