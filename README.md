@@ -30,8 +30,8 @@ Every tatemono is its own small world. It gets its own database, its own users, 
 - **Backend:** Laravel (PHP), Express (TypeScript), FastAPI (Python), Spring Boot (Java), ASP.NET Core (C#), Go, or Rust
 - **Database:** SQLite (a file per tatemono) or PostgreSQL (a database per tatemono)
 - **BrowserExtension:** in progress...phase 5
-- **TUI/CLI:** in progress...phase 1
-- **Packages:** in progress...phase 3
+- **TUI/CLI:** in progress...phase 3
+- **Packages:** in progress...phase 4
 - **OS:** soon...
 
 Pick the stack you like, and the same tatemono runs on it.
