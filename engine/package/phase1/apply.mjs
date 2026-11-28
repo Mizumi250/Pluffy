@@ -41,16 +41,29 @@ function load(rel) {
 function edit(rel, done, anchor, replacement, mode = 'after') {
   const f = load(rel)
   if (!f) { log.push(`  MISSING FILE  ${rel}`); failed = true; return }
-  if (f.text.includes(done)) { log.push(`  already done  ${rel}  (${done.slice(0, 50).trim()})`); return }
-  const first = f.text.indexOf(anchor)
-  if (first === -1) { log.push(`  ANCHOR NOT FOUND  ${rel}\n      ${anchor.split('\n')[0].slice(0, 110)}`); failed = true; return }
-  if (f.text.indexOf(anchor, first + 1) !== -1) { log.push(`  ANCHOR NOT UNIQUE  ${rel}\n      ${anchor.split('\n')[0].slice(0, 110)}`); failed = true; return }
-  const at = first
+  const doneText = done instanceof RegExp ? String(done) : done
+  if (done instanceof RegExp ? done.test(f.text) : f.text.includes(done)) { log.push(`  already done  ${rel}  (${doneText.slice(0, 50).trim()})`); return }
+  let at, length
+  if (anchor instanceof RegExp) {
+    const flags = anchor.flags.includes('g') ? anchor.flags : anchor.flags + 'g'
+    const found = [...f.text.matchAll(new RegExp(anchor.source, flags))]
+    if (found.length === 0) { log.push(`  ANCHOR NOT FOUND  ${rel}\n      ${String(anchor).slice(0, 110)}`); failed = true; return }
+    if (found.length > 1) { log.push(`  ANCHOR NOT UNIQUE  ${rel}\n      ${String(anchor).slice(0, 110)}`); failed = true; return }
+    at = found[0].index
+    length = found[0][0].length
+    if (typeof replacement === 'function') replacement = replacement(found[0])
+  } else {
+    const first = f.text.indexOf(anchor)
+    if (first === -1) { log.push(`  ANCHOR NOT FOUND  ${rel}\n      ${anchor.split('\n')[0].slice(0, 110)}`); failed = true; return }
+    if (f.text.indexOf(anchor, first + 1) !== -1) { log.push(`  ANCHOR NOT UNIQUE  ${rel}\n      ${anchor.split('\n')[0].slice(0, 110)}`); failed = true; return }
+    at = first
+    length = anchor.length
+  }
   if (mode === 'before')       f.text = f.text.slice(0, at) + replacement + f.text.slice(at)
-  else if (mode === 'after')   f.text = f.text.slice(0, at + anchor.length) + replacement + f.text.slice(at + anchor.length)
-  else                         f.text = f.text.slice(0, at) + replacement + f.text.slice(at + anchor.length)
+  else if (mode === 'after')   f.text = f.text.slice(0, at + length) + replacement + f.text.slice(at + length)
+  else                         f.text = f.text.slice(0, at) + replacement + f.text.slice(at + length)
   f.changed = true
-  log.push(`  edited        ${rel}  (${done.slice(0, 50).trim()})`)
+  log.push(`  edited        ${rel}  (${doneText.slice(0, 50).trim()})`)
 }
 
 const SHARED = 'engine/shared/arkzen/engine-core'
@@ -76,7 +89,7 @@ edit(PARSER, '...PKG_CODE_TAGS,',
 edit(PARSER, '...PKG_YAML_TAGS,',
   '  ...EXT_YAML_TAGS,\n]',
   '  ...EXT_YAML_TAGS,\n  // package YAML-only blocks - v18.0\n  ...PKG_YAML_TAGS,\n]', 'replace')
-edit(PARSER, '(?:web|native|desktop|ext|pkg):',
+edit(PARSER, /\(\?:web\|native\|desktop\|ext\|(?:[a-z]+\|)*pkg(?:\|[a-z]+)*\):/,
   '(?:web|native|desktop|ext):', '(?:web|native|desktop|ext|pkg):', 'replace')
 edit(PARSER, '// v18.0: a typo in a pkg block name',
   '    const hasInlineClose = trimmed.endsWith(\'*/\')\n',
@@ -101,7 +114,7 @@ edit(PARSER, '!hasExt && !hasPkg &&',
 edit(PARSER, 'const pkg = parsePkg(content)',
   '  const ext = parseExt(content)\n',
   '\n  // v18.0: package blocks (opt-in; undefined when the Tatemono declares none)\n  const pkg = parsePkg(content)\n', 'after')
-edit(PARSER, 'ext !== undefined, pkg !== undefined)',
+edit(PARSER, 'ext !== undefined, pkg !== undefined',
   'content.includes(\'/* @arkzen:file:\'), ext !== undefined)',
   'content.includes(\'/* @arkzen:file:\'), ext !== undefined, pkg !== undefined)', 'replace')
 edit(PARSER, '...(pkg ? { pkg } : {}),',
@@ -134,7 +147,7 @@ edit(VALIDATOR, 'ArkzenDatabase, ArkzenPkgBlock }',
   "import type { ParsedTatemono, ValidationResult, ArkzenDatabase, ArkzenPkgBlock } from '../types'", 'replace')
 edit(VALIDATOR, '!parsed.ext && !parsed.pkg &&',
   '!hasFreeFiles && !parsed.ext &&', '!hasFreeFiles && !parsed.ext && !parsed.pkg &&', 'replace')
-edit(VALIDATOR, 'const extOnly = (!!parsed.ext || !!parsed.pkg) &&',
+edit(VALIDATOR, /const extOnly = \(?!!parsed\.ext[^\n]*!!parsed\.pkg/,
   'const extOnly = !!parsed.ext &&', 'const extOnly = (!!parsed.ext || !!parsed.pkg) &&', 'replace')
 
 // ── 3. types, in every stack that carries them ───────────────
@@ -171,22 +184,14 @@ edit(SC, 'const PKG_YAML_FAMILIES',
 edit(SC, "head === 'pkg'",
   "  if (head === 'ext') return { family: `ext:${parts[1]}`, name: parts.slice(2).join(':') }\n",
   "  if (head === 'pkg') return { family: `pkg:${parts[1]}`, name: parts.slice(2).join(':') }\n", 'after')
-edit(SC, 'exts: [], pkgs: []',
-  'oauth: null, exts: [],', 'oauth: null, exts: [], pkgs: [],', 'replace')
+edit(SC, /exts: \[\], pkgs: \[\]/, /exts: \[\],/, 'exts: [], pkgs: [],', 'replace')
 edit(SC, "model.pkgs.push(",
   "    if (o.family.startsWith('ext:')) model.exts.push({ ...o, name: o.name, fields: yamlTop(yaml) })\n",
   "    if (o.family.startsWith('pkg:')) model.pkgs.push({ ...o, name: o.name, fields: yamlTop(yaml) })\n", 'after')
-edit(SC, '!m.exts.length && !m.pkgs.length &&',
-  '!m.exts.length && !m.webPages.length', '!m.exts.length && !m.pkgs.length && !m.webPages.length', 'replace')
-edit(SC, 'PKG_YAML_FAMILIES.has(o.family)\n',
-  "head === 'database' || head === 'api' || EXT_YAML_FAMILIES.has(o.family)\n",
-  "head === 'database' || head === 'api' || EXT_YAML_FAMILIES.has(o.family) || PKG_YAML_FAMILIES.has(o.family)\n", 'replace')
-edit(SC, "o.family === 'desktop:frame' || EXT_CODE_FAMILIES.has(o.family) || PKG_CODE_FAMILIES",
-  "o.family === 'desktop:frame' || EXT_CODE_FAMILIES.has(o.family)\n",
-  "o.family === 'desktop:frame' || EXT_CODE_FAMILIES.has(o.family) || PKG_CODE_FAMILIES.has(o.family)\n", 'replace')
-edit(SC, "EXT_CODE_FAMILIES.has(o.family) || PKG_CODE_FAMILIES.has(o.family)) && !o.sameLineClose && o.closed",
-  "EXT_CODE_FAMILIES.has(o.family)) && !o.sameLineClose && o.closed",
-  "EXT_CODE_FAMILIES.has(o.family) || PKG_CODE_FAMILIES.has(o.family)) && !o.sameLineClose && o.closed", 'replace')
+edit(SC, '!m.exts.length && !m.pkgs.length &&', /!m\.exts\.length &&/, '!m.exts.length && !m.pkgs.length &&', 'replace')
+edit(SC, /EXT_YAML_FAMILIES\.has\(o\.family\) \|\| PKG_YAML_FAMILIES\.has\(o\.family\)/, /(head === 'database' \|\| head === 'api' \|\| EXT_YAML_FAMILIES\.has\(o\.family\))/, ' || PKG_YAML_FAMILIES.has(o.family)', 'after')
+edit(SC, /o\.family === 'desktop:frame' \|\| EXT_CODE_FAMILIES\.has\(o\.family\) \|\| PKG_CODE_FAMILIES/, /(o\.family === 'desktop:frame' \|\| EXT_CODE_FAMILIES\.has\(o\.family\))/, ' || PKG_CODE_FAMILIES.has(o.family)', 'after')
+edit(SC, /o\.family === 'native:layout:lynx' \|\| EXT_CODE_FAMILIES\.has\(o\.family\) \|\| PKG_CODE_FAMILIES/, /(o\.family === 'native:layout:lynx' \|\| EXT_CODE_FAMILIES\.has\(o\.family\))/, ' || PKG_CODE_FAMILIES.has(o.family)', 'after')
 edit(SC, 'Unknown package block',
   "    if (o.family.startsWith('ext:')) {\n      if (!EXT_YAML_FAMILIES.has(o.family)",
   "    if (o.family.startsWith('pkg:')) {\n" +
