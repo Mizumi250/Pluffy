@@ -37,15 +37,24 @@ class Terms {
     if (!fs.existsSync(cwd || '')) cwd = os.homedir()          // the engine folder may be gone (after Uninstall)
     if (log) {
       this.map.set(id, { kind: 'log', cwd })                   // a tab that only shows text (repo commands)
-    } else if (pty) {
-      const shell = win ? 'powershell.exe' : process.env.SHELL || '/bin/bash'
-      const p = pty.spawn(shell, win ? ['-NoLogo'] : [], { name: 'xterm-256color', cols, rows, cwd, env: this.env() })
-      p.onData((data) => this.emit({ type: 'term:data', id, data }))
-      p.onExit(({ exitCode }) => { this.map.delete(id); this.emit({ type: 'term:exit', id, code: exitCode }) })
-      this.map.set(id, { kind: 'pty', p, cwd })
     } else {
+      let why = pty ? '' : 'node-pty is not installed.'
+      if (pty) {
+        try {
+          const shell = win ? 'powershell.exe' : process.env.SHELL || '/bin/bash'
+          const p = pty.spawn(shell, win ? ['-NoLogo'] : [], { name: 'xterm-256color', cols, rows, cwd, env: this.env() })
+          p.onData((data) => this.emit({ type: 'term:data', id, data }))
+          p.onExit(({ exitCode }) => { this.map.delete(id); this.emit({ type: 'term:exit', id, code: exitCode }) })
+          this.map.set(id, { kind: 'pty', p, cwd })
+          return id
+        } catch (e) {
+          // The native part (conpty.node) is missing or built for another Electron. Do not crash: use pipes.
+          why = String(e && e.message || e).split('\n')[0].slice(0, 160)
+          pty = null
+        }
+      }
       this.map.set(id, { kind: 'pipe', child: null, buf: '', cwd })
-      this.emit({ type: 'term:data', id, data: '\x1b[33mInteractive shell needs node-pty. Run "npm rebuild" in gui/.\x1b[0m\r\nGUI commands still work and show up here.\r\n' })
+      this.emit({ type: 'term:data', id, data: `\x1b[33mInteractive shell is off: ${why}\x1b[0m\r\nFix: in the gui folder run "npm run fix-pty" (see gui/README.md). GUI commands still work and show up here.\r\n` })
     }
     return id
   }

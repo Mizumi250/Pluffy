@@ -7,20 +7,37 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "scheme": "pluffy",
-    "splash": { "image": "./assets/splash.png", "resizeMode": "contain", "backgroundColor": "#f3ebe9" },
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f3ebe9"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "dev.pluffy.mobile",
       "infoPlist": {
         "NSLocalNetworkUsageDescription": "Pluffy talks to the laptop on your network that runs the Pluffy bridge.",
-        "NSAppTransportSecurity": { "NSAllowsLocalNetworking": true, "NSAllowsArbitraryLoads": true }
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true,
+          "NSAllowsArbitraryLoads": true
+        }
       }
     },
     "android": {
       "package": "dev.pluffy.mobile",
-      "adaptiveIcon": { "foregroundImage": "./assets/adaptive-icon.png", "backgroundColor": "#f3ebe9" },
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#f3ebe9"
+      },
       "usesCleartextTraffic": true
     },
-    "plugins": ["expo-secure-store"]
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "153f7974-81f6-4602-9ce0-c7ae6e92f30c"
+      }
+    }
   }
 }

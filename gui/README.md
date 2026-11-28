@@ -68,4 +68,4 @@ stay as they are. `Push repo` is `git add -A`, commit, push. `Pull repo` is `git
 - Updating the engine keeps your tatemonos, `arkzen.json` and `.mizumi-ai.json`.
 - Chat opens in its own window (same exe, `--pluffy-chat`). Embedding it in the main window means
   exporting a `createChat()` from chat/main.js: small refactor, not done yet.
-- Without node-pty the app falls back to piped output (no interactive shell).
+- Without node-pty (or if `conpty.node` is missing or built for another Electron) the app falls back to piped output, with the reason printed in the terminal tab. Fix it with `npm run fix-pty` in `gui/`.
