@@ -1,0 +1,7 @@
+{
+  "name": "pluffy-bridge",
+  "private": true,
+  "type": "module",
+  "description": "Lets the Pluffy phone app drive mizumi.js on this computer. No dependencies.",
+  "scripts": { "start": "node server.js" }
+}

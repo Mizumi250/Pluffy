@@ -31,6 +31,7 @@
 //    node mizumi.js scan         ← scan tatemonos into training data
 //    node mizumi.js chat         ← open the Pluffy chat window (Electron)
 //    node mizumi.js tui          ← Pluffy TUI: the GUI's menu in the terminal, with falling petals
+//    node mizumi.js bridge       ← let the Pluffy phone app control this computer (prints a pairing PIN)
 // ============================================================
 
 import { execFileSync, spawn } from 'node:child_process'
@@ -1335,6 +1336,13 @@ async function cmdTui(rest = []) {
   process.exitCode = await runNode('tui/main.js', rest)
 }
 
+// The bridge lets the phone app run mizumi.js commands on this computer. It never leaves your network on its own.
+async function cmdBridge(rest = []) {
+  const entry = path.join(ROOT_DIR, 'bridge', 'server.js')
+  if (!fs.existsSync(entry)) { error('bridge/server.js not found in the repo root'); process.exitCode = 1; return }
+  process.exitCode = await runNode('bridge/server.js', rest)
+}
+
 async function interactiveMenu() {
   printBanner()
 
@@ -1448,6 +1456,7 @@ function printHelp() {
     ['mizumi index',             '→ Refresh the online tatemono index in the guidelines (--check / --dry)'],
     ['mizumi chat',              '→ Open the Pluffy chat window (Electron)'],
     ['mizumi tui',               '→ Pluffy TUI (same cards as Studio, in your terminal)'],
+    ['mizumi bridge',            '→ Connect the Pluffy phone app to this computer (PIN pairing)'],
     ['mizumi review',            '→ Second AI reviews the repo (menu), report in .pluffy-review/'],
     ['mizumi review engine --apply', '→ Review one folder and approve edits one by one'],
   ]
@@ -1515,6 +1524,7 @@ switch (command) {
   case 'chat':    cmdChat(args.slice(1));      break
   case 'tui':
   case 'dash':    cmdTui(args.slice(1));       break
+  case 'bridge':  cmdBridge(args.slice(1));    break
   case 'review':  cmdReview(args.slice(1));    break
   case 'help':
   case '--help':

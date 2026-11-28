@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Pluffy",
+    "slug": "pluffy-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "pluffy",
+    "splash": { "image": "./assets/splash.png", "resizeMode": "contain", "backgroundColor": "#f3ebe9" },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.pluffy.mobile",
+      "infoPlist": {
+        "NSLocalNetworkUsageDescription": "Pluffy talks to the laptop on your network that runs the Pluffy bridge.",
+        "NSAppTransportSecurity": { "NSAllowsLocalNetworking": true, "NSAllowsArbitraryLoads": true }
+      }
+    },
+    "android": {
+      "package": "dev.pluffy.mobile",
+      "adaptiveIcon": { "foregroundImage": "./assets/adaptive-icon.png", "backgroundColor": "#f3ebe9" },
+      "usesCleartextTraffic": true
+    },
+    "plugins": ["expo-secure-store"]
+  }
+}

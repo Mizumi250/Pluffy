@@ -95,7 +95,7 @@ function drawDock(scr, x, y, w, h) {
   })
   const t = curTask(), inner = h - 2, iw = w - 4
   if (!t) {
-    scr.put(x + 3, y + 2, 'Pick a command and press ⏎ — its output streams here.', C.dim)
+    scr.put(x + 3, y + 2, 'Pick a command and press ⏎, and its output streams here.', C.dim)
     scr.put(x + 3, y + 3, 'Long runs like Start engine keep going while you browse.', C.dim)
     return
   }
