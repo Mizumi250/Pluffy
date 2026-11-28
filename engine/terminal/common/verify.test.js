@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { verifyCli } from './verify.js'
+import { verifyCli, verifyPrompts, simulateDefaults } from './verify.js'
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'pluffy-term-verify-'))
 let n = 0
@@ -84,4 +84,86 @@ test('a program that hangs is stopped and reported', async () => {
 test('an example with an unterminated quote is reported, not thrown', async () => {
   const steps = await verifyCli(model([ex('say "oops')]), fake(GOOD))
   assert.equal(statusOf(steps, 'example: demo say "oops'), 'FAIL')
+})
+
+// ── prompts ──────────────────────────────────────────────
+
+const step = (id, over = {}) => ({ id, type: 'text', message: `Q ${id}`, required: false, default: undefined, choices: null, validate: null, when: null, ...over })
+const prompt = steps => ({ name: 'p', result: 'answers', steps, fallback: {} })
+
+test('simulateDefaults follows "when" with the default answers', () => {
+  const p = prompt([
+    step('color', { type: 'select', choices: ['red', 'blue'], default: 'blue' }),
+    step('why', { when: { color: 'red' }, required: true }),
+    step('shade', { when: { color: 'blue' }, default: 'navy' }),
+  ])
+  const r = simulateDefaults(p, { interactive: true })
+  assert.deepEqual(r.asked.map(s => s.id), ['color', 'shade'])
+  assert.equal(r.blocker, null)
+})
+
+test('simulateDefaults names the first question that needs a typed answer', () => {
+  const p = prompt([step('a', { default: 'x' }), step('b', { required: true }), step('c', { required: true })])
+  const r = simulateDefaults(p, { interactive: true })
+  assert.equal(r.blocker.step.id, 'b')
+  assert.match(r.blocker.reason, /"b" has no default/)
+})
+
+test('simulateDefaults treats an editor as unanswerable and a select as answerable', () => {
+  assert.match(simulateDefaults(prompt([step('n', { type: 'editor' })]), { interactive: true }).blocker.reason, /opens an editor/)
+  assert.equal(simulateDefaults(prompt([step('s', { type: 'select', choices: ['a', 'b'], required: true })]), { interactive: true }).blocker, null)
+  assert.equal(simulateDefaults(prompt([step('s', { type: 'select', choices: ['a', 'b'], required: true })]), { interactive: false }).blocker.step.id, 's')
+})
+
+const promptModel = steps => ({
+  project: { binary: 'demo', version: '1.0.0' },
+  prompts: [prompt(steps)],
+  commands: [{ name: 'ask', path: ['ask'], builtin: null, prompt: 'p', args: [], flags: [], examples: [] }],
+})
+const statusFor = (steps, part) => steps.find(s => s.name.includes(part))?.status
+
+test('a program that ignores missing input fails the prompt check', async () => {
+  const model = promptModel([step('name', { required: true })])
+  const steps = await verifyPrompts(model, fake("console.log('done')"), { timeoutMs: 3000 })
+  assert.equal(statusFor(steps, 'names the missing input'), 'FAIL')
+  assert.equal(statusFor(steps, 'Ctrl+C'), 'FAIL', 'it never showed the question')
+})
+
+test('a program that names the missing input and shows the question passes', async () => {
+  const model = promptModel([step('name', { required: true })])
+  const good = `
+    if (!process.stdin.isTTY) { console.error('error: missing value for "name": pass --name'); process.exit(1) }
+    process.on('SIGINT', () => process.exit(130))
+    console.log('Q name'); setInterval(() => {}, 1000)`
+  const steps = await verifyPrompts(model, fake(good), { timeoutMs: 5000 })
+  assert.equal(statusFor(steps, 'names the missing input'), 'PASS')
+  assert.equal(statusFor(steps, 'Ctrl+C'), 'PASS')
+  assert.equal(statusFor(steps, 'accepting every default'), 'UNVERIFIED')
+})
+
+test('a prompt program that dies on Ctrl+C with the wrong code fails', async () => {
+  const model = promptModel([step('name', { required: true })])
+  const bad = `
+    if (!process.stdin.isTTY) { console.error('missing value for "name"'); process.exit(1) }
+    process.on('SIGINT', () => process.exit(1))
+    console.log('Q name'); setInterval(() => {}, 1000)`
+  const steps = await verifyPrompts(model, fake(bad), { timeoutMs: 5000 })
+  assert.equal(statusFor(steps, 'Ctrl+C'), 'FAIL')
+})
+
+test('all-default prompts must run without a terminal and complete in one', async () => {
+  const model = promptModel([step('a', { default: 'x' })])
+  const ok = `
+    if (process.stdin.isTTY) { console.log('Q a'); process.stdin.once('data', () => { console.log('done'); process.exit(0) }); process.stdin.setRawMode(true); process.on('SIGINT', () => process.exit(130)) }
+    else console.log('done')`
+  const steps = await verifyPrompts(model, fake(ok), { timeoutMs: 5000 })
+  assert.equal(statusFor(steps, 'runs on defaults'), 'PASS')
+  assert.equal(statusFor(steps, 'accepting every default'), 'PASS')
+})
+
+test('a command with required arguments is reported UNVERIFIED, not failed', async () => {
+  const model = promptModel([step('a', { default: 'x' })])
+  model.commands[0].args = [{ required: true }]
+  const steps = await verifyPrompts(model, fake('process.exit(0)'), { timeoutMs: 3000 })
+  assert.deepEqual(steps.map(s => s.status), ['UNVERIFIED'])
 })

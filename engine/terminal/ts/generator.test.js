@@ -15,17 +15,17 @@ const dir = () => path.join(tmp, `p${n++}`)
 async function modelOf(name) {
   const read = await readTatemono(name)
   assert.equal(read.valid, true, read.errors.join('\n'))
-  return buildModel(read.parsed)
+  return buildModel(read.parsed, { sourceDir: path.dirname(read.file) })
 }
 
 // Writes a throwaway tatemono and returns its model.
-async function modelFromSource(source) {
-  const d = dir()
+async function modelFromSource(source, existing) {
+  const d = existing ?? dir()
   fs.mkdirSync(d, { recursive: true })
   fs.writeFileSync(path.join(d, 'core.tsx'), source)
   const read = await readTatemono(d)
   assert.equal(read.valid, true, read.errors.join('\n'))
-  return buildModel(read.parsed)
+  return buildModel(read.parsed, { sourceDir: d })
 }
 
 const META = '/* @arkzen:meta\nname: t\nversion: 1.0.0\ndescription: t\nauth: false\n*/\n'
@@ -110,12 +110,6 @@ test('refuses a tui project instead of generating half a program', async () => {
   assert.throws(() => generateTs(model, dir()), err => err instanceof GenerateError && /terminal UI generator, which is not built yet/.test(err.message))
 })
 
-test('refuses a command that depends on a prompt', async () => {
-  const model = await modelOf('term-create-site')
-  const { errors } = checkSupported(model)
-  assert.ok(errors.some(e => /command "create" uses prompt "site"/.test(e)), errors.join('\n'))
-})
-
 test('reports completion and unbuilt blocks as warnings, and leaves the command out', async () => {
   const model = await modelFromSource(META + '/* @arkzen:term:project\nname: t\nbinary: t\nmode: cli\nruntimes: [ts]\n*/\n' + CMD + HANDLER +
     '/* @arkzen:term:command:completion\nbuiltin: completion\n*/\n/* @arkzen:term:config\nfile: t.json\n*/\n')
@@ -162,4 +156,128 @@ test('the import check catches Pluffy, undeclared packages and missing files', (
   assert.ok(problems.some(p => /pluffy-utils.*Pluffy/.test(p)))
   assert.ok(problems.some(p => /lodash.*does not declare/.test(p)))
   assert.ok(problems.some(p => /missing\.js.*does not exist/.test(p)))
+})
+
+// ── prompts, scaffolders and assets ──────────────────────
+
+test('a prompt command gets the prompt runtime, its definitions and the inquirer dependency', async () => {
+  const model = await modelOf('term-cli-prompts')
+  const out = dir()
+  generateTs(model, out)
+  for (const f of ['src/prompts.ts', 'src/prompt-defs.ts']) assert.ok(fs.existsSync(path.join(out, f)), f)
+  assert.equal(fs.existsSync(path.join(out, 'src/scaffold.ts')), false, 'no templates, so no scaffold module')
+  assert.equal(fs.existsSync(path.join(out, 'src/assets.ts')), false)
+  const pkg = JSON.parse(fs.readFileSync(path.join(out, 'package.json'), 'utf8'))
+  assert.equal(pkg.dependencies['@inquirer/prompts'], '8.8.1')
+  assert.equal(pkg.engines.node, '>=22.13.0')
+  const defs = fs.readFileSync(path.join(out, 'src/prompt-defs.ts'), 'utf8')
+  assert.match(defs, /"result": "profile"/)
+  assert.match(defs, /"when": \{\s*"color": "red"\s*\}/)
+})
+
+test('a project with no prompts does not depend on inquirer', async () => {
+  const out = dir()
+  generateTs(await modelOf('term-cli-features'), out)
+  const pkg = JSON.parse(fs.readFileSync(path.join(out, 'package.json'), 'utf8'))
+  assert.equal(pkg.dependencies['@inquirer/prompts'], undefined)
+  assert.equal(pkg.engines.node, '>=22.12.0')
+  assert.equal(fs.existsSync(path.join(out, 'src/prompts.ts')), false)
+})
+
+test('the fallback flags, --no-input and the prompt wrapper are wired into cli.ts', async () => {
+  const out = dir()
+  generateTs(await modelOf('term-cli-prompts'), out)
+  const cli = fs.readFileSync(path.join(out, 'src/cli.ts'), 'utf8')
+  assert.match(cli, /new Option\("--name <name>", "Your name"\)\.env\("SURVEY_NAME"\)/)
+  assert.match(cli, /new Option\("--age <age>", "Your age"\)\.argParser\(parseNumber\)/)
+  assert.match(cli, /new Option\("--color <color>", "Pick a color"\)\.choices\(\["red","green","blue"\]\)/)
+  assert.match(cli, /new Option\("--tags <tags>", "Pick tags"\)\.argParser\(collectList\)/)
+  assert.match(cli, /new Option\("--ok", "Do you agree"\)/)
+  assert.match(cli, /new Option\("--no-ok"/)
+  assert.match(cli, /new Option\('--no-input'/)
+  assert.match(cli, /withPrompt\(prompts\["survey"\], handler0\)/)
+  assert.equal(/SURVEY_SECRET/.test(cli), false, 'an env-only fallback is read at run time, not a flag')
+})
+
+test('a prompt command with templates and no handler becomes a scaffolder, with its assets copied', async () => {
+  const model = await modelOf('term-create-site')
+  const out = dir()
+  const result = generateTs(model, out)
+  for (const f of ['src/scaffold.ts', 'src/assets.ts', 'assets/templates/index.html']) assert.ok(fs.existsSync(path.join(out, f)), f)
+  assert.ok(result.files.includes('assets/templates/index.html'))
+  assert.equal(fs.existsSync(path.join(out, 'src/commands')), false, 'there is no handler to write')
+  const cli = fs.readFileSync(path.join(out, 'src/cli.ts'), 'utf8')
+  assert.match(cli, /withPrompt\(prompts\["site"\], scaffoldHandler\(prompts\["site"\]\.result, \[/)
+  assert.match(cli, /"target":"\{\{name\}\}\/index\.html"/)
+  assert.match(cli, /new Option\('--force'/)
+  const pkg = JSON.parse(fs.readFileSync(path.join(out, 'package.json'), 'utf8'))
+  assert.deepEqual(pkg.files, ['dist/src', 'assets'])
+  assert.equal(fs.readFileSync(path.join(out, 'assets/templates/index.html'), 'utf8').includes('{{name}}'), true, 'the template is copied untouched')
+})
+
+test('embedded assets live inside the code and are not copied', async () => {
+  const d = dir()
+  fs.mkdirSync(path.join(d, 'assets/templates'), { recursive: true })
+  fs.writeFileSync(path.join(d, 'assets/templates/a.txt'), 'hello {{name}}')
+  const model = await modelFromSource(META + '/* @arkzen:term:project\nname: t\nbinary: t\nmode: cli\nruntimes: [ts]\n*/\n' +
+    '/* @arkzen:term:prompt:p\nsteps:\n  - id: name\n    type: text\n    message: Name\n*/\n/* @arkzen:term:command:make\nprompt: p\n*/\n' +
+    '/* @arkzen:term:assets\nembed: true\ntemplates:\n  - source: templates/a.txt\n    target: "{{name}}.txt"\n    variables: [name]\n*/\n', d)
+  const out = dir()
+  const result = generateTs(model, out)
+  assert.equal(fs.existsSync(path.join(out, 'assets')), false)
+  assert.equal(JSON.parse(fs.readFileSync(path.join(out, 'package.json'), 'utf8')).files.includes('assets'), false)
+  const assets = fs.readFileSync(path.join(out, 'src/assets.ts'), 'utf8')
+  assert.ok(assets.includes(Buffer.from('hello {{name}}').toString('base64')))
+  assert.equal(result.files.some(f => f.startsWith('assets/')), false)
+})
+
+test('two generated commands over one set of templates are refused', async () => {
+  const model = await modelFromSource(META + '/* @arkzen:term:project\nname: t\nbinary: t\nmode: cli\nruntimes: [ts]\n*/\n' +
+    '/* @arkzen:term:prompt:p\nsteps:\n  - id: name\n    type: text\n    message: Name\n*/\n' +
+    '/* @arkzen:term:command:one\nprompt: p\n*/\n/* @arkzen:term:command:two\nprompt: p\n*/\n' +
+    '/* @arkzen:term:assets\ntemplates:\n  - source: a.txt\n    target: "{{name}}"\n    variables: [name]\n*/\n', (() => {
+      const d = dir(); fs.mkdirSync(path.join(d, 'assets'), { recursive: true }); fs.writeFileSync(path.join(d, 'assets/a.txt'), 'x'); return d
+    })())
+  assert.throws(() => generateTs(model, dir()), /would both write the same templates/)
+})
+
+test('a user handler on a prompt command keeps its handler', async () => {
+  const out = dir()
+  generateTs(await modelOf('term-cli-prompts'), out)
+  assert.ok(fs.existsSync(path.join(out, 'src/commands/survey.ts')))
+})
+
+test('an unsafe assets dest is refused', async () => {
+  const model = await modelFromSource(META + '/* @arkzen:term:project\nname: t\nbinary: t\nmode: cli\nruntimes: [ts]\n*/\n' + CMD + HANDLER + '/* @arkzen:term:assets\ndest: ../outside\n*/\n', (() => {
+    const d = dir(); fs.mkdirSync(d, { recursive: true }); return d
+  })())
+  assert.throws(() => generateTs(model, dir()), /dest "\.\.\/outside" must be a folder inside the project/)
+})
+
+// ── the output folder guard ──────────────────────────────
+
+test('it refuses an output folder that is not empty and not its own', async () => {
+  const model = await modelOf('term-todo-cli')
+  const out = dir()
+  fs.mkdirSync(out, { recursive: true })
+  fs.writeFileSync(path.join(out, 'precious.txt'), 'keep me')
+  assert.throws(() => generateTs(model, out), /not empty and was not made by this generator/)
+  assert.equal(fs.readFileSync(path.join(out, 'precious.txt'), 'utf8'), 'keep me')
+})
+
+test('it refuses an output folder that overlaps the tatemono folder', async () => {
+  const d = dir()
+  fs.mkdirSync(d, { recursive: true })
+  const model = await modelFromSource(META + '/* @arkzen:term:project\nname: t\nbinary: t\nmode: cli\nruntimes: [ts]\n*/\n' + CMD + HANDLER, d)
+  assert.throws(() => generateTs(model, d), /overlaps the tatemono folder/)
+  assert.throws(() => generateTs(model, path.join(d, 'sub')), /overlaps the tatemono folder/)
+  assert.throws(() => generateTs(model, path.dirname(d)), /overlaps the tatemono folder/)
+  assert.ok(fs.existsSync(path.join(d, 'core.tsx')), 'the source is still there')
+})
+
+test('it rebuilds into its own previous output', async () => {
+  const model = await modelOf('term-todo-cli')
+  const out = dir()
+  generateTs(model, out)
+  assert.doesNotThrow(() => generateTs(model, out))
 })

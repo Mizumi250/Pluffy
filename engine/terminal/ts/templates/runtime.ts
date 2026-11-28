@@ -38,8 +38,12 @@ export interface Stdin {
   read(): Promise<string>
 }
 
-/** A handler may return a number to set the exit code. */
-export type Handler = (ctx: Ctx) => void | number | Promise<void | number>
+/**
+ * A handler may return a number to set the exit code.
+ * The parameter is not checked against Ctx, so a handler can destructure the answers of a prompt
+ * under the name the prompt's result gives them. Annotate it as (ctx: Ctx) when you want the types.
+ */
+export type Handler = (ctx: any) => void | number | Promise<void | number>
 
 export interface ActionSpec {
   name: string
@@ -79,6 +83,14 @@ export function collect(parse?: (value: string) => unknown) {
   return (value: string, previous: unknown): unknown[] => [
     ...(Array.isArray(previous) ? previous : []),
     parse ? parse(value) : value,
+  ]
+}
+
+/** For a flag that takes a comma separated list and may also be repeated: --tags a,b --tags c. */
+export function collectList(value: string, previous: unknown): string[] {
+  return [
+    ...(Array.isArray(previous) ? (previous as string[]) : []),
+    ...value.split(',').map(s => s.trim()).filter(Boolean),
   ]
 }
 

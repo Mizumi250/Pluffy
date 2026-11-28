@@ -9,7 +9,7 @@ import path from 'node:path'
 import fs from 'node:fs'
 import { readTatemono, ROOT_DIR, TERMINAL_DIR } from './common/read.js'
 import { buildModel } from './common/model.js'
-import { verifyCli } from './common/verify.js'
+import { verifyCli, verifyPrompts } from './common/verify.js'
 import { runNpm } from './common/run.js'
 import { generateTs, GenerateError } from './ts/generator.js'
 import { installAndBuild } from './ts/build.js'
@@ -56,7 +56,7 @@ async function load(target) {
     process.exitCode = 1
     return null
   }
-  return { ...read, model: buildModel(read.parsed) }
+  return { ...read, model: buildModel(read.parsed, { sourceDir: path.dirname(read.file) }) }
 }
 
 async function cmdCheck(target) {
@@ -116,6 +116,7 @@ async function cmdBuild(target, flags, { verifyOnly = false } = {}) {
       : { name: 'imports stay inside the project (no Pluffy)', status: 'PASS' })
     if (!flags['no-verify'] && built) {
       steps.push(...await verifyCli(model, result.launch))
+      steps.push(...await verifyPrompts(model, result.launch))
       const r = await runNpm(['test'], { cwd: outDir })
       steps.push(r.code === 0
         ? { name: 'npm test (your tests and the generated example tests)', status: 'PASS' }

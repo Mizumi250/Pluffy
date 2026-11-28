@@ -685,3 +685,35 @@ Verified: 177 tests pass (127 from step 1, 50 new), including a real `npm instal
 Not verified: Windows. The npm registry was reachable here, so the offline skip path has not run. No terminal UI exists yet. `mizumi.js` and `export.js` are not wired to the terminal engine, so use `node engine/terminal/cli.js build <tatemono>` for now.
 
 Next: step 3, prompts (`term:prompt`, scaffolders with `assets.templates`) and declared TUI screens on `ts` with Ink, plus the pseudo-terminal test harness.
+
+### Step 3 (done, first half): prompts, scaffolders, assets and the pseudo-terminal harness
+
+Built on commit `21d05d4d5`. Nothing outside `engine/terminal/` and two fixtures changed.
+
+Work order change: step 3 in section 12 also lists declared TUI screens on Ink. They are NOT in this step. The declared `table` and `form` widgets read `term:data`, and screens need keymaps, both of which are step 4, so screens built now could not show anything. The Ink screens move to step 4 together with the record manager. Prompts, scaffolders, assets and the pseudo-terminal harness, which step 3 also needed, are done here.
+
+New:
+- `engine/terminal/common/pty.js` and `pty_driver.py`: run a program in a pseudo-terminal of a given size and play a script (`expect` text, `send` keys). Python standard library only. Linux and macOS.
+- `engine/terminal/common/glob.js`, model fields for prompts and assets.
+- `engine/terminal/ts/templates/prompts.ts`, `scaffold.ts`, `assets.ts` (copied into generated projects), and generator support for them.
+- `verifyPrompts` in `common/verify.js`: three automatic checks per prompt command.
+- Fixtures `tatemonos/term-cli-prompts` (every question type) and an updated `term-create-site` (examples).
+- 38 more tests (88 in `engine/terminal`, 215 with step 1).
+
+Decisions made while building:
+- Prompts use `@inquirer/prompts` 8.8.1 (pinned). It needs Node 22.13 or newer, so `engines.node` is raised to `>=22.13.0` for a project with prompts (22.12.0 otherwise).
+- A step's value comes from, in order: a command argument or flag with the step's name, the flag named in `fallback`, the environment variable named in `fallback`, a question in a terminal, then `default`. A required step with none of these stops with `missing value for "<id>": pass --flag or set ENV`.
+- `fallback.flag` becomes a flag on the command. `--no-input` is added to every prompt command. `--force` is added to a scaffolder.
+- `result` is the name the answers have on ctx (default `answers`). `Handler` takes `ctx: any`, so a handler can destructure it.
+- `validate`: `regex` for strings, `min`/`max` for numbers and for the length of strings and lists, `length` for an exact length.
+- A scaffolder is a command with a `prompt`, no handler, and `assets.templates`. Every template is written. Two scaffolders in one project are refused. Placeholders are `{{name}}`, replaced only for the names a template lists in `variables`. Targets are relative to the current folder, may not leave it, and never overwrite without `--force`. Binary files are copied unchanged.
+- `assets.embed: true` compiles the files into `src/assets.ts` as base64. Otherwise they are copied to `assets.dest` (default `assets`) and added to `files`.
+- The generator refuses an output folder that is not empty and was not made by it, or that overlaps the tatemono folder, because a rebuild deletes the old output.
+- Verification runs every command in a fresh empty temp folder.
+- Prompt checks: without a terminal the program names the missing input (or runs on defaults); in a terminal the first question appears and Ctrl+C exits with 130; when every question has a default, pressing Enter through all of them completes. A prompt that needs a typed answer, an editor, or a command with required arguments is reported UNVERIFIED for that check.
+
+Verified: 215 tests pass, including real `npm install` and `tsc` builds of five projects, scripted interactive sessions through the pseudo-terminal (every question type, validation errors and fixing them, `when`, the editor, Ctrl+C mid-way, `--no-input`, an environment variable), a scaffolder writing real files, overwrite refusal and `--force`, a template trying to leave the folder, and a binary file embedded and copied byte for byte. The end to end suite ran three times in a row with the same result. The verifier has tests that feed it wrong programs.
+
+Not verified: Windows (the pseudo-terminal harness is not supported there). `autocomplete` ignores `default` in a terminal (the search list has no default), the first match is chosen on Enter. `editor` was tested with `EDITOR=true`, not a real editor. Terminal screens do not exist yet.
+
+Next: step 4, the Ink TUI: declared screens and widgets, `term:data` record manager, keymaps, themes, `term:loop`, `term:config`. It reuses the pseudo-terminal harness.

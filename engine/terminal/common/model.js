@@ -44,7 +44,7 @@ function normalizeFlag(raw) {
   }
 }
 
-export function buildModel(parsed) {
+export function buildModel(parsed, { sourceDir = null } = {}) {
   const term = parsed.term
   if (!term || !term.project) throw new Error('this tatemono has no @arkzen:term:project')
   const p = term.project.data
@@ -127,12 +127,40 @@ export function buildModel(parsed) {
     else roots.push(c)
   }
 
+  const prompts = term.prompts.map(p => ({
+    name: p.name,
+    result: p.data.result ?? 'answers',
+    steps: (p.data.steps ?? []).map(s => ({
+      id: s.id,
+      prop: camel(s.id),
+      type: s.type,
+      message: s.message,
+      default: s.default,
+      choices: s.choices ?? null,
+      required: s.required === true,
+      validate: s.validate ?? null,
+      when: s.when ?? null,
+    })),
+    fallback: p.data.fallback ?? {},
+  }))
+
+  const a = term.assets ? term.assets.data : null
+  const assets = a ? {
+    include: a.include ?? [],
+    embed: a.embed === true,
+    dest: a.dest ?? 'assets',
+    templates: (a.templates ?? []).map(t => ({ source: t.source, target: t.target, variables: t.variables ?? [] })),
+  } : null
+
   return {
+    sourceDir,
     meta: { name: parsed.meta.name, version: String(parsed.meta.version), description: parsed.meta.description ?? '' },
     project,
     runtimes,
     commands,
     commandTree: roots,
+    prompts,
+    assets,
     handlers,
     scripts: byLang(term.scripts),
     tests: byLang(term.tests),

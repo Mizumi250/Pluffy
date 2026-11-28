@@ -2,18 +2,27 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
+import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const cli = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src/cli.js')
 
+// Every run starts in an empty folder, so a command that writes files leaves nothing behind.
 function run(args: string[]) {
-  const r = spawnSync(process.execPath, [cli, ...args], {
-    encoding: 'utf8',
-    env: { ...process.env, NO_COLOR: '1' },
-    stdio: ['ignore', 'pipe', 'pipe'],
-  })
-  return { code: r.status, stdout: r.stdout, stderr: r.stderr }
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'cli-example-'))
+  try {
+    const r = spawnSync(process.execPath, [cli, ...args], {
+      cwd,
+      encoding: 'utf8',
+      env: { ...process.env, NO_COLOR: '1' },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    return { code: r.status, stdout: r.stdout, stderr: r.stderr }
+  } finally {
+    fs.rmSync(cwd, { recursive: true, force: true })
+  }
 }
 
 // An expectation written as /pattern/ is a regular expression, anything else is a substring.

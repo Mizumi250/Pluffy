@@ -42,6 +42,17 @@ fallback:
 /* @arkzen:term:command:create
 description: Create a new site
 prompt: site
+examples:
+  - cmd: create --name demo
+    expect_stdout: created demo/index.html
+  - cmd: create --name demo --style dark
+    expect_stdout: created demo/index.html
+  - cmd: create --name Bad_Name
+    expect_exit: 1
+    expect_stderr: does not match
+  - cmd: create
+    expect_exit: 1
+    expect_stderr: missing value for "name"
 */
 
 /* @arkzen:term:assets
